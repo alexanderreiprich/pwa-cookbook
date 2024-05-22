@@ -1,17 +1,31 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
+import reportWebVitals from "./reportWebVitals";
+
+import { FirebaseAppProvider } from "reactfire";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBKEtWnPeJ_oO1r0G5dvyZeAezZzd7T6Jo",
+  authDomain: "pwacookbook.firebaseapp.com",
+  projectId: "pwacookbook",
+  storageBucket: "pwacookbook.appspot.com",
+  messagingSenderId: "580668056456",
+  appId: "1:580668056456:web:770d132b3cbf581fcc903d",
+};
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
+
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  <FirebaseAppProvider firebaseConfig={firebaseConfig}>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </FirebaseAppProvider>
 );
 
 // If you want your app to work offline and load faster, you can change
