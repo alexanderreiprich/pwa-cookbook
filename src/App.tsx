@@ -21,6 +21,8 @@ import {
 
 import { RecipeInterface } from "./interfaces/RecipeInterface";
 import { IngredientInterface } from "./interfaces/IngredientsInterface";
+import { Button } from "@mui/material";
+import ButtonUsage from "./components/Button";
 
 // Test function, TODO: remove
 // function GetDoc() {
@@ -43,26 +45,25 @@ function GetRecipes() {
   if (status === "loading") {
     return <p>loading recipies...</p>;
   }
-  console.log(recipies);
-  return (
-    <div>
-      <ul>
-        {recipies.map((recipe) => (
-          <li key={recipe.id}>
-            omg {recipe.name} consists of
-            <ul>
-              {recipe.ingredients.map(
-                (ingred: IngredientInterface, index: number) => (
-                  <li key={index}>{ingred.name}</li>
-                )
-              )}
-            </ul>
-            and has to bake for {recipe.time} min!
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <div>
+    <Button>Test</Button>
+      <ButtonUsage></ButtonUsage>
+    <ul>
+      {recipies.map((recipe) => (
+        <li key={recipe.id}>
+          omg {recipe.name} consists of
+          <ul>
+            {recipe.ingredients.map(
+              (ingred: IngredientInterface, index: number) => (
+                <li key={index}>{ingred.name}</li>
+              )
+            )}
+          </ul>
+          and has to bake for {recipe.time} min!
+        </li>
+      ))}
+    </ul>
+</div>
 }
 
 function App() {
