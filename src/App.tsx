@@ -1,4 +1,8 @@
 import React from "react";
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Default from "./pages/default";
 // import Home from "./pages/home";
@@ -46,24 +50,9 @@ function GetRecipes() {
     return <p>loading recipies...</p>;
   }
   return <div>
-    <Button>Test</Button>
+      <Button>Test</Button>
       <ButtonUsage></ButtonUsage>
-    <ul>
-      {recipies.map((recipe) => (
-        <li key={recipe.id}>
-          omg {recipe.name} consists of
-          <ul>
-            {recipe.ingredients.map(
-              (ingred: IngredientInterface, index: number) => (
-                <li key={index}>{ingred.name}</li>
-              )
-            )}
-          </ul>
-          and has to bake for {recipe.time} min!
-        </li>
-      ))}
-    </ul>
-</div>
+    </div>
 }
 
 function App() {
