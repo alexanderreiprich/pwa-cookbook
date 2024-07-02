@@ -25,8 +25,6 @@ import {
 
 import { RecipeInterface } from "./interfaces/RecipeInterface";
 import { IngredientInterface } from "./interfaces/IngredientsInterface";
-import { Button } from "@mui/material";
-import ButtonUsage from "./components/Button";
 
 // Test function, TODO: remove
 // function GetDoc() {
@@ -49,10 +47,7 @@ function GetRecipes() {
   if (status === "loading") {
     return <p>loading recipies...</p>;
   }
-  return <div>
-      <Button>Test</Button>
-      <ButtonUsage></ButtonUsage>
-    </div>
+  return <p>Loaded!</p>
 }
 
 function App() {
