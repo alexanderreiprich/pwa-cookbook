@@ -14,40 +14,39 @@ import {
   getFirestore,
   collection,
   query,
-  orderBy,
+  getDocs,
 } from "firebase/firestore";
 import {
   FirestoreProvider,
   useFirestore,
   useFirebaseApp,
   useFirestoreCollectionData,
+  useFirestoreDocData,
 } from "reactfire";
 
 import { RecipeInterface } from "./interfaces/RecipeInterface";
 import { IngredientInterface } from "./interfaces/IngredientsInterface";
-
-// Test function, TODO: remove
-// function GetDoc() {
-//   const ref = doc(useFirestore(), "testing", "firsttest");
-//   const { status, data } = useFirestoreDocData(ref);
-//   if (status === "loading") {
-//     return <p>beep boop loading</p>;
-//   }
-//   return <p>yoo, it's {data.test ? "true" : "false"}</p>;
-// }
+import RecipeElement from "./components/RecipeElement";
 
 function GetRecipes() {
   const firestore = useFirestore();
-  const recipeCollection = collection(firestore, "recipies");
-  const dessertQuery = query(recipeCollection);
-  const { status, data: recipies } = useFirestoreCollectionData(dessertQuery, {
+  const recipesCollection = collection(firestore, "recipes");
+  const recipesQuery = query(recipesCollection);
+  const { status, data: recipes } = useFirestoreCollectionData(recipesQuery, {
     idField: "id",
   });
 
   if (status === "loading") {
-    return <p>loading recipies...</p>;
+    return <p>loading recipes...</p>;
   }
-  return <p>Loaded!</p>
+  console.log(recipes);
+  return (
+    <div>
+      { recipes.map((recipe) => (
+        <RecipeElement name={recipe.name} image={recipe.image} />
+      )) }
+    </div>
+  );
 }
 
 function App() {
@@ -68,17 +67,48 @@ function App() {
       name: "Milk",
       amount: 250,
       unit: "ml",
-    },
+    }
   ];
 
   const strawberryCake: RecipeInterface = {
+    id: "strawberry_cake",
     name: "Strawberry Cake",
     ingredients: strawberryCakeIngredients,
     time: 140,
+    image: "https://thescranline.com/wp-content/uploads/2023/06/STRAWBERRY-CAKE-S-01.jpg",
+    steps: ["Choose Ingredients", "Mix Ingredients", "Put in oven for 300 degrees 161 mins"]
+  };
+
+  const chocolateCakeIngredients: IngredientInterface[] = [
+    {
+      name: "Sugar",
+      amount: 100,
+      unit: "g",
+    },
+    {
+      name: "Chocolate",
+      amount: 500,
+      unit: "g",
+    },
+    {
+      name: "Milk",
+      amount: 250,
+      unit: "ml",
+    }
+  ];
+
+  const chocolateCake: RecipeInterface = {
+    id: "chocolate_cake",
+    name: "Chocolate Cake",
+    ingredients: chocolateCakeIngredients,
+    time: 180,
+    image: "https://hips.hearstapps.com/hmg-prod/images/chocolate-cake-index-64b83bce2df26.jpg",
+    steps: ["Choose Ingredients", "Mix Ingredients", "Put in oven for 200 degrees 69 mins"]
   };
 
   const createRecipe = async () => {
-    await setDoc(doc(db, "recipies", "desserts"), { strawberryCake });
+    await setDoc(doc(db, "recipes", chocolateCake.id), chocolateCake);
+    await setDoc(doc(db, "recipes", strawberryCake.id), strawberryCake);
   };
 
   // createRecipe();
@@ -88,7 +118,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Default />} />
-          <Route index element={<GetRecipes />} />
+          <Route path="/recipes" element={<GetRecipes />} />
         </Routes>
       </BrowserRouter>
     </FirestoreProvider>

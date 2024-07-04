@@ -5,7 +5,7 @@ export default function RecipeElement({ name, image }: { name: string, image: st
   return <div onClick={ () => {
     //TODO: open recipe in detailed view
   }}>
-    <img id="recipeImage" src={ image }></img>
+    <img id="recipeImage" src={ image } />
     <p id="recipeName">{ name }</p>
   </div>;
 }
