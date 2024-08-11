@@ -65,8 +65,14 @@ export default function NavigationBar({title}: {title: string}) {
             </Typography>
             <Drawer open={open} onClose={toggleDrawer}>
               <List>
-                <ListItemButton component="a" href="https://google.com/">
-                  <ListItemText primary="test" />
+                <ListItemButton component="a" href="/">
+                  <ListItemText primary="Rezepte durchsuchen" />
+                </ListItemButton>
+                <ListItemButton component="a" href="/">
+                  <ListItemText primary="Meine Rezepte" />
+                </ListItemButton>
+                <ListItemButton component="a" href="/">
+                  <ListItemText primary="Einstellungen" />
                 </ListItemButton>
               </List>
             </Drawer>
