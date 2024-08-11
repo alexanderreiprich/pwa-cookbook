@@ -5,7 +5,9 @@ import App from "./App";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 
-import { FirebaseAppProvider } from "reactfire";
+import { FirebaseAppProvider} from "reactfire";
+import { getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBKEtWnPeJ_oO1r0G5dvyZeAezZzd7T6Jo",
@@ -19,6 +21,8 @@ const firebaseConfig = {
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 
 root.render(
   <FirebaseAppProvider firebaseConfig={firebaseConfig}>

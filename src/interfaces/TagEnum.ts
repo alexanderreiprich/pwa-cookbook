@@ -1,0 +1,3 @@
+export enum TAG {
+  BREAKFAST, LUNCH, DINNER, VEGAN, VEGETARIAN
+}
