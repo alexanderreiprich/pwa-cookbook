@@ -66,12 +66,15 @@ export default function NavigationBar({title}: {title: string}) {
             <Drawer open={open} onClose={toggleDrawer}>
               <List>
                 <ListItemButton component="a" href="/">
+                  <ListItemText primary="Meine Übersicht" />
+                </ListItemButton>
+                <ListItemButton component="a" href="/search">
                   <ListItemText primary="Rezepte durchsuchen" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/">
-                  <ListItemText primary="Meine Rezepte" />
+                <ListItemButton component="a" href="/recipe-overview">
+                  <ListItemText primary="Alle Rezepte" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/">
+                <ListItemButton component="a" href="/settings">
                   <ListItemText primary="Einstellungen" />
                 </ListItemButton>
               </List>
@@ -79,6 +82,8 @@ export default function NavigationBar({title}: {title: string}) {
           </Toolbar>
         </AppBar>
       </ScrollToHide>
+      {/* Toolbar so that the content of the page is not hidden beneath the app bar */}
+      <Toolbar>{/* content */}</Toolbar>
     </Box>
   );
 }
