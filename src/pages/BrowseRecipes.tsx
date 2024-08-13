@@ -4,6 +4,8 @@ import { useFirestoreCollectionData } from "reactfire";
 import NavigationBar from "../components/NavigationBar";
 import RecipeElement from "../components/RecipeElement";
 
+import "../style/BrowseRecipes.css";
+
 function BrowseRecipes() {
   
   const recipesCollection = collection(db, "recipes");
