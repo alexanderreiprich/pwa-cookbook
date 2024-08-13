@@ -21,6 +21,7 @@ function Recipe() {
       <div id="recipeHead">
         <p>{recipe.name}</p>
         <i>{recipe.description}</i>
+        <i>von: {recipe.author}</i>
       </div>
       <div id="recipeBody">
         <div id="recipeImgContainer">
