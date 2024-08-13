@@ -1,7 +1,7 @@
 function Home() {
   return (
-    <div className="App">
-      <p>Home! :)</p>
+    <div id="root">
+      <p>Home Page</p>
     </div>
   );
 }

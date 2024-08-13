@@ -12,6 +12,7 @@ function CreateRecipe() {
     id: "undefined",
     name: "undefined",
     ingredients: [],
+    number_of_people: 0,
     time: 0,
     image:
       "",
