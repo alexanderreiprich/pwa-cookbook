@@ -11,13 +11,9 @@ import {
 } from "reactfire";
 
 import "./style/RecipeElement.css";
-import NavigationBar from "./components/NavigationBar";
 import { db } from ".";
 import BrowseRecipes from "./pages/BrowseRecipes";
 import Recipe from "./pages/Recipe";
-import { RecipeInterface } from "./interfaces/RecipeInterface";
-import { DIFFICULTY } from "./interfaces/DifficultyEnum";
-import { addDoc, collection } from "firebase/firestore";
 
 function App() {
 

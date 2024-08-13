@@ -7,6 +7,7 @@ export interface RecipeInterface {
   image: string,
   description: string,
   ingredients: IngredientInterface[],
+  number_of_people: number,
   time: number,
   difficulty: DIFFICULTY,
   tags: TAG[],
