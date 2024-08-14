@@ -14,6 +14,8 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import ScrollToHide from "./ScrollToHide";
 import React, { useState } from 'react';
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 // export default function NavigationBar() {
 //   function openNav() {
 //     let sidebar: HTMLElement = document.getElementById("sidebar")!;
@@ -45,6 +47,19 @@ export default function NavigationBar({title}: {title: string}) {
     setOpen(!open);
   }
 
+  const auth = getAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        navigate("/");
+      })
+      .catch((error) => {
+        alert("Etwas ist schiefgegangen, bitte lade die Seite neu.");
+      });
+  };
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <ScrollToHide threshold={0}>
@@ -73,6 +88,9 @@ export default function NavigationBar({title}: {title: string}) {
                 </ListItemButton>
                 <ListItemButton component="a" href="/">
                   <ListItemText primary="Einstellungen" />
+                </ListItemButton>
+                <ListItemButton component="button" onClick={handleLogout}>
+                  <ListItemText primary="Abmelden" />
                 </ListItemButton>
               </List>
             </Drawer>
