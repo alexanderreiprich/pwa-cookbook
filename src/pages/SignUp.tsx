@@ -34,7 +34,8 @@ export default function SignUp() {
         let username = data.get("username")!.toString();
         await setDoc(doc(db, "users", username), {
           email: data.get("email")!.toString(),
-          favorites: []
+          favorites: [],
+          created_recipes: []
         });
         const user = userCredential.user;
         navigate("/login");
