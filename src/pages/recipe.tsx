@@ -38,4 +38,4 @@ function Recipe() {
   );
 }
 
-export default Recipe
+export default Recipe;

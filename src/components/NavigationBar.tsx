@@ -79,6 +79,7 @@ export default function NavigationBar({title}: {title: string}) {
           </Toolbar>
         </AppBar>
       </ScrollToHide>
+      <Toolbar></Toolbar>
     </Box>
   );
 }
