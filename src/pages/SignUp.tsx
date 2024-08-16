@@ -1,14 +1,10 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +12,7 @@ import { useState } from "react";
 
 import "../style/Login.css";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "..";
 
 export default function SignUp() {
@@ -32,22 +28,22 @@ export default function SignUp() {
     setUsernameError("");
     const data = new FormData(event.currentTarget);
     const auth = getAuth();
+
     createUserWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString())
       .then(async (userCredential) => {
         let username = data.get("username")!.toString();
-        const docUserIds = doc(db, "users", "user_ids");
-        const docUserSavedRecipes = doc(db, "users", "saved_recipes");
-        await updateDoc(docUserIds, {[username]: data.get("email")!.toString()});
-        await updateDoc(docUserSavedRecipes, {[username]: []});
+        await setDoc(doc(db, "users", username), {
+          email: data.get("email")!.toString(),
+          favorites: []
+        });
         const user = userCredential.user;
         navigate("/login");
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMessage = error.message;
         switch (errorCode) {
           case "auth/email-already-in-use": 
-            setEmailError("Diese E-Mail-Adresse wird bereits verwendet");
+            setEmailError("Diese E-Mail-Adresse wird bereits verwendet.");
             break;
           case "auth/weak-password":
             setPasswordError("Dieses Password ist zu kurz. Bitte versuche ein anderes.");
@@ -56,8 +52,29 @@ export default function SignUp() {
             setEmailError("Ein unerwarteter Fehler ist aufgetreten.");
             break;
         }
-      });
+      }
+    );
   };
+
+  const handleUsernameInput = async () => {
+    let chosenUsernameInput = document.getElementById("username")! as HTMLInputElement;
+    let chosenUsername = chosenUsernameInput.value;
+    if (chosenUsername != "") { // avoid edge case of invalid database reference
+      const docRef = doc(db, "users", chosenUsername);
+      const docSnap = await getDoc(docRef);
+      const submitButton = document.getElementById("submitBtn")! as HTMLButtonElement;
+      console.log(docSnap.exists());
+      if (docSnap.exists()) {
+        submitButton.disabled = true;
+        setUsernameError("Nutzername bereits vergeben.")
+      }
+      else {
+        submitButton.disabled = false;
+        setUsernameError("");
+      }
+    }
+    
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -84,6 +101,7 @@ export default function SignUp() {
                 id="username"
                 label="Nutzername"
                 autoFocus
+                onBlur={handleUsernameInput}
               />
             </Grid>
             <label className="errorLabel">{usernameError}</label>
@@ -116,6 +134,7 @@ export default function SignUp() {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            id="submitBtn"
           >
             Registrieren
           </Button>
