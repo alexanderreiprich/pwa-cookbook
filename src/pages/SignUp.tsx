@@ -35,8 +35,10 @@ export default function SignUp() {
     createUserWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString())
       .then(async (userCredential) => {
         let username = data.get("username")!.toString();
-        const doca = doc(db, "users", "user_ids");
-        const ref = await updateDoc(doca, {[username]: data.get("email")!.toString()})
+        const docUserIds = doc(db, "users", "user_ids");
+        const docUserSavedRecipes = doc(db, "users", "saved_recipes");
+        await updateDoc(docUserIds, {[username]: data.get("email")!.toString()});
+        await updateDoc(docUserSavedRecipes, {[username]: []});
         const user = userCredential.user;
         navigate("/login");
       })

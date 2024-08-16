@@ -94,10 +94,6 @@ export default function SignIn() {
             autoComplete="current-password"
           />
           <label className="errorLabel">{passwordError}</label>
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Daten für die nächste Anmeldung speichern"
-          />
           <Button
             type="submit"
             fullWidth
@@ -107,11 +103,6 @@ export default function SignIn() {
             Anmelden
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Passwort vergessen?
-              </Link>
-            </Grid>
             <Grid item>
               <Link href="/signup" variant="body2">
                 {"Kein Account? Hier registrieren!"}
