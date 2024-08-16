@@ -14,6 +14,8 @@ import "./style/RecipeElement.css";
 import { db } from ".";
 import BrowseRecipes from "./pages/BrowseRecipes";
 import Recipe from "./pages/Recipe";
+import Login from "./pages/Login";
+import Register from "./pages/SignUp";
 
 function App() {
 
@@ -22,6 +24,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<BrowseRecipes />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Register />} />
           <Route path="/recipes" element={<Recipe />} />
         </Routes>
       </BrowserRouter>
