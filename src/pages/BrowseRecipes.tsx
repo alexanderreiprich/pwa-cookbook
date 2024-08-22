@@ -5,6 +5,7 @@ import NavigationBar from "../components/NavigationBar";
 import RecipeElement from "../components/RecipeElement";
 
 import "../style/BrowseRecipes.css";
+import { Grid } from "@mui/material";
 
 function BrowseRecipes() {
   
@@ -21,11 +22,13 @@ function BrowseRecipes() {
   return(
     <div id="root">
       <NavigationBar title="Rezepte" />
-      <div className="recipeElementContainer">
+      <Grid container spacing={1}>
         {recipes.map((recipe) => (
-          <RecipeElement name={recipe.name} image={recipe.image} id={recipe.id} />
+          <Grid item xs={6} sm={3}>
+            <RecipeElement name={recipe.name} image={recipe.image} id={recipe.id} />
+          </Grid>
         ))}
-      </div>
+      </Grid>
     </div>
   );
 }
