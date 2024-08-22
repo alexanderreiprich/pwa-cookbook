@@ -16,7 +16,12 @@ function BrowseRecipes() {
   });
 
   if (status === "loading") {
-    return(<p>Rezepte werden geladen...</p>);
+    return(
+      <div id="root">
+        <NavigationBar title="Rezepte" />
+        <p>Rezepte werden geladen...</p>
+      </div>
+    );
   }
 
   return(
