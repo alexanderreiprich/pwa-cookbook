@@ -14,7 +14,7 @@ export default function RecipeElement({
     <div
       className="recipeElement"
       onClick={() => {
-        navigate(`/recipes?id=${id}`); //TODO: Replace navigate with <Link>-Component
+        navigate(`/recipes?id=${id}`);
       }}
     >
       <div className="recipeImageContainer">
