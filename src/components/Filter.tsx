@@ -92,17 +92,8 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
         <FormControl fullWidth margin="normal">
           <InputLabel>Schwierigkeit</InputLabel>
           <Select
-            multiple
             value={difficultyFilter}
             onChange={handleDifficultyChange}
-            input = {<Input id="select-multiple-chip" />}
-            renderValue = {selected => (
-              <div className="filterChips">
-                {selected.map(value => (
-                  <Chip key={value} label={value} />
-                ))}
-              </div>
-            )}
           >
             {difficulties.map((difficulty) => (
               <MenuItem value={difficulty}>{difficulty}</MenuItem>

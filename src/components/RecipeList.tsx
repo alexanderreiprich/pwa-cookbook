@@ -13,7 +13,7 @@ import SortComponent from "./Sort";
 
 export default function RecipeList() {
 
-  const [filters, setFilters] = useState<{ timeMin?: number; timeMax?: number; tags?: string[]; difficulty?: string[] }>({});
+  const [filters, setFilters] = useState<{ timeMin?: number; timeMax?: number; tags?: string[]; difficulty?: string }>({});
   const handleApplyFilters = (newFilters: any) => {
     setFilters(newFilters);
   };
@@ -38,7 +38,8 @@ export default function RecipeList() {
         q = query(q, where("tags", "array-contains-any", chosenTags))
       }
       if (filters.difficulty && filters.difficulty?.length > 0) {
-        q = query(q, where("difficulty", "==", DIFFICULTY[filters.difficulty[0] as keyof typeof DIFFICULTY]));
+        console.log(filters.difficulty);
+        q = query(q, where("difficulty", "==", DIFFICULTY[filters.difficulty as keyof typeof DIFFICULTY]));
       }
       const querySnapshot = await getDocs(q);
       let recipeList: RecipeInterface[] = querySnapshot.docs.map((recipe) => ({
