@@ -16,18 +16,22 @@ import BrowseRecipes from "./pages/BrowseRecipes";
 import Recipe from "./pages/Recipe";
 import Login from "./pages/Login";
 import Register from "./pages/SignUp";
+import { AuthProvider } from "./components/Authentication";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
 
   return (
     <FirestoreProvider sdk={db}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<BrowseRecipes />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Register />} />
-          <Route path="/recipes" element={<Recipe />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+              <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Register />} />
+              <Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />
+            </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </FirestoreProvider>
   );

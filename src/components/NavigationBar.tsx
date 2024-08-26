@@ -48,12 +48,13 @@ export default function NavigationBar({title}: {title: string}) {
   }
 
   const auth = getAuth();
+  const user = auth.currentUser;
   const navigate = useNavigate();
 
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
-        navigate("/");
+        navigate("/login");
       })
       .catch((error) => {
         alert("Etwas ist schiefgegangen, bitte lade die Seite neu.");
@@ -65,16 +66,18 @@ export default function NavigationBar({title}: {title: string}) {
       <ScrollToHide threshold={0}>
         <AppBar position="fixed">
           <Toolbar>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
-              onClick={toggleDrawer}
-            >
-              <MenuIcon />
-            </IconButton>
+            {user && (
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                sx={{ mr: 2 }}
+                onClick={toggleDrawer}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {title}
             </Typography>

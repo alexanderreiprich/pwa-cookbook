@@ -5,7 +5,6 @@ import { useFirestoreDocData } from "reactfire";
 import NavigationBar from "../components/NavigationBar";
 import { Button, Grid } from "@mui/material";
 import "../style/Images.css";
-import { ReactElement, JSXElementConstructor, ReactNode, Key } from "react";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { TAG } from "../interfaces/TagEnum";

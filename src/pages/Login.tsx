@@ -13,13 +13,15 @@ import Container from "@mui/material/Container";
 import NavigationBar from "../components/NavigationBar";
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "../style/Login.css";
 
 export default function SignIn() {
   let navigate = useNavigate();
+  let location = useLocation();
+  let from = location.state?.from?.pathname + location.state?.from?.search || "/";
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
@@ -27,10 +29,10 @@ export default function SignIn() {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
-    signInWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString()) // TODO: is this the correct way to handle user potentially being null?
+    signInWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString())
     .then((userCredential) => {
       const user = userCredential.user;
-      navigate("/");
+      navigate(from);
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -54,7 +56,6 @@ export default function SignIn() {
   };
 
   const auth = getAuth();
-  
 
   return (
     <Container component="main" maxWidth="xs">
