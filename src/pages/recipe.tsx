@@ -1,4 +1,3 @@
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Button, Grid } from "@mui/material";
 import { doc } from "firebase/firestore";
 import { Key } from "react";
@@ -11,6 +10,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
+import FavoritesButton from "../components/FavoritesButton";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -18,7 +18,6 @@ function Recipe() {
 
   const ref = doc(db, "recipes", id!);
   const { status, data: recipe } = useFirestoreDocData(ref);
-  console.log(recipe);
 
   if( !recipe || status === "error") {
     return (
@@ -54,7 +53,7 @@ function Recipe() {
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
-            <Button color="secondary" startIcon={<FavoriteIcon />}>{recipe.favorites}</Button>
+            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites} />
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>

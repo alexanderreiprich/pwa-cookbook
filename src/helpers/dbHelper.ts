@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { addDoc, collection, deleteDoc, doc, DocumentData, getDocFromServer, setDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, DocumentData, getDocFromServer, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -27,6 +27,20 @@ export async function editRecipe(id: String, recipe: RecipeInterface) {
     catch (e) {
         console.log(e);
         alert("Fehler beim Hinzufügen");
+    }
+}
+
+export async function updateRecipeFavorites(id: String, favorites: number) {
+    try {
+        const path = `recipes/${id}`;
+        const docRef = doc(db, path);
+        await updateDoc(docRef, {
+            favorites: favorites
+        });
+        alert("Favoriten aktualisiert");
+    } catch (e) {
+        console.log(e);
+        alert("Fehler beim Aktualisieren der Favoriten");
     }
 }
 
