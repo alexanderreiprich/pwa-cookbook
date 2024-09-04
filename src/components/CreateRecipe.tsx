@@ -6,9 +6,10 @@ import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import EditRecipe from "./EditRecipe";
+import { useAuth } from "./Authentication";
 
 export default function CreateRecipe() {
-
+  const { currentUser } = useAuth();
   let recipe: RecipeInterface = {
     id: "",
     name: "",
@@ -22,13 +23,13 @@ export default function CreateRecipe() {
     difficulty: DIFFICULTY.EASY,
     tags: [],
     favorites: 0,
-    author: "test",
+    author: currentUser ? (currentUser.displayName ? currentUser.displayName : (currentUser.email ? currentUser.email : "unknown")) : "unknown",
     date_create: new Date()
   }
 
   return(
     <div>
-      <EditRecipe recipe={recipe} isNew={true}></EditRecipe>
+      <EditRecipe recipe={recipe} isNew={true} ></EditRecipe>
     </div>
   );
 }

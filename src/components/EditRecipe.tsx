@@ -190,6 +190,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
               <TextField size="small" inputRef={nameRef} required id="name" label="Name des Rezeptes" defaultValue={recipe.name}/>
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
+              <TextField size="small" type="number" inputRef={timeRef} id="time" label="Dauer in Minuten" defaultValue={recipe.time}/>
               
               <CustomSelect
                 size="small"
@@ -236,14 +237,15 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
               displayEmpty
               fullWidth
               variant="outlined"
-            >
-              {allTags.map((tag) => (
-                <MenuItem key={tag} value={tag}>
-                  {TAG[parseInt(tag)]}
-                </MenuItem>
-              ))}
-            </CustomSelect>
-              </Stack>
+              >
+                {allTags.map((tag) => (
+                  <MenuItem key={tag} value={tag}>
+                    {TAG[parseInt(tag)]}
+                  </MenuItem>
+                ))}
+              </CustomSelect>
+              <TextField size="small" inputRef={imageRef} id="image-link" label="Link auf Bild des Rezeptes" defaultValue={recipe.image}/>
+            </Stack>
           </Box>
 
           {/* Upload image via file */}
@@ -269,8 +271,6 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
                 </div>
               )}
           </Box> */}
-
-          <TextField size="small" inputRef={imageRef} id="image-link" label="Link auf Bild des Rezeptes" defaultValue={recipe.image}/>
 
           {/* Ingredients */}
 
