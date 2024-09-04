@@ -1,11 +1,13 @@
 import NavigationBar from "../components/NavigationBar";
 import RecipeList from "../components/RecipeList";
+import CreateRecipe from "../components/CreateRecipe";
 
 function BrowseRecipes() {
   
   return(
-    <div id="root">
+    <div>
       <NavigationBar title="Rezepte" />
+      <CreateRecipe></CreateRecipe>
       <RecipeList />
     </div>
   );
