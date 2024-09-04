@@ -80,7 +80,6 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
       setOpen(true);
-      console.log(recipe.image);
       
     }
   const idRef = useRef<HTMLInputElement>(null);
