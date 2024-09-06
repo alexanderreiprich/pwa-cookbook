@@ -2,13 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 
 import { FirebaseAppProvider} from "reactfire";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { syncFirestoreWithIndexedDB } from "./helpers/synchDBHelper";
+import { NetworkStatusProvider } from "./helpers/NetworkStatusProvider";
+
+// Logos by https://iconpacks.net/?utm_source=link-attribution&utm_content=5026
 
 const firebaseConfig = {
   apiKey: "AIzaSyBKEtWnPeJ_oO1r0G5dvyZeAezZzd7T6Jo",
@@ -27,18 +30,42 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 root.render(
   <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <NetworkStatusProvider>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </NetworkStatusProvider>
   </FirebaseAppProvider>
 );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.unregister();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then((registration) => {
+      console.log('Service Worker registered with scope:', registration.scope);
+    })
+    .catch((error) => {
+      console.error('Service Worker registration failed:', error);
+    });
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then((registration) => {
+    if ('sync' in registration) {
+      (registration as any).sync.register('sync-recipes').catch((error: any) => {
+        console.error('Sync registration failed:', error);
+        syncFirestoreWithIndexedDB(); // Fallback
+      });
+    } else {
+      // Fallback, falls Hintergrundsynchronisation nicht unterstützt wird
+      syncFirestoreWithIndexedDB();
+    }
+  });
+} else {
+  // Fallback, falls Service Worker nicht unterstützt wird
+  syncFirestoreWithIndexedDB();
+}

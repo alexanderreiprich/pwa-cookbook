@@ -1,9 +1,6 @@
 import { Button, Grid } from "@mui/material";
-import { doc } from "firebase/firestore";
-import { Key } from "react";
+import { Key, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useFirestoreDocData } from "reactfire";
-import { db } from "..";
 import EditRecipe from "../components/EditRecipe";
 import NavigationBar from "../components/NavigationBar";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
@@ -11,15 +8,57 @@ import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
 import FavoritesButton from "../components/FavoritesButton";
+import { RecipeInterface } from "../interfaces/RecipeInterface";
+import { formatDate } from "../helpers/templateHelper";
+import { useRecipeActions } from "../helpers/useRecipes";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+    const id= searchParams.get("id");
+  const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { handleGetRecipeById } = useRecipeActions();
 
-  const ref = doc(db, "recipes", id!);
-  const { status, data: recipe } = useFirestoreDocData(ref);
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      try {
+        if (id) {
+          const recipe = await handleGetRecipeById(id);
+          setRecipe(recipe);
+        } else {
+          setError('Fehler beim Abrufen der Id des Rezepts.');
+        }
 
-  if( !recipe || status === "error") {
+      } catch (err) {
+        setError('Fehler beim Abrufen des Rezepts.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipe();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div>
+      <NavigationBar title="Rezepte" />
+        <p>Rezept wird geladen...</p>
+      </div>
+    )
+  }
+  if (error) {
+    return (
+      <div>
+      <NavigationBar title="Rezepte" />
+        <p>{error}</p>
+      </div>
+    )
+  }
+
+  if(!recipe) {
     return (
       <div>
       <NavigationBar title="Rezepte" />
@@ -28,16 +67,6 @@ function Recipe() {
     )
       
   }
-  if (status === "loading") {
-    return (
-      <div>
-      <NavigationBar title="Rezepte" />
-        <p>Rezept wird geladen...</p>
-      </div>
-    )
-  }
-
-
 
 
   return (
@@ -48,12 +77,12 @@ function Recipe() {
           <h1>{recipe.name}</h1>
           <div>
             <div><i>von: {recipe.author}</i></div>
-            <div>erstellt am: {new Date(recipe.date_create.seconds * 1000 + recipe.date_create.nanoseconds / 1000000).toDateString()}</div>
+            <div>erstellt am: {formatDate(recipe.date_create)}</div>
           </div>
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
-            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites} />
+            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites}/>
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>

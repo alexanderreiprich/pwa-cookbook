@@ -1,61 +1,100 @@
-import { Button } from "@mui/material";
-import { addDoc, collection, deleteDoc, doc, DocumentData, getDocFromServer, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { IngredientInterface } from "../interfaces/IngredientsInterface";
-import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { TAG } from "../interfaces/TagEnum";
-import { update } from "firebase/database";
+import { 
+    createRecipeInIndexedDB, 
+    deleteRecipeInIndexedDB, 
+    fetchFromIndexedDB, 
+    getRecipeByIdFromIndexedDB, 
+    updateRecipeFavoritesInIndexedDB, 
+    updateRecipeInIndexedDB 
+} from "../db/idb";
+import { 
+    createRecipeInFirestore, 
+    deleteRecipeInFirestore, 
+    fetchFromFirestore, 
+    getAllRecipesFromFirestore, 
+    getRecipeByIdFromFirestore, 
+    updateRecipeFavoritesInFirestore, 
+    updateRecipeInFirestore 
+} from "../db/firestore";
 
-export async function createRecipe(recipe: RecipeInterface) {
-    try {
-        const docRef = await addDoc(collection(db, "recipes"), recipe);
-        alert("Rezept hinzugefügt")
-    }
-    catch (e) {
-        alert("Fehler beim Hinzufügen");
+// Function to update recipe favorites
+export async function updateRecipeFavorites(id: string, newFavorites: number, isOnline: boolean) {
+    // Update in IndexedDB
+    updateRecipeFavoritesInIndexedDB(id, newFavorites);
+
+    // Update in Firestore if online
+    if (isOnline) {
+        await updateRecipeFavoritesInFirestore(id, newFavorites);
     }
 }
 
-export async function editRecipe(id: String, recipe: RecipeInterface) {
-    try {
-        const path = "recipes/" + id;
-        const docRef = doc(db, path);
-        await setDoc(docRef, recipe as DocumentData);
-        alert("Rezept gespeichert")
-    }
-    catch (e) {
-        console.log(e);
-        alert("Fehler beim Hinzufügen");
+// Function to update a recipe
+export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean) {
+    // Update in IndexedDB
+    updateRecipeInIndexedDB(id, updatedRecipe);
+
+    // Update in Firestore if online
+    if (isOnline) {
+        await updateRecipeInFirestore(id, updatedRecipe);
     }
 }
 
-export async function updateRecipeFavorites(id: String, favorites: number) {
-    try {
-        const path = `recipes/${id}`;
-        const docRef = doc(db, path);
-        await updateDoc(docRef, {
-            favorites: favorites
-        });
-        alert("Favoriten aktualisiert");
-    } catch (e) {
-        console.log(e);
-        alert("Fehler beim Aktualisieren der Favoriten");
+// Function to get all recipes
+export async function getAllRecipes(filters: any, isOnline: boolean): Promise<RecipeInterface[]> {
+    let recipes: RecipeInterface[] = [];
+    
+    // Fetch from Firestore if online
+    if (isOnline) {
+        recipes = await getAllRecipesFromFirestore(filters);
+        // Fallback to IndexedDB if no recipes found in Firestore
+        if (!recipes || recipes.length === 0) {
+            recipes = await fetchFromFirestore(filters);
+        }
+    } else {
+        // Fetch from IndexedDB if offline
+        recipes = await fetchFromIndexedDB();
+    }
+    
+    return recipes;
+}
+
+// Function to get a recipe by ID
+export async function getRecipeById(id: string, isOnline: boolean): Promise<RecipeInterface | null> {
+    let recipe: RecipeInterface | null = null;
+
+    // Fetch from Firestore if online
+    if (isOnline) {
+        recipe = await getRecipeByIdFromFirestore(id);
+        // Fallback to IndexedDB if recipe not found in Firestore
+        if (!recipe) {
+            recipe = await getRecipeByIdFromIndexedDB(id);
+        }
+    } else {
+        // Fetch from IndexedDB if offline
+        recipe = await getRecipeByIdFromIndexedDB(id);
+    }
+
+    return recipe;
+}
+
+// Function to create a new recipe
+export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean) {
+    // Create in IndexedDB
+    createRecipeInIndexedDB(newRecipe);
+    
+    // Create in Firestore if online
+    if (isOnline) {
+        await createRecipeInFirestore(newRecipe);
     }
 }
 
-// Todo: Test functionality after recipes can be created
-export async function deleteRecipe(id: String) {
-    try {
-        // if(confirm("Soll das Rezept wirklich gelöscht werden?")){
-        const path = "recipes/" + "id";
-        const docRef = doc(db, path);
-        await deleteDoc(docRef);
-        alert("Rezept " + id + " gelöscht")
-        // }
-    }
-    catch (e) {
-        console.log(e);
-        alert("Fehler beim Löschen");
+// Function to delete a recipe
+export async function deleteRecipe(id: string, isOnline: boolean) {
+    // Delete from IndexedDB
+    await deleteRecipeInIndexedDB(id);
+    
+    // Delete from Firestore if online
+    if (isOnline) {
+        await deleteRecipeInFirestore(id);
     }
 }

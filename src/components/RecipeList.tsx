@@ -1,15 +1,12 @@
-import { db } from "..";
-import { collection, CollectionReference, getDocs, Query, query, where, Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import RecipeElement from "../components/RecipeElement";
-
 import "../style/BrowseRecipes.css";
 import { Grid } from "@mui/material";
 import FilterComponent from "../components/Filter";
 import { useEffect, useState } from "react";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { TAG } from "../interfaces/TagEnum";
 import SortComponent from "./Sort";
+import { useRecipeActions } from "../helpers/useRecipes";
 
 export default function RecipeList() {
 
@@ -20,32 +17,11 @@ export default function RecipeList() {
 
   const [recipes, setRecipes] = useState<RecipeInterface[]>([]);
   const [sortOrder, setSortOrder] = useState<"nameAsc" | "favsAsc" | "dateAsc" | "nameDsc" | "favsDsc" | "dateDsc">("nameAsc");
-
+  const { handleGetAllRecipes } = useRecipeActions();
+  
   useEffect(() => {
     const fetchItems = async () => {
-      let q: Query | CollectionReference = collection(db, "recipes");
-      if (filters.timeMin) {
-        q = query(q, where("time", ">=", Number(filters.timeMin)));
-      }
-      if (filters.timeMax) {
-        q = query(q, where("time", "<=", Number(filters.timeMax)));
-      }
-      if (filters.tags && filters.tags?.length > 0) {
-        let chosenTags = []
-        for (let i = 0; i < filters.tags?.length; i++) {
-          chosenTags.push(TAG[filters.tags[i] as keyof typeof TAG]);
-        }
-        q = query(q, where("tags", "array-contains-any", chosenTags))
-      }
-      if (filters.difficulty && filters.difficulty?.length > 0) {
-        console.log(filters.difficulty);
-        q = query(q, where("difficulty", "==", DIFFICULTY[filters.difficulty as keyof typeof DIFFICULTY]));
-      }
-      const querySnapshot = await getDocs(q);
-      let recipeList: RecipeInterface[] = querySnapshot.docs.map((recipe) => ({
-        id: recipe.id,
-        ...recipe.data(),
-      })) as RecipeInterface[];
+      let recipeList = await handleGetAllRecipes(filters);
 
       switch(sortOrder) {
         case "nameAsc":
@@ -100,7 +76,7 @@ export default function RecipeList() {
   }, [filters, sortOrder]);
 
   return (
-    <div id="root">
+    <div>
       <Grid container>
         <FilterComponent onApplyFilters={handleApplyFilters} />
         <SortComponent sortBy={sortOrder} onSortOrderChange={setSortOrder} />
