@@ -39,9 +39,6 @@ function Recipe() {
     )
   }
 
-
-
-
   return (
     <div>
       <NavigationBar title="Rezepte" />

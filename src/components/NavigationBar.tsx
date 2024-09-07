@@ -4,8 +4,6 @@ import {
   Toolbar,
   Typography,
   IconButton,
-  Menu,
-  MenuItem,
   Drawer,
   List,
   ListItemButton,
@@ -13,7 +11,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ScrollToHide from "./ScrollToHide";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
