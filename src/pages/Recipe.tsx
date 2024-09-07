@@ -11,6 +11,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
+import { useAuth } from '../components/Authentication';
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,9 @@ function Recipe() {
 
   const ref = doc(db, "recipes", id!);
   const { status, data: recipe } = useFirestoreDocData(ref);
+
+  const { currentUser } = useAuth();
+	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 
   if( !recipe || status === "error") {
     return (
@@ -56,7 +60,7 @@ function Recipe() {
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
-          <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
+          {recipe.author == user ? (<EditRecipe recipe={recipe} isNew={false}></EditRecipe>) : null}
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
