@@ -1,6 +1,6 @@
 function Default() {
   return (
-    <div id="root">
+    <div>
       <p>Default Page</p>
     </div>
   );
