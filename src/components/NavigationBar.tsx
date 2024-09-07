@@ -16,29 +16,6 @@ import ScrollToHide from "./ScrollToHide";
 import React, { useState } from 'react';
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-// export default function NavigationBar() {
-//   function openNav() {
-//     let sidebar: HTMLElement = document.getElementById("sidebar")!;
-//     sidebar.style.width = "200px";
-//   }
-
-//   function closeNav() {
-//     let sidebar: HTMLElement = document.getElementById("sidebar")!;
-//     sidebar.style.width = "0";
-//   }
-
-//   return <div className="navigationBarContainer">
-//     <div id="sidebar" className="sidebar">
-//       <a href="javascript:void(0)" className="closeBtn" onClick={closeNav}>
-//         &times;
-//       </a>
-//       <a href="#">Your Recipes</a>
-//       <a href="#">Explore Recipes</a>
-//       <a href="#">App Preferences</a>
-//     </div>
-//     <button className="openBtn" onClick={openNav}>&#9776; Open</button>
-//   </div>;
-// }
 
 export default function NavigationBar({title}: {title: string}) {
 
@@ -86,7 +63,7 @@ export default function NavigationBar({title}: {title: string}) {
                 <ListItemButton component="a" href="/">
                   <ListItemText primary="Rezepte durchsuchen" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/">
+                <ListItemButton component="a" href="/my_recipes">
                   <ListItemText primary="Meine Rezepte" />
                 </ListItemButton>
                 <ListItemButton component="a" href="/">

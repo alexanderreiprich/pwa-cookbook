@@ -21,6 +21,7 @@ function Recipe() {
   console.log(recipe);
 
   if( !recipe || status === "error") {
+    console.log(recipe, status);
     return (
       <div>
       <NavigationBar title="Rezepte" />
