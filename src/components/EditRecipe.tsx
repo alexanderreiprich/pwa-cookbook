@@ -98,10 +98,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const allDifficulties = Object.keys(DIFFICULTY);
 
   const { 
-    handleUpdateRecipeFavorites, 
     handleUpdateRecipe, 
-    handleGetAllRecipes, 
-    handleGetRecipeById, 
     handleCreateRecipe, 
     handleDeleteRecipe 
 } = useRecipeActions();
