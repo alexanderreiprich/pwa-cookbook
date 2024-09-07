@@ -23,5 +23,6 @@
   },
   "include": [
     "src"
-  ]
+  , "public/serviceWorker.js"  ],
+  "exclude": ["node_modules"]
 }

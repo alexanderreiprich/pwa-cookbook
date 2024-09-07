@@ -3,7 +3,8 @@ import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { parseDate } from "../helpers/synchDBHelper";
+import { parseDate, saveDate } from "../helpers/synchDBHelper";
+import { updateRecipe } from "../helpers/dbHelper";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -44,7 +45,7 @@ export async function updateRecipeInFirestore(id: string, updatedRecipe: Partial
     try {
       const recipeRef = doc(db, 'recipes', id);
       // updates recipe in firestore
-      await setDoc(recipeRef, updatedRecipe, { merge: true });
+      await setDoc(recipeRef, {...updatedRecipe, date_create: saveDate(updatedRecipe.date_create)}, { merge: true });
       console.log('Rezept erfolgreich in Firestore aktualisiert.');
     } catch (e) {
         console.log(e);
@@ -108,7 +109,7 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promi
     try {
       const recipeRef = doc(db, 'recipes', newRecipe.id);
   
-      await setDoc(recipeRef, newRecipe);
+      await setDoc(recipeRef, {...newRecipe, date_create: saveDate(newRecipe.date_create)});
       console.log('Rezept erfolgreich in Firestore erstellt.');
   
     } catch (err) {

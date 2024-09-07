@@ -1,4 +1,4 @@
-import { doc, writeBatch } from "firebase/firestore";
+import { doc, Timestamp, writeBatch } from "firebase/firestore";
 import { getAllRecipesFromDB } from "../db/idb";
 import { db } from "..";
 export async function syncFirestoreWithIndexedDB() {
@@ -22,4 +22,10 @@ export function parseDate(date: any): Date {
   } else {
     return new Date(date);
   }
+}
+
+export function saveDate(date: Date | Timestamp | undefined): Timestamp {
+  if(!date) return Timestamp.fromDate(new Date());
+  if(date instanceof Timestamp ) return date;
+  return Timestamp.fromDate(date);
 }
