@@ -27,11 +27,9 @@ function App() {
         <AuthProvider>
           <Routes>
             <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
-            <Route path="/" element={<BrowseRecipes />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />
-            <Route path="/recipes" element={<Recipe />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
