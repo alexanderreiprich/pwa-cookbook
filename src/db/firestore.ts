@@ -4,7 +4,6 @@ import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { parseDate, saveDate } from "../helpers/synchDBHelper";
-import { updateRecipe } from "../helpers/dbHelper";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -13,10 +12,8 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
         return querySnapshot.docs.map(doc => {
             const data = doc.data() as Partial<RecipeInterface>; // Type Assertion
         
-            // Konvertiere Firestore-Timestamp zu JavaScript-Date
-            const date_create = data.date_create instanceof Timestamp 
-            ? data.date_create.toDate()
-            : new Date(data.date_create ?? Date.now());
+            // Convert Timestamp to Date
+            const date_create = parseDate(data.date_create);
         
             return {
             id: doc.id,

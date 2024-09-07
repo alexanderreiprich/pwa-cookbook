@@ -1,5 +1,7 @@
 import React, { createContext, useEffect, useState, useContext, ReactNode } from 'react';
 
+// Boilerplate Network Status Provider
+
 // Define the type for the context value
 interface NetworkStatusContextValue {
   isOnline: boolean;

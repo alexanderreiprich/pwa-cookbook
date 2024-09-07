@@ -28,9 +28,9 @@ export const AuthProvider = ({children}: {children: any}) => {
     }
   }, []);
 
-  // if (loading) {
-  //   return <div>Lade Nutzer...</div>
-  // }
+  if (loading) {
+    return <div>Lade Nutzer...</div>
+  }
 
   return (
     <AuthContext.Provider value={{currentUser}}>
