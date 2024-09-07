@@ -18,7 +18,6 @@ function Recipe() {
 
   const ref = doc(db, "recipes", id!);
   const { status, data: recipe } = useFirestoreDocData(ref);
-  console.log(recipe);
 
   if( !recipe || status === "error") {
     return (

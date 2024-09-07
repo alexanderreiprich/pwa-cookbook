@@ -31,9 +31,9 @@ export default function RecipeList() {
         q = query(q, where("time", "<=", Number(filters.timeMax)));
       }
       if (filters.tags && filters.tags?.length > 0) {
-        let chosenTags = []
+        let chosenTags: string[] = []
         for (let i = 0; i < filters.tags?.length; i++) {
-          chosenTags.push(TAG[filters.tags[i] as keyof typeof TAG]);
+          chosenTags.push(TAG[filters.tags[i] as any].toString());
         }
         q = query(q, where("tags", "array-contains-any", chosenTags))
       }
