@@ -7,7 +7,7 @@ import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DocumentData } from "firebase/firestore";
 import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { useRecipeActions } from "../helpers/useRecipes";
+import { useRecipeActions } from "../db/useRecipes";
 import { Key, useRef, useState } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -175,7 +175,8 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       tags: tags,
       favorites: recipe.favorites,
       author: recipe.author,
-      date_create: recipe.date_create
+      date_create: recipe.date_create,
+      date_edit: new Date()
     }
     isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
     handleClose();

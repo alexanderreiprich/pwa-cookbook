@@ -6,7 +6,7 @@ import FilterComponent from "../components/Filter";
 import { useEffect, useState } from "react";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import SortComponent from "./Sort";
-import { useRecipeActions } from "../helpers/useRecipes";
+import { useRecipeActions } from "../db/useRecipes";
 
 export default function RecipeList() {
 

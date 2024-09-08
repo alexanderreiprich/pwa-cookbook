@@ -1,7 +1,7 @@
 // useRecipes.ts
 import { useAuth } from '../components/Authentication';
 import { RecipeInterface } from '../interfaces/RecipeInterface';
-import { useNetworkStatus } from './NetworkStatusProvider'; // Adjust path as needed
+import { useNetworkStatus } from '../helpers/NetworkStatusProvider'; // Adjust path as needed
 import { 
     updateRecipeFavorites, 
     updateRecipe, 
@@ -10,7 +10,7 @@ import {
     createRecipe, 
     deleteRecipe,
     checkRecipeLikes
-} from "./dbHelper";
+} from "../helpers/dbHelper";
 
 export function useRecipeActions() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status

@@ -1,6 +1,7 @@
 import { doc, Timestamp, writeBatch } from "firebase/firestore";
 import { getAllRecipesFromDB } from "../db/idb";
 import { db } from "..";
+import { RecipeInterface } from "../interfaces/RecipeInterface";
 export async function syncFirestoreWithIndexedDB() {
   const recipes = await getAllRecipesFromDB();
   
@@ -24,8 +25,12 @@ export function parseDate(date: any): Date {
   }
 }
 
-export function saveDate(date: Date | Timestamp | undefined): Timestamp {
+function saveDate(date: Date | Timestamp | undefined): Timestamp {
   if(!date) return Timestamp.fromDate(new Date());
   if(date instanceof Timestamp ) return date;
   return Timestamp.fromDate(date);
+}
+
+export function saveRecipe(recipe: Partial<RecipeInterface>): Object {
+  return {...recipe, date_create: saveDate(recipe.date_create), date_edit: saveDate(recipe.date_edit)}
 }

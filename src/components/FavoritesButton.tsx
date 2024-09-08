@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useAuth } from './Authentication';
-import { useRecipeActions } from '../helpers/useRecipes'; // Adjust path as needed
+import { useRecipeActions } from '../db/useRecipes'; // Adjust path as needed
 interface FavoritesButtonProps {
   favorites: number;
   recipeId: string;

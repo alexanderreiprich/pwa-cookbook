@@ -10,7 +10,7 @@ import "../style/Images.css";
 import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
-import { useRecipeActions } from "../helpers/useRecipes";
+import { useRecipeActions } from "../db/useRecipes";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
