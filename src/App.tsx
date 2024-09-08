@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Register from "./pages/SignUp";
 import { AuthProvider } from "./components/Authentication";
 import PrivateRoute from "./components/PrivateRoute";
+import MyRecipes from "./pages/MyRecipes";
 
 function App() {
 
@@ -26,11 +27,12 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Register />} />
-            <Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />
-          </Routes>
+              <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Register />} />
+              <Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />
+              <Route path="/my_recipes" element={<PrivateRoute><MyRecipes /></PrivateRoute>} />
+            </Routes>
         </AuthProvider>
       </BrowserRouter>
     </FirestoreProvider>

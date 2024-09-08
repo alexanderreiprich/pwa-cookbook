@@ -1,10 +1,5 @@
-import { Button } from "@mui/material";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { TAG } from "../interfaces/TagEnum";
 import EditRecipe from "./EditRecipe";
 import { useAuth } from "./Authentication";
 

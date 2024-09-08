@@ -68,7 +68,6 @@ function Recipe() {
       
   }
 
-
   return (
     <div>
       <NavigationBar title="Rezepte" />
@@ -88,7 +87,6 @@ function Recipe() {
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
-          <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
