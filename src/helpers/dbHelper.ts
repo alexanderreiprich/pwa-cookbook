@@ -1,30 +1,33 @@
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { 
+    checkRecipeLikesInIndexedDB,
     createRecipeInIndexedDB, 
     deleteRecipeInIndexedDB, 
     fetchFromIndexedDB, 
-    getRecipeByIdFromIndexedDB, 
+    getRecipeByIdFromIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB 
 } from "../db/idb";
 import { 
+    checkRecipeLikesInFirestore,
     createRecipeInFirestore, 
     deleteRecipeInFirestore, 
     fetchFromFirestore, 
     getAllRecipesFromFirestore, 
-    getRecipeByIdFromFirestore, 
+    getRecipeByIdFromFirestore,
     updateRecipeFavoritesInFirestore, 
     updateRecipeInFirestore 
 } from "../db/firestore";
+import { User } from "firebase/auth";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(id: string, newFavorites: number, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
-    updateRecipeFavoritesInIndexedDB(id, newFavorites);
+    updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
 
     // Update in Firestore if online
     if (isOnline) {
-        await updateRecipeFavoritesInFirestore(id, newFavorites);
+        await updateRecipeFavoritesInFirestore(currentUser, id, newFavorites, likes);
     }
 }
 
@@ -96,5 +99,14 @@ export async function deleteRecipe(id: string, isOnline: boolean) {
     // Delete from Firestore if online
     if (isOnline) {
         await deleteRecipeInFirestore(id);
+    }
+}
+
+export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<boolean> {
+    if(isOnline) {
+        return checkRecipeLikesInFirestore(id, currentUser);    
+    } else {
+        return checkRecipeLikesInIndexedDB(id);
+
     }
 }

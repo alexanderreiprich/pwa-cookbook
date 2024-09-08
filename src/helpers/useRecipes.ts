@@ -1,4 +1,5 @@
 // useRecipes.ts
+import { useAuth } from '../components/Authentication';
 import { RecipeInterface } from '../interfaces/RecipeInterface';
 import { useNetworkStatus } from './NetworkStatusProvider'; // Adjust path as needed
 import { 
@@ -7,14 +8,16 @@ import {
     getAllRecipes, 
     getRecipeById, 
     createRecipe, 
-    deleteRecipe 
+    deleteRecipe,
+    checkRecipeLikes
 } from "./dbHelper";
 
 export function useRecipeActions() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
+    const { currentUser } = useAuth();
 
-    const handleUpdateRecipeFavorites = async (id: string, newFavorites: number) => {
-        await updateRecipeFavorites(id, newFavorites, isOnline);
+    const handleUpdateRecipeFavorites = async (id: string, newFavorites: number, likes: boolean) => {
+        await updateRecipeFavorites(currentUser, id, newFavorites, likes, isOnline);
     };
 
     const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
@@ -37,6 +40,10 @@ export function useRecipeActions() {
         await deleteRecipe(id, isOnline);
     };
 
+    const handleCheckRecipeLikes = async (id: string) => {
+        return await checkRecipeLikes(id, isOnline, currentUser);
+    }
+
     return {
         handleUpdateRecipeFavorites,
         handleUpdateRecipe,
@@ -44,5 +51,6 @@ export function useRecipeActions() {
         handleGetRecipeById,
         handleCreateRecipe,
         handleDeleteRecipe,
+        handleCheckRecipeLikes
     };
 }

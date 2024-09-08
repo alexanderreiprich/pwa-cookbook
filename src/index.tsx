@@ -8,8 +8,8 @@ import { FirebaseAppProvider} from "reactfire";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { syncFirestoreWithIndexedDB } from "./helpers/synchDBHelper";
 import { NetworkStatusProvider } from "./helpers/NetworkStatusProvider";
+import { initDB } from "./db/idb";
 
 // Logos by https://iconpacks.net/?utm_source=link-attribution&utm_content=5026
 
@@ -28,6 +28,9 @@ const root = ReactDOM.createRoot(
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+initDB();
+
 root.render(
   <FirebaseAppProvider firebaseConfig={firebaseConfig}>
     <NetworkStatusProvider>
