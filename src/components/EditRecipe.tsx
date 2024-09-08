@@ -7,7 +7,7 @@ import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DocumentData } from "firebase/firestore";
 import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { createRecipe, deleteRecipe, editRecipe } from "../helpers/dbHelper";
+import { useRecipeActions } from "../db/useRecipes";
 import { Key, useRef, useState } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -96,34 +96,34 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
+
+  const { 
+    handleUpdateRecipe, 
+    handleCreateRecipe, 
+    handleDeleteRecipe 
+} = useRecipeActions();
   
   const handleClose = () => {
     setOpen(false);
   }
 
-  const handleDelete = () => {
-    deleteRecipe(recipe.id);
-  }
-
-  const handleSave = () => { 
-    let updatedRecipe: RecipeInterface = {
-      id: idRef.current && isNew ? idRef.current.value : recipe.id,
-      name: nameRef.current ? nameRef.current.value : recipe.name,
-      ingredients: ingredients,
-      number_of_people: numberOfPeopleRef.current ? Number(numberOfPeopleRef.current.value) : recipe.number_of_people,
-      time: timeRef.current ? Number(timeRef.current.value) : recipe.time,
-      image: imageRef.current ? imageRef.current.value : recipe.image,
-      steps: steps,
-      description: descriptionRef.current ? descriptionRef.current.value : recipe.description,
-      difficulty: difficulty,
-      tags: tags,
-      favorites: recipe.favorites,
-      author: recipe.author,
-      date_create: recipe.date_create
+  const deleteRecipe = async () => {
+    if (recipe.id) {
+        await handleDeleteRecipe(recipe.id);
     }
-    isNew ? createRecipe(updatedRecipe) : editRecipe(recipe.id, updatedRecipe);
-    handleClose();
+};
+
+const createRecipe = async (newRecipe: RecipeInterface) => {
+  if (newRecipe) {
+      await handleCreateRecipe(newRecipe);
   }
+};
+
+const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
+  if (id && updatedRecipe) {
+      await handleUpdateRecipe(id, updatedRecipe);
+  }
+};
 
   const handleStepChange = (index: number, value: string) => {
     const newSteps = [...steps];
@@ -160,6 +160,32 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const handleRemoveRow = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
+
+  const handleSave = () => { 
+    let updatedRecipe: RecipeInterface = {
+      id: idRef.current && isNew ? idRef.current.value : recipe.id,
+      name: nameRef.current ? nameRef.current.value : recipe.name,
+      ingredients: ingredients,
+      number_of_people: numberOfPeopleRef.current ? numberOfPeopleRef.current.value : recipe.number_of_people,
+      time: timeRef.current ? timeRef.current.value : recipe.time,
+      image: imageRef.current ? imageRef.current.value : recipe.image,
+      steps: steps,
+      description: descriptionRef.current ? descriptionRef.current.value : recipe.description,
+      difficulty: difficulty,
+      tags: tags,
+      favorites: recipe.favorites,
+      author: recipe.author,
+      date_create: recipe.date_create,
+      date_edit: new Date()
+    }
+    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+    handleClose();
+  }
+
+  const handleDelete = () => {
+    if(!isNew) deleteRecipe();
+    handleClose();
+  }
 
 
   return (

@@ -2,13 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
-import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
-
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { FirebaseAppProvider} from "reactfire";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { NetworkStatusProvider } from "./helpers/NetworkStatusProvider";
+import { initDB } from "./db/idb";
+
+// Logos by https://iconpacks.net/?utm_source=link-attribution&utm_content=5026
 
 const firebaseConfig = {
   apiKey: "AIzaSyBKEtWnPeJ_oO1r0G5dvyZeAezZzd7T6Jo",
@@ -25,18 +28,20 @@ const root = ReactDOM.createRoot(
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+initDB();
+
 root.render(
   <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <NetworkStatusProvider>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </NetworkStatusProvider>
   </FirebaseAppProvider>
 );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.unregister();
+serviceWorkerRegistration.register();
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

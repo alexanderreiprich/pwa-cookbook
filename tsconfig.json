@@ -22,5 +22,8 @@
   },
   "include": [
     "src"
-  ]
+  , "public/serviceWorker.js"  ],
+  "exclude": ["node_modules"]
 }
+
+// to enable ts to js compilation resulting in new files, noEmit: false

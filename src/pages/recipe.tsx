@@ -1,30 +1,64 @@
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Button, Grid } from "@mui/material";
-import { doc } from "firebase/firestore";
-import { Key } from "react";
+import { Key, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useFirestoreDocData } from "reactfire";
-import { db } from "..";
 import EditRecipe from "../components/EditRecipe";
 import NavigationBar from "../components/NavigationBar";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
-import { useAuth } from '../components/Authentication';
+import FavoritesButton from "../components/FavoritesButton";
+import { RecipeInterface } from "../interfaces/RecipeInterface";
+import { formatDate } from "../helpers/templateHelper";
+import { useRecipeActions } from "../db/useRecipes";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
+    const id= searchParams.get("id");
+  const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { handleGetRecipeById } = useRecipeActions();
 
-  const ref = doc(db, "recipes", id!);
-  const { status, data: recipe } = useFirestoreDocData(ref);
+  useEffect(() => {
+    const fetchRecipe = async () => {
+      try {
+        if (id) {
+          const recipe = await handleGetRecipeById(id);
+          setRecipe(recipe);
+        } else {
+          setError('Fehler beim Abrufen der Id des Rezepts.');
+        }
 
-  const { currentUser } = useAuth();
-	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+      } catch (err) {
+        setError('Fehler beim Abrufen des Rezepts.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchRecipe();
+  }, [id]);
 
-  if( !recipe || status === "error") {
+  if (loading) {
+    return (
+      <div>
+      <NavigationBar title="Rezepte" />
+        <p>Rezept wird geladen...</p>
+      </div>
+    )
+  }
+  if (error) {
+    return (
+      <div>
+      <NavigationBar title="Rezepte" />
+        <p>{error}</p>
+      </div>
+    )
+  }
+
+  if(!recipe) {
     return (
       <div>
       <NavigationBar title="Rezepte" />
@@ -32,14 +66,6 @@ function Recipe() {
       </div>
     )
       
-  }
-  if (status === "loading") {
-    return (
-      <div>
-      <NavigationBar title="Rezepte" />
-        <p>Rezept wird geladen...</p>
-      </div>
-    )
   }
 
   return (
@@ -50,18 +76,17 @@ function Recipe() {
           <h1>{recipe.name}</h1>
           <div>
             <div><i>von: {recipe.author}</i></div>
-            <div>erstellt am: {new Date(recipe.date_create.seconds * 1000 + recipe.date_create.nanoseconds / 1000000).toDateString()}</div>
+            <div>erstellt am: {formatDate(recipe.date_create)}</div>
           </div>
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
-            <Button color="secondary" startIcon={<FavoriteIcon />}>{recipe.favorites}</Button>
+            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites}/>
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
-          {recipe.author == user ? (<EditRecipe recipe={recipe} isNew={false}></EditRecipe>) : null}
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
