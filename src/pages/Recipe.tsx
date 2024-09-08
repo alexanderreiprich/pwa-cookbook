@@ -23,6 +23,7 @@ function Recipe() {
   const { currentUser } = useAuth();
 	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 
+
   if( !recipe || status === "error") {
     return (
       <div>
