@@ -34,7 +34,7 @@ export async function updateRecipeFavorites(currentUser: User | null, id: string
 // Function to update a recipe
 export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean) {
     // Update in IndexedDB
-    updateRecipeInIndexedDB(id, updatedRecipe);
+    // updateRecipeInIndexedDB(id, updatedRecipe);
 
     // Update in Firestore if online
     if (isOnline) {

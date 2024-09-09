@@ -11,6 +11,7 @@ import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
 import { useRecipeActions } from "../db/useRecipes";
+import { convertToDate } from "../helpers/synchDBHelper";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -77,7 +78,7 @@ function Recipe() {
           <h1>{recipe.name}</h1>
           <div>
             <div><i>von: {recipe.author}</i></div>
-            <div>erstellt am: {formatDate(recipe.date_create)}</div>
+            <div>erstellt am: {formatDate(convertToDate(recipe.date_create))}</div>
           </div>
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>

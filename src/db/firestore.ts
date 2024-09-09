@@ -3,7 +3,7 @@ import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { parseDate, saveRecipe } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helpers/synchDBHelper";
 import { User } from "firebase/auth";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
@@ -13,13 +13,8 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
         return querySnapshot.docs.map(doc => {
             const data = doc.data() as Partial<RecipeInterface>; // Type Assertion
         
-            // Convert Timestamp to Date
-            const date_create = parseDate(data.date_create);
-        
             return {
-            id: doc.id,
-            ...data,
-            date_create,
+            ...data
             } as RecipeInterface;
         });
     } catch (error) {
@@ -101,9 +96,7 @@ export async function getAllRecipesFromFirestore(filters: any): Promise<RecipeIn
         const data = docSnap.data() as Partial<RecipeInterface>;
   
         return {
-          ...data,
-          id: docSnap.id,
-          date_create: parseDate(data.date_create),
+          ...data
         } as RecipeInterface;
       } else {
         console.log('Rezept nicht in Firestore gefunden. Versuche, es aus IndexedDB abzurufen.');

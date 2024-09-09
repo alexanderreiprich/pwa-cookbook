@@ -13,6 +13,7 @@ import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import { convertToTimestamp } from "../helpers/synchDBHelper";
 
 const style = {
   position: "absolute" as "absolute",
@@ -176,7 +177,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: new Date()
+      date_edit: convertToTimestamp(new Date())
     }
     isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
     handleClose();

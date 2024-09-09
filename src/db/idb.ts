@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { parseDate } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helpers/synchDBHelper";
 
 const dbPromise = openDB('recipes-db', 2, {
   upgrade(db, oldVersion, newVersion, transaction) {
@@ -33,8 +33,7 @@ export async function getAllRecipesFromDB(): Promise<RecipeInterface[]> {
     
     // Date-Parsing
     return recipes.map(recipe => ({
-      ...recipe,
-      date_create: parseDate(recipe.date_create)
+      ...recipe
     }));
   }
   
@@ -45,8 +44,7 @@ export async function fetchFromIndexedDB(): Promise<RecipeInterface[]> {
 
     // Date-Parsing
     return recipes.map(recipe => ({
-        ...recipe,
-        date_create: parseDate(recipe.date_create)
+        ...recipe
     }));
 }
 
@@ -58,8 +56,7 @@ export async function getRecipeByIdFromIndexedDB(id: string): Promise<RecipeInte
 
     // Date-Parsing
     return {
-        ...recipe,
-        date_create: parseDate(recipe.date_create)
+        ...recipe
     };
 }
   
@@ -67,7 +64,7 @@ export async function getRecipeByIdFromIndexedDB(id: string): Promise<RecipeInte
 export async function updateRecipeInIndexedDB( id: string, updatedRecipe: Partial<RecipeInterface>) {
     try{
     const db = await initDB();
-      await db.put('recipes', { id, ...updatedRecipe });
+      await db.put('recipes', { id, ...saveRecipe(updatedRecipe) });
       console.log('Rezept erfolgreich in IndexedDB aktualisiert.');
     } catch (error) {
       console.error('Fehler beim Aktualisieren des Rezepts in der Indexed DB:', error);
@@ -77,7 +74,7 @@ export async function updateRecipeInIndexedDB( id: string, updatedRecipe: Partia
 export async function createRecipeInIndexedDB(newRecipe: RecipeInterface): Promise<void> {
   try {
     const db = await initDB();
-    await db.put('recipes', newRecipe);
+    await db.put('recipes', saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in IndexedDB gespeichert.');
   } catch (error) {
     console.error('Fehler beim Erstellen des Rezepts in der Indexed DB:', error);

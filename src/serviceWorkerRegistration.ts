@@ -59,15 +59,19 @@ export function register(config?: Config) {
 }
 
 function registerValidSW(swUrl: string, config?: Config) {
+  console.log("registerValidSW", swUrl);
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      console.log("registration", registration);
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
+        console.log("onupdatefound");
         if (installingWorker == null) {
           return;
         }
         installingWorker.onstatechange = () => {
+          console.log("onstatechange", installingWorker);
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,

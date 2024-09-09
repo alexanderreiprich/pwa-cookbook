@@ -15,7 +15,7 @@ export async function syncFirestoreWithIndexedDB() {
   await batch.commit();
 }
 
-export function parseDate(date: any): Date {
+export function convertToDate(date: any): Date {
   if (date instanceof Date) {
     return date;
   } else if (date.toDate) {
@@ -25,12 +25,19 @@ export function parseDate(date: any): Date {
   }
 }
 
-function saveDate(date: Date | Timestamp | undefined): Timestamp {
+export function convertToTimestamp(date: Date | Timestamp | undefined): Timestamp {
   if(!date) return Timestamp.fromDate(new Date());
   if(date instanceof Timestamp ) return date;
-  return Timestamp.fromDate(date);
+  if(date instanceof Date) return Timestamp.fromDate(date);
+  if(date as {seconds: number, nanoseconds: number}){
+    return date as Timestamp;
+  }
+  return Timestamp.fromDate(new Date());
 }
 
 export function saveRecipe(recipe: Partial<RecipeInterface>): Object {
-  return {...recipe, date_create: saveDate(recipe.date_create), date_edit: saveDate(recipe.date_edit)}
+  let dateCreate = convertToTimestamp(recipe.date_create);
+  let dateEdit = convertToTimestamp(recipe.date_edit);
+  console.log("saveRecipe", dateCreate, dateEdit);
+  return {...recipe, date_create: dateCreate, date_edit: dateEdit}
 }
