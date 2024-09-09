@@ -113,7 +113,7 @@ function Recipe() {
           </p>
           <ul>
             {adjustedIngredients.map((ingredient: IngredientInterface) =>
-              <li key={ingredient.name as Key}>{ingredient.name} {ingredient.amount.toFixed()} {ingredient.unit}</li>
+              <li key={ingredient.name as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
             )}
           </ul>
           <h2>Schritte</h2>
