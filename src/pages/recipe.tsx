@@ -1,4 +1,12 @@
-import { Button, Grid } from "@mui/material";
+import {
+  Button,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  Stack,
+  Switch,
+  Typography,
+} from "@mui/material";
 import { Key, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import EditRecipe from "../components/EditRecipe";
@@ -11,6 +19,7 @@ import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
 import { useRecipeActions } from "../db/useRecipes";
+import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -18,7 +27,18 @@ function Recipe() {
   const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { handleGetRecipeById } = useRecipeActions();
+  const [checked, setChecked] = useState<boolean>(false);
+  const { handleGetRecipeById, handleChangeRecipeVisibility } = useRecipeActions();
+  const { isOnline } = useNetworkStatus();
+
+  const handleVisibilityChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (id) {
+      handleChangeRecipeVisibility(id);
+      setChecked(!checked);
+    }
+  };
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -26,12 +46,12 @@ function Recipe() {
         if (id) {
           const recipe = await handleGetRecipeById(id);
           setRecipe(recipe);
+          setChecked(recipe!.public);
         } else {
-          setError('Fehler beim Abrufen der Id des Rezepts.');
+          setError("Fehler beim Abrufen der Id des Rezepts.");
         }
-
       } catch (err) {
-        setError('Fehler beim Abrufen des Rezepts.');
+        setError("Fehler beim Abrufen des Rezepts.");
         console.error(err);
       } finally {
         setLoading(false);
@@ -44,44 +64,82 @@ function Recipe() {
   if (loading) {
     return (
       <div>
-      <NavigationBar title="Rezepte" />
+        <NavigationBar title="Rezepte" />
         <p>Rezept wird geladen...</p>
       </div>
-    )
+    );
   }
   if (error) {
     return (
       <div>
-      <NavigationBar title="Rezepte" />
+        <NavigationBar title="Rezepte" />
         <p>{error}</p>
       </div>
-    )
+    );
   }
 
-  if(!recipe) {
+  if (!recipe) {
     return (
       <div>
-      <NavigationBar title="Rezepte" />
+        <NavigationBar title="Rezepte" />
         <p>Rezept konnte leider nicht geladen werden...</p>
       </div>
-    )
-      
+    );
   }
 
   return (
     <div>
       <NavigationBar title="Rezepte" />
-      <Grid container spacing={10} justifyContent="center" paddingTop={3} paddingBottom={3}>
+      <Grid
+        container
+        spacing={10}
+        justifyContent="center"
+        paddingTop={3}
+        paddingBottom={3}
+      >
         <Grid item id="recipeHead" xs={10} md={5}>
           <h1>{recipe.name}</h1>
           <div>
-            <div><i>von: {recipe.author}</i></div>
+            <div>
+              <i>von: {recipe.author}</i>
+            </div>
             <div>erstellt am: {formatDate(recipe.date_create)}</div>
           </div>
+          {isOnline ? (
+            <div>
+              <FormGroup
+                sx={{
+                  borderRadius: 2,
+                  borderColor: "#000000",
+                  borderWidth: "1px",
+                }}
+              >
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center" }}
+                >
+                  <b>Privat</b>
+                  <Switch
+                    onChange={handleVisibilityChange}
+                    checked={checked}
+                  />
+                  <b>Öffentlich</b>
+                </Stack>
+              </FormGroup>
+            </div>
+          ) : null}
           <div>
-            <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
-            {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
-            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites}/>
+            <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>
+              {DIFFICULTY[recipe.difficulty]}
+            </Button>
+            {recipe.tags.map((tag: TAG) => (
+              <Button> {TAG[tag]}</Button>
+            ))}
+            <FavoritesButton
+              recipeId={recipe.id}
+              favorites={recipe.favorites}
+            />
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>
@@ -94,14 +152,18 @@ function Recipe() {
         <Grid item id="recipeContent" xs={10}>
           <h2>Zutaten</h2>
           <p>Anzahl der Personen: {recipe.number_of_people}</p>
-          <ul >
-            {recipe.ingredients.map((ingredient: IngredientInterface) =>
-              <li key={ingredient.name as Key}>{ingredient.name} {ingredient.amount} {ingredient.unit}</li>
-            )}
+          <ul>
+            {recipe.ingredients.map((ingredient: IngredientInterface) => (
+              <li key={ingredient.name as Key}>
+                {ingredient.name} {ingredient.amount} {ingredient.unit}
+              </li>
+            ))}
           </ul>
           <h2>Schritte</h2>
-          <ol >
-            {recipe.steps.map((value: String) => <li key={value as Key}>{value}</li>)}
+          <ol>
+            {recipe.steps.map((value: String) => (
+              <li key={value as Key}>{value}</li>
+            ))}
           </ol>
         </Grid>
       </Grid>

@@ -9,6 +9,7 @@ import {
     updateRecipeInIndexedDB 
 } from "../db/idb";
 import { 
+    changeRecipeVisibilityInFirestore,
     checkRecipeLikesInFirestore,
     createRecipeInFirestore, 
     deleteRecipeInFirestore, 
@@ -110,4 +111,8 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
         return checkRecipeLikesInIndexedDB(id);
 
     }
+}
+
+export async function changeRecipeVisibility(id: string) {
+    return changeRecipeVisibilityInFirestore(id);
 }

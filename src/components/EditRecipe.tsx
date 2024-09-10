@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DocumentData } from "firebase/firestore";
-import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import { FormControlLabel, MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { useRecipeActions } from "../db/useRecipes";
 import { Key, useRef, useState } from "react";
@@ -93,6 +93,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [tags, setTags] = useState<TAG[]>(recipe.tags);
   const [ingredients, setIngredients] = useState<IngredientInterface[]>(recipe.ingredients);
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
+  const publicRef = useRef<HTMLInputElement>(null);
   
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
@@ -176,7 +177,8 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: new Date()
+      date_edit: new Date(),
+      public: recipe.public
     }
     isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
     handleClose();
@@ -215,6 +217,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
               <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id}/>
               <TextField size="small" inputRef={nameRef} required id="name" label="Name des Rezeptes" defaultValue={recipe.name}/>
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
+              <FormControlLabel control={<Switch size="small" inputRef={publicRef} id="public" defaultValue={recipe.public} />} label="Rezept veröffentlichen" />
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
               <TextField size="small" type="number" inputRef={timeRef} id="time" label="Dauer in Minuten" defaultValue={recipe.time}/>
               

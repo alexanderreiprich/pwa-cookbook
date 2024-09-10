@@ -9,7 +9,8 @@ import {
     getRecipeById, 
     createRecipe, 
     deleteRecipe,
-    checkRecipeLikes
+    checkRecipeLikes,
+    changeRecipeVisibility
 } from "../helpers/dbHelper";
 
 export function useRecipeActions() {
@@ -44,6 +45,10 @@ export function useRecipeActions() {
         return await checkRecipeLikes(id, isOnline, currentUser);
     }
 
+    const handleChangeRecipeVisibility = async (id: string) => {
+        return await changeRecipeVisibility(id);
+    }
+
     return {
         handleUpdateRecipeFavorites,
         handleUpdateRecipe,
@@ -51,6 +56,7 @@ export function useRecipeActions() {
         handleGetRecipeById,
         handleCreateRecipe,
         handleDeleteRecipe,
-        handleCheckRecipeLikes
+        handleCheckRecipeLikes,
+        handleChangeRecipeVisibility
     };
 }

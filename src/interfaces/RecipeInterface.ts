@@ -15,5 +15,6 @@ export interface RecipeInterface {
   favorites: number,
   author: string,
   date_create: Date,
-  date_edit: Date
+  date_edit: Date,
+  public: boolean
 };

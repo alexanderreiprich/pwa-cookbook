@@ -159,6 +159,26 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
   }
 }
 
+export async function changeRecipeVisibilityInFirestore(id: string): Promise<void> {
+  try {
+    const recipeRef = doc(db, 'recipes', id);
+    const docSnap = await getDoc(recipeRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data() as any;
+      let isPublic: boolean = data.public;
+      if (isPublic) {
+        await updateDoc(recipeRef, { public: false });
+      }
+      else {
+        await updateDoc(recipeRef, { public: true });
+      }
+    }
+  } catch (error) {
+    console.error("Fehler beim Zugriff auf Rezept:", error);
+    return;
+  }
+}
+
 async function getUserId(currentUser: User | OfflineUser | null): Promise<string> {
   let userId: string = "superuser";
     if(currentUser && currentUser.email){
