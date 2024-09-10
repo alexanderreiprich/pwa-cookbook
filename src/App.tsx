@@ -26,12 +26,13 @@ function App() {
     <FirestoreProvider sdk={db}>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<BrowseRecipes />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Register />} />
-            <Route path="/recipes" element={<Recipe />} />
-          </Routes>
+        <Routes>
+              <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Register />} />
+              <Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />
+              <Route path="/my_recipes" element={<PrivateRoute><MyRecipes /></PrivateRoute>} />
+            </Routes>
         </AuthProvider>
       </BrowserRouter>
     </FirestoreProvider>

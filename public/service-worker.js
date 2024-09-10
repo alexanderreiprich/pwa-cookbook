@@ -124,6 +124,22 @@ function getFromFirestore(id) {
     });
 }
 
+async function syncOwnRecipesFromFirestore() {
+    let recipes = []
+        // gets email from idb to find the right user in the firestore and get the favorites ids from there
+    let user = await getEmailFromIDB();
+    if(user && user[0].email){
+        let email = user[0].email;
+        if(email){
+            // get all recipes where author has the email saved in the idb
+            let querySnapshot = await firestore.collection('recipes').where('author', '==', email).get();
+            recipes = querySnapshot.docs.map(doc => doc.data());
+        }
+    }
+    recipes.map(doc => syncFirestoreDocToIndexedDB(doc));
+}
+
+
 function syncIndexedDBDocToFirestore(doc) {
     if(doc && doc.id){
         return getFromFirestore(doc.id).then(firestoreDoc => {
@@ -230,19 +246,16 @@ async function getUserFromIDB() {
 }
 
 async function syncFavoritesList(ids) {
-    console.log("syncFavoritesList", ids)
    return getUserFromIDB().then( idbUser => {
         let newFavorites = ids;
         if(idbUser && idbUser[1] && idbUser[1].favorites){
             if(idbUser[1].favorites == newFavorites) return;
             idbUser[1].favorites.forEach(favorite => {
-                console.log("favorite added", favorite);
                 if(!newFavorites.includes(favorite)) newFavorites.push(favorite);
             })
         }
-        console.log("newFavorites", newFavorites);
-            addFavoritesListToIndexedDB(newFavorites);
-            if(newFavorites != ids && idbUser.email)addFavoritesListToFirestore(idbUser.email, newFavorites);
+        addFavoritesListToIndexedDB(newFavorites);
+        if(newFavorites != ids && idbUser.email)addFavoritesListToFirestore(idbUser.email, newFavorites);
         }).catch((err) => {
             console.log(err);
             return ids;
@@ -252,7 +265,12 @@ async function syncFavoritesList(ids) {
     });
 }
 
-
+async function syncDBs(event) {
+    event.waitUntil(syncFirestoreWithIndexedDB());
+    event.waitUntil(syncFavoritesFromFirestore());
+    event.waitUntil(syncOwnRecipesFromFirestore());
+    event.waitUntil(getAllFromIndexedDB().then(doc => doc.map(recipe => syncIndexedDBDocToFirestore(recipe))));
+}
 
 
 // Service Worker events
@@ -263,17 +281,12 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
-  event.waitUntil(self.clients.claim());
-  event.waitUntil(syncFirestoreWithIndexedDB());
-  console.log(syncFavoritesFromFirestore());
-  event.waitUntil(getAllFromIndexedDB().then(doc => doc.map(recipe => syncIndexedDBDocToFirestore(recipe))));
+  syncDBs(event);
 });
 
 self.addEventListener('sync', (event) => {
   console.log('Background sync', event);
   if (event.tag === 'sync-recipes') {
-    event.waitUntil(syncFirestoreWithIndexedDB());
-    console.log(syncFavoritesFromFirestore());
-    event.waitUntil(getAllFromIndexedDB().then(doc => doc.map(recipe => syncIndexedDBDocToFirestore(recipe))));
+    syncDBs(event);
   }
 });
