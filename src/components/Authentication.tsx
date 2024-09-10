@@ -1,9 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "..";
+import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 
 interface AuthContextType {
-  currentUser: User | null
+  currentUser: User | OfflineUser | null
+}
+export type OfflineUser = {
+  displayName: string,
+  email: string
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -16,16 +21,24 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({children}: {children: any}) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | OfflineUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isOnline } = useNetworkStatus();
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-    return () => {
-      unsubscribe();
+    if (isOnline) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setCurrentUser(user);
+        setLoading(false);
+      });
+      return () => {
+        unsubscribe();
+      }
     }
+    else {
+      setCurrentUser({displayName: "localUser", email:"offline@user.com"})
+    }
+
   }, []);
 
   if (loading) {

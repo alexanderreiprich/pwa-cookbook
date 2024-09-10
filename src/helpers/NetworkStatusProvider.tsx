@@ -31,7 +31,7 @@ export const NetworkStatusProvider: React.FC<NetworkStatusProviderProps> = ({ ch
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
+  
   return (
     <NetworkStatusContext.Provider value={{ isOnline }}>
       {children}

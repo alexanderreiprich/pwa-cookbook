@@ -19,9 +19,10 @@ import {
     updateRecipeInFirestore 
 } from "../db/firestore";
 import { User } from "firebase/auth";
+import { OfflineUser } from "../components/Authentication";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | OfflineUser | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
     updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
 
@@ -102,7 +103,7 @@ export async function deleteRecipe(id: string, isOnline: boolean) {
     }
 }
 
-export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<boolean> {
+export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | OfflineUser | null): Promise<boolean> {
     if(isOnline) {
         return checkRecipeLikesInFirestore(id, currentUser);    
     } else {

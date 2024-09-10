@@ -5,6 +5,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { parseDate, saveRecipe } from "../helpers/synchDBHelper";
 import { User } from "firebase/auth";
+import { OfflineUser } from "../components/Authentication";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -29,7 +30,7 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
 }
 
 
-export async function updateRecipeFavoritesInFirestore(user: User | null, id: string, newFavorites: number, likes: boolean): Promise<void> {
+export async function updateRecipeFavoritesInFirestore(user: User | OfflineUser | null, id: string, newFavorites: number, likes: boolean): Promise<void> {
     try {
       const recipeRef = doc(db, 'recipes', id);
       await updateDoc(recipeRef, { favorites: newFavorites });
@@ -140,7 +141,7 @@ export async function deleteRecipeInFirestore(id: string): Promise<void> {
   }
 }
 
-export async function checkRecipeLikesInFirestore(id: string, currentUser: User | null): Promise<boolean> {
+export async function checkRecipeLikesInFirestore(id: string, currentUser: User | OfflineUser| null): Promise<boolean> {
   try {
     let userId: string = await getUserId(currentUser);
     const userRef = doc(db, 'users', userId);
@@ -158,7 +159,7 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
   }
 }
 
-async function getUserId(currentUser: User | null): Promise<string> {
+async function getUserId(currentUser: User | OfflineUser | null): Promise<string> {
   let userId: string = "superuser";
     if(currentUser && currentUser.email){
       let email: string = currentUser.email;

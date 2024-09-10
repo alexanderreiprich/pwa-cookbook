@@ -14,7 +14,7 @@ import { useRecipeActions } from "../db/useRecipes";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
-    const id= searchParams.get("id");
+  const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
