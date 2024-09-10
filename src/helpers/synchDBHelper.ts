@@ -38,6 +38,5 @@ export function convertToTimestamp(date: Date | Timestamp | undefined): Timestam
 export function saveRecipe(recipe: Partial<RecipeInterface>): Object {
   let dateCreate = convertToTimestamp(recipe.date_create);
   let dateEdit = convertToTimestamp(recipe.date_edit);
-  console.log("saveRecipe", dateCreate, dateEdit);
   return {...recipe, date_create: dateCreate, date_edit: dateEdit}
 }

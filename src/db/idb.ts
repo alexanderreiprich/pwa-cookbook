@@ -91,9 +91,9 @@ export async function deleteRecipeInIndexedDB(id: string): Promise<void> {
   }
 }
 
-export async function updateRecipeFavoritesInIndexedDB(id: string, newFavorites: number, likes: boolean): Promise<void> {
+export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterface, newFavorites: number, likes: boolean): Promise<void> {
   try {
-
+    const id = recipeDoc.id;
     // Open a transaction with readwrite access
     const db = await initDB();
     const tx = db.transaction(['recipes', 'user'], 'readwrite');
@@ -106,8 +106,11 @@ export async function updateRecipeFavoritesInIndexedDB(id: string, newFavorites:
       recipe.favorites = newFavorites;
       await recipesStore.put(recipe); // No key provided; relies on keyPath defined in the store
       console.log('Favoriten erfolgreich in IndexedDB aktualisiert.');
-    } else {
-      console.error('Rezept nicht gefunden:', id);
+    } else if (recipeDoc) {
+      updateRecipeInIndexedDB(id, recipeDoc);
+    }
+    else {
+      console.error('Rezept nicht gefunden:');
     }
 
     // Update user favorites
@@ -164,4 +167,17 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean>
     }
 
     return userFavorites.includes(id);
+}
+
+export async function syncEmailToFirestore (email: string) {
+  const db = await initDB();
+  const tx = db.transaction(['user'], 'readwrite');
+  const userStore = tx.objectStore('user');
+
+  // Get user favorites
+  let storedEmail:string = await userStore.get('email') || "";
+ if(email && storedEmail != email){
+  const emailEntry = { id: "email", email: email };
+    await userStore.put(emailEntry);
+ }
 }

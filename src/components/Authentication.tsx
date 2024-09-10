@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "..";
+import { syncEmail } from "../helpers/dbHelper";
 
 interface AuthContextType {
   currentUser: User | null
@@ -23,6 +24,7 @@ export const AuthProvider = ({children}: {children: any}) => {
       setCurrentUser(user);
       setLoading(false);
     });
+
     return () => {
       unsubscribe();
     }
@@ -31,6 +33,9 @@ export const AuthProvider = ({children}: {children: any}) => {
   if (loading) {
     return <div>Lade Nutzer...</div>
   }
+
+  // syncs Email to idb store;
+  syncEmail(currentUser);
 
   return (
     <AuthContext.Provider value={{currentUser}}>

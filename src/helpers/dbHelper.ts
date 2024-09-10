@@ -5,6 +5,7 @@ import {
     deleteRecipeInIndexedDB, 
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
+    syncEmailToFirestore,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB 
 } from "../db/idb";
@@ -21,20 +22,20 @@ import {
 import { User } from "firebase/auth";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
-    updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
+    updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
 
     // Update in Firestore if online
     if (isOnline) {
-        await updateRecipeFavoritesInFirestore(currentUser, id, newFavorites, likes);
+        await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
 }
 
 // Function to update a recipe
 export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean) {
     // Update in IndexedDB
-    // updateRecipeInIndexedDB(id, updatedRecipe);
+    updateRecipeInIndexedDB(id, updatedRecipe);
 
     // Update in Firestore if online
     if (isOnline) {
@@ -109,4 +110,8 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
         return checkRecipeLikesInIndexedDB(id);
 
     }
+}
+
+export async function syncEmail(user: User | null){
+    if(user && user.email) syncEmailToFirestore(user.email);
 }
