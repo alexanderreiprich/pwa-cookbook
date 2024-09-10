@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Register from "./pages/SignUp";
 import { AuthProvider } from "./components/Authentication";
 import PrivateRoute from "./components/PrivateRoute";
+import MyRecipes from "./pages/MyRecipes";
 
 function App() {
 

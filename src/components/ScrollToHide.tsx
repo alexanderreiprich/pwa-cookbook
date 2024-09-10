@@ -1,5 +1,4 @@
 import { Slide, useScrollTrigger } from "@mui/material"
-import React from "react"
 
 const ScrollToHide = (props: any) => {
   const trigger = useScrollTrigger({
