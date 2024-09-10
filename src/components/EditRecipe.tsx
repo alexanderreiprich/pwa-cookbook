@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DocumentData } from "firebase/firestore";
-import { FormControlLabel, MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import { MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { useRecipeActions } from "../db/useRecipes";
 import { Key, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import { getRecipeById } from "../helpers/dbHelper";
 
 const style = {
   position: "absolute" as "absolute",
@@ -93,7 +94,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [tags, setTags] = useState<TAG[]>(recipe.tags);
   const [ingredients, setIngredients] = useState<IngredientInterface[]>(recipe.ingredients);
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
-  const publicRef = useRef<HTMLInputElement>(null);
+  const [hasError, setHasError] = useState(false);
   
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
@@ -101,7 +102,8 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const { 
     handleUpdateRecipe, 
     handleCreateRecipe, 
-    handleDeleteRecipe 
+    handleDeleteRecipe,
+    handleGetRecipeById 
 } = useRecipeActions();
   
   const handleClose = () => {
@@ -162,7 +164,14 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => { 
+  const handleIdCheck = async (id: string): Promise<boolean> => {
+    if (await handleGetRecipeById(id)) {
+      return false;
+    }
+    return true
+  }
+
+  const handleSave = async () => { 
     let updatedRecipe: RecipeInterface = {
       id: idRef.current && isNew ? idRef.current.value : recipe.id,
       name: nameRef.current ? nameRef.current.value : recipe.name,
@@ -180,8 +189,14 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       date_edit: new Date(),
       public: recipe.public
     }
-    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
-    handleClose();
+    if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
+      setHasError(true);
+    }
+    else {
+      setHasError(false);
+      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+      handleClose();
+    }
   }
 
   const handleDelete = () => {
@@ -214,7 +229,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
               Allgemeine Informationen
             </Typography>
             <Stack spacing={{ xs: 2, sm: 2, md: 4 }} paddingBottom={2}>
-              <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id}/>
+              <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id} error={hasError} helperText={hasError? 'ID bereits vergeben' : ''}/>
               <TextField size="small" inputRef={nameRef} required id="name" label="Name des Rezeptes" defaultValue={recipe.name}/>
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
