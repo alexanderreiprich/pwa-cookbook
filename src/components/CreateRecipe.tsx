@@ -22,7 +22,8 @@ export default function CreateRecipe() {
     favorites: 0,
     author: currentUser ? (currentUser.displayName ? currentUser.displayName : (currentUser.email ? currentUser.email : "unknown")) : "unknown",
     date_create: Timestamp.now(),
-    date_edit: Timestamp.now()
+    date_edit: Timestamp.now(),
+    public: false
   }
 
   return(

@@ -1,14 +1,15 @@
 import React from "react";
 import { FormControl, InputLabel, Select, MenuItem, Button, Popover } from "@mui/material";
+import { SortOrder } from "../interfaces/SortOrderEnum";
 
 interface SortComponentProps {
-  sortBy: "nameAsc" | "favsAsc" | "dateAsc" | "nameDsc" | "favsDsc" | "dateDsc";
-  onSortOrderChange: (order: "nameAsc" | "favsAsc" | "dateAsc" | "nameDsc" | "favsDsc" | "dateDsc") => void;
+  sortBy: SortOrder;
+  onSortOrderChange: (order: SortOrder) => void;
 }
 
 const SortComponent: React.FC<SortComponentProps> = ({ sortBy, onSortOrderChange }) => {
   const handleSortChange = (event: any) => {
-    onSortOrderChange(event.target.value as "nameAsc" | "favsAsc" | "dateAsc" | "nameDsc" | "favsDsc" | "dateDsc");
+    onSortOrderChange(event.target.value as SortOrder);
   };
 
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
@@ -50,12 +51,12 @@ const SortComponent: React.FC<SortComponentProps> = ({ sortBy, onSortOrderChange
             onChange={(e) => {handleSortChange(e); handleClose();}}
             label="Sortieren nach"
           >
-            <MenuItem value="nameAsc">Name (aufsteigend)</MenuItem>
-            <MenuItem value="nameDsc">Name (absteigend)</MenuItem>
-            <MenuItem value="favsAsc">Favoriten (aufsteigend)</MenuItem>
-            <MenuItem value="favsDsc">Favoriten (absteigend)</MenuItem>
-            <MenuItem value="dateAsc">Datum (aufsteigend)</MenuItem>
-            <MenuItem value="dateDsc">Datum (absteigend)</MenuItem>
+            <MenuItem value={SortOrder.NAMEASC}>Name (aufsteigend)</MenuItem>
+            <MenuItem value={SortOrder.NAMEDSC}>Name (absteigend)</MenuItem>
+            <MenuItem value={SortOrder.FAVSASC}>Favoriten (aufsteigend)</MenuItem>
+            <MenuItem value={SortOrder.FAVSDSC}>Favoriten (absteigend)</MenuItem>
+            <MenuItem value={SortOrder.DATEASC}>Datum (aufsteigend)</MenuItem>
+            <MenuItem value={SortOrder.DATEDSC}>Datum (absteigend)</MenuItem>
           </Select>
         </FormControl>
       </Popover>

@@ -4,7 +4,6 @@ import { useAuth } from "./Authentication";
 const PrivateRoute = ({children}: {children: any}) => {
   const { currentUser } = useAuth();
   const location = useLocation();
-  console.log(currentUser);
   if (!currentUser) {
     return <Navigate to="/login" state={{from: location}} replace />
    }
