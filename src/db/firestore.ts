@@ -1,9 +1,9 @@
-import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { parseDate, saveRecipe } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helpers/synchDBHelper";
 import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
 
@@ -14,13 +14,8 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
         return querySnapshot.docs.map(doc => {
             const data = doc.data() as Partial<RecipeInterface>; // Type Assertion
         
-            // Convert Timestamp to Date
-            const date_create = parseDate(data.date_create);
-        
             return {
-            id: doc.id,
-            ...data,
-            date_create,
+            ...data
             } as RecipeInterface;
         });
     } catch (error) {
@@ -33,19 +28,24 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
 export async function updateRecipeFavoritesInFirestore(user: User | null, id: string, newFavorites: number, likes: boolean): Promise<void> {
     try {
       const recipeRef = doc(db, 'recipes', id);
-      await updateDoc(recipeRef, { favorites: newFavorites });
+      await updateDoc(recipeRef, { favorites: newFavorites, date_edit: Timestamp.now() });
       console.log('Favoriten erfolgreich in Firestore aktualisiert.');
     } catch (err) {
         console.log(err);
     }
 
+    updateFavoritesListInFirestore(user, id, likes);
+  }
+
+
+  async function updateFavoritesListInFirestore(user: User | null, id: string, likes: boolean): Promise<void> {
     try {
       const userId: string = await getUserId(user);
       const userRef = doc(db, 'users', userId);
       if (likes) {
-        await updateDoc(userRef, { favorites: arrayUnion(id) });
+        await updateDoc(userRef, { favorites: arrayUnion(id), edit_date: Timestamp.now() });
       } else {
-        await updateDoc(userRef, { favorites: arrayRemove(id) });
+        await updateDoc(userRef, { favorites: arrayRemove(id), edit_date: Timestamp.now() });
       }
       console.log('Benutzerfavoriten erfolgreich in Firestore aktualisiert.');
     } catch (error) {
@@ -105,9 +105,7 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
         const data = docSnap.data() as Partial<RecipeInterface>;
   
         return {
-          ...data,
-          id: docSnap.id,
-          date_create: parseDate(data.date_create),
+          ...data
         } as RecipeInterface;
       } else {
         console.log('Rezept nicht in Firestore gefunden. Versuche, es aus IndexedDB abzurufen.');
@@ -132,12 +130,15 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promi
   }
 }
 
-export async function deleteRecipeInFirestore(id: string): Promise<void> {
+export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
-
-    await deleteDoc(recipeRef);
-    console.log('Rezept erfolgreich aus Firestore gelöscht.');
+    const isLiked = await checkRecipeLikesInFirestore(id, user);
+    if(isLiked) {
+      updateFavoritesListInFirestore(user, id, false);
+    }
+    await deleteDoc(recipeRef).then( () =>
+    console.log('Rezept erfolgreich aus Firestore gelöscht.'));
 
   } catch (err) {
       console.log(err);

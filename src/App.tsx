@@ -29,8 +29,9 @@ function App() {
     <FirestoreProvider sdk={db}>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-              {isOnline == true ? (<Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />) : (<Route path="/" element={<BrowseRecipes />} />)}
+
+        <Routes>
+              <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />
               {isOnline == true ? (<Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />) : (<Route path="/recipes" element={<Recipe />} />)}

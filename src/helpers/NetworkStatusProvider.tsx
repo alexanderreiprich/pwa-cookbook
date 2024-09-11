@@ -1,7 +1,5 @@
 import React, { createContext, useEffect, useState, useContext, ReactNode } from 'react';
 
-// Boilerplate Network Status Provider
-
 // Define the type for the context value
 interface NetworkStatusContextValue {
   isOnline: boolean;
@@ -20,11 +18,30 @@ export const NetworkStatusProvider: React.FC<NetworkStatusProviderProps> = ({ ch
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const notifyServiceWorker = (status: boolean) => {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'NETWORK_STATUS_CHANGE',
+          isOnline: status
+        });
+      }
+    };
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      notifyServiceWorker(true);
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      notifyServiceWorker(false);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Initial notification on load
+    notifyServiceWorker(navigator.onLine);
 
     return () => {
       window.removeEventListener('online', handleOnline);

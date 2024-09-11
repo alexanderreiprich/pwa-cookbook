@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "..";
-import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
+
+import { syncEmail } from "../helpers/dbHelper";
 
 interface AuthContextType {
   currentUser: User  | null
@@ -23,14 +24,14 @@ export const AuthProvider = ({children}: {children: any}) => {
   const { isOnline } = useNetworkStatus();
 
   useEffect(() => {
-    if (isOnline) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setCurrentUser(user);
-        setLoading(false);
-      });
-      return () => {
-        unsubscribe();
-      }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
     }
     else {
       setCurrentUser(null)
@@ -41,6 +42,9 @@ export const AuthProvider = ({children}: {children: any}) => {
   if (loading) {
     return <div>Lade Nutzer...</div>
   }
+
+  // syncs Email to idb store;
+  syncEmail(currentUser);
 
   return (
     <AuthContext.Provider value={{currentUser}}>

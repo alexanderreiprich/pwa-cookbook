@@ -20,8 +20,8 @@ export function useRecipeActions() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
     const { currentUser } = useAuth();
 
-    const handleUpdateRecipeFavorites = async (id: string, newFavorites: number, likes: boolean) => {
-        await updateRecipeFavorites(currentUser, id, newFavorites, likes, isOnline);
+    const handleUpdateRecipeFavorites = async (recipe: RecipeInterface, newFavorites: number, likes: boolean) => {
+        await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, isOnline);
     };
 
     const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
@@ -41,7 +41,7 @@ export function useRecipeActions() {
     };
 
     const handleDeleteRecipe = async (id: string) => {
-        await deleteRecipe(id, isOnline);
+        await deleteRecipe(id, isOnline, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {

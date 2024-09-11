@@ -1,6 +1,7 @@
 import { IngredientInterface } from "./IngredientsInterface"
 import { DIFFICULTY } from "./DifficultyEnum"
 import { TAG } from "./TagEnum"
+import { Timestamp } from "firebase/firestore"
 export interface RecipeInterface {
   id: string,
   name: string,
@@ -16,5 +17,8 @@ export interface RecipeInterface {
   author: string,
   date_create: Date,
   date_edit: Date,
+  public: boolean
+  date_create: Timestamp,
+  date_edit: Timestamp,
   public: boolean
 };
