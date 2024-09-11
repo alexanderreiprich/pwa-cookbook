@@ -13,7 +13,8 @@ import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import { checkRecipeVersioning, convertToTimestamp } from "../helpers/synchDBHelper";
+import { useNavigate } from 'react-router-dom';
+import { checkRecipeVersioning } from "../helpers/synchDBHelper";
 
 const style = {
   position: "absolute" as "absolute",
@@ -97,6 +98,8 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
+
+  const navigate = useNavigate();
 
   const { 
     handleUpdateRecipe, 
@@ -184,13 +187,22 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       date_create: recipe.date_create,
       date_edit: Timestamp.now()
     }
-    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit);
+    isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit).then(() => handleReload()) ;
     handleClose();
   }
 
   const handleDelete = () => {
-    if(!isNew) deleteRecipe();
+    if(!isNew) deleteRecipe().then(() => {
+      navigate('/my_recipes', {replace: true});
+      handleReload();
+    });
     handleClose();
+  }
+
+  const handleReload = () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 0);
   }
 
 
