@@ -6,7 +6,7 @@ function BrowseRecipes() {
   
   return(
     <div>
-      <NavigationBar title="Rezepte" />
+      <NavigationBar title="Alle Rezepte durchsuchen" />
       <CreateRecipe></CreateRecipe>
       <RecipeList />
     </div>

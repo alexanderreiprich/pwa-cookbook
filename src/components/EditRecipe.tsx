@@ -200,7 +200,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       date_edit: Timestamp.now(),
       public: recipe.public
     }
-    if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
+    if (isNew && await handleIdCheck(updatedRecipe.id) === false) {
       setHasError(true);
     }
     else {

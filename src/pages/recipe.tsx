@@ -1,13 +1,11 @@
 import {
   Box,
   Button,
-  FormControlLabel,
   FormGroup,
   Grid,
   Stack,
   Switch,
   TextField,
-  Typography,
 } from "@mui/material";
 
 import { Key, useEffect, useState } from "react";
@@ -161,7 +159,7 @@ function Recipe() {
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
           <div id="recipeImgContainer">
-            <img className="image" src={recipe.image} />
+            <img className="image" src={recipe.image} alt={recipe.name}/>
           </div>
         </Grid>
         <Grid item id="recipeContent" xs={10}>

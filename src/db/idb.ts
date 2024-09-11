@@ -180,7 +180,7 @@ export async function syncEmailToFirestore (email: string) {
 
   // Get user favorites
   let storedEmail:string = await userStore.get('email') || "";
- if(email && storedEmail != email){
+ if(email && storedEmail !== email){
   const emailEntry = { id: "email", email: email };
     await userStore.put(emailEntry);
  }

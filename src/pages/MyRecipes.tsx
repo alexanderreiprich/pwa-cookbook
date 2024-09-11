@@ -3,13 +3,10 @@ import CreateRecipe from "../components/CreateRecipe";
 import NavigationBar from "../components/NavigationBar";
 
 import "../style/BrowseRecipes.css";
-import { db } from "..";
 import { useAuth } from "../provider/Authentication";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { Grid } from "@mui/material";
 import RecipeElement from "../components/RecipeElement";
-import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { TAG } from "../interfaces/TagEnum";
 import FilterComponent from "../components/Filter";
 import SortComponent from "../components/Sort";
 import { useDbActionHandler } from "../db/dbActionHandler";
@@ -47,7 +44,7 @@ function MyRecipes () {
 
 	return (
 		<div>
-			<NavigationBar title="Deine Rezepte" />
+			<NavigationBar title="Meine Rezepte" />
 			<CreateRecipe />
 			<Grid container>
         <FilterComponent onApplyFilters={handleApplyFilters} />

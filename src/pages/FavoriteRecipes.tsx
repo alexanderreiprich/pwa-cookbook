@@ -3,7 +3,6 @@ import CreateRecipe from "../components/CreateRecipe";
 import NavigationBar from "../components/NavigationBar";
 
 import "../style/BrowseRecipes.css";
-import { useAuth } from "../provider/Authentication";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { Grid } from "@mui/material";
 import RecipeElement from "../components/RecipeElement";
@@ -24,9 +23,6 @@ function FavoriteRecipes () {
 	const [recipes, setRecipes] = useState<RecipeInterface[]>([]);
 	const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.NAMEASC);
 
-	const { currentUser } = useAuth();
-	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
-	
   const { handleGetUsersFavoriteRecipes } = useDbActionHandler();
 
 	useEffect(() => {

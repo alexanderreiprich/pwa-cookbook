@@ -34,9 +34,9 @@ function App() {
               <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />
-              {isOnline == true ? (<Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />) : (<Route path="/recipes" element={<Recipe />} />)}
-              {isOnline == true ? (<Route path="/my_recipes" element={<PrivateRoute><MyRecipes /></PrivateRoute>} />) : (<Route path="/my_recipes" element={<MyRecipes />} />)}
-              {isOnline == true ? (<Route path="/favorite_recipes" element={<PrivateRoute><FavoriteRecipes /></PrivateRoute>} />) : (<Route path="/favorite_recipes" element={<FavoriteRecipes />} />)}
+              {isOnline === true ? (<Route path="/recipes" element={<PrivateRoute><Recipe /></PrivateRoute>} />) : (<Route path="/recipes" element={<Recipe />} />)}
+              {isOnline === true ? (<Route path="/my_recipes" element={<PrivateRoute><MyRecipes /></PrivateRoute>} />) : (<Route path="/my_recipes" element={<MyRecipes />} />)}
+              {isOnline === true ? (<Route path="/favorite_recipes" element={<PrivateRoute><FavoriteRecipes /></PrivateRoute>} />) : (<Route path="/favorite_recipes" element={<FavoriteRecipes />} />)}
             </Routes>
         </AuthProvider>
       </BrowserRouter>
