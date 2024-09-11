@@ -38,17 +38,7 @@ function openIndexedDB() {
     });
 }
 
-function getAllFromIndexedDB() {
-    return openIndexedDB().then(db => new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], 'readonly');
-        const objectStore = transaction.objectStore(storeName);
-        const request = objectStore.getAll();
-        request.onerror = (event) => reject(event);
-        request.onsuccess = (event) => resolve(event.target.result);
-    }));
-}
-
-function getFromIndexedDB(id) {
+async function getFromIndexedDB(id) {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readonly');
         const objectStore = transaction.objectStore(storeName);
@@ -57,7 +47,6 @@ function getFromIndexedDB(id) {
         request.onsuccess = (event) => resolve(event.target.result);
     }));
 }
-
 async function getUserFromIDB() {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([userStoreName], 'readonly');
@@ -66,10 +55,6 @@ async function getUserFromIDB() {
         request.onerror = (event) => reject(event);
         request.onsuccess = (event) => resolve(event.target.result);
     }));
-}
-
-function getFromFirestore(id) {
-    return firestore.collection('recipes').doc(id).get().then(doc => doc.exists ? doc.data() : null);
 }
 
 async function getUserFromFirestore(email) {
@@ -84,6 +69,10 @@ async function getFavoritesIdsFromFirestore() {
         return fireStoreUser && fireStoreUser.favorites ? fireStoreUser.favorites : [];
     }
     return [];
+}
+
+function getFromFirestore(id) {
+    return firestore.collection('recipes').doc(id).get().then(doc => doc.exists ? doc.data() : null);
 }
 
 function addToIndexedDB(doc) {
@@ -111,7 +100,7 @@ function putToIndexedDB(doc) {
     }));
 }
 
-function addFavoritesListToIndexedDB(favorites, edit_date) {
+async function addFavoritesListToIndexedDB(favorites, edit_date) {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([userStoreName], 'readwrite');
         const objectStore = transaction.objectStore(userStoreName);
@@ -137,11 +126,8 @@ async function addFavoritesListToFirestore(email, favorites) {
 }
 
 async function syncDBs() {
-    await syncFirestoreWithIndexedDB();
     await syncFavoritesFromFirestore();
     await syncOwnRecipesFromFirestore();
-    const docs = await getAllFromIndexedDB();
-    await Promise.all(docs.map(syncIndexedDBDocToFirestore));
     console.log("Service worker synced DBs");
 }
 
@@ -154,24 +140,21 @@ async function syncOwnRecipesFromFirestore() {
     }
 }
 
-async function syncIndexedDBDocToFirestore(doc) {
-    if (doc && doc.id) {
-        const firestoreDoc = await getFromFirestore(doc.id);
-        if (firestoreDoc && firestoreDoc.date_edit) {
-            if (doc.date_edit && doc.date_edit.seconds && firestoreDoc.date_edit.seconds && doc.date_edit.seconds > firestoreDoc.date_edit.seconds) {
-                await addToFirestore(doc);
-                return putToIndexedDB(doc);
-            }
-            else if(!doc.date_edit || !doc.date_edit.seconds){
-                await putToIndexedDB(firestoreDoc);
-                return addToFirestore(firestoreDoc);
-            }
-            else if(!firestoreDoc.date_edit.seconds){
-                return addToFirestore(doc);
-            }
-        } else {
-            return addToFirestore(doc);
+async function syncFileInDBs(firestoreDoc, idbDoc) {
+    if (firestoreDoc && firestoreDoc.date_edit) {
+        if (idbDoc.date_edit && idbDoc.date_edit.seconds && firestoreDoc.date_edit.seconds && idbDoc.date_edit.seconds > firestoreDoc.date_edit.seconds) {
+            await addToFirestore(idbDoc);
+            return putToIndexedDB(idbDoc);
         }
+        else if(!idbDoc.date_edit || !idbDoc.date_edit.seconds) {
+            await putToIndexedDB(firestoreDoc);
+            return addToFirestore(firestoreDoc);
+        }
+        else if(!firestoreDoc.date_edit.seconds){
+            return addToFirestore(idbDoc);
+        }
+    } else {
+        return addToFirestore(idbDoc);
     }
 }
 
@@ -180,13 +163,11 @@ function syncFirestoreDocToIndexedDB(doc) {
         return getFromIndexedDB(doc.id).then(idbDoc => {
             if (!idbDoc) {
                 return addToIndexedDB(doc);
+            } else {
+                syncFileInDBs(doc, idbDoc);
             }
         });
     }
-}
-
-function syncFirestoreWithIndexedDB() {
-    return getAllFromIndexedDB().then(docs => Promise.all(docs.map(syncIndexedDBDocToFirestore)));
 }
 
 async function syncFavoritesFromFirestore() {
@@ -224,7 +205,6 @@ async function syncFavoritesList(ids) {
             newEditDate = firestoreEditDate;
         }
     }
-    console.log(idbUser[0], idbUser[0].email);
     if (!arraysEqual(idbUser[1].favorites, newFavorites)) {
         await addFavoritesListToIndexedDB(newFavorites, edit_date);
     }
@@ -233,8 +213,7 @@ async function syncFavoritesList(ids) {
     }
 }
 
-
-// Boiler plate comaparison function
+// Boiler plate comparison function
 function arraysEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) {
       return false;
@@ -251,7 +230,7 @@ function arraysEqual(arr1, arr2) {
       }
     }
     return true;
-  }
+}
 
 async function handleNetworkStatusChange(isOnline) {
     if (isOnline) {
@@ -277,4 +256,4 @@ self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'NETWORK_STATUS_CHANGE') {
       event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
     }
-  });
+});

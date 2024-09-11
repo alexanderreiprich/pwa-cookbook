@@ -37,7 +37,7 @@ export function useRecipeActions() {
     };
 
     const handleDeleteRecipe = async (id: string) => {
-        await deleteRecipe(id, isOnline);
+        await deleteRecipe(id, isOnline, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {
