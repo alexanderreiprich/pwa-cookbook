@@ -148,6 +148,7 @@ function Recipe() {
               </FormGroup>
             </div>
           ) : null}
+          <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
@@ -157,7 +158,6 @@ function Recipe() {
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
-        <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
