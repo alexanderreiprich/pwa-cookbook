@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useAuth } from './Authentication';
-import { useRecipeActions } from '../db/useRecipes'; // Adjust path as needed
+import { useDbActionHandler } from '../db/dbActionHandler'; // Adjust path as needed
 import { RecipeInterface } from '../interfaces/RecipeInterface';
-import { useNetworkStatus } from '../helpers/NetworkStatusProvider';
 import { LikesInterface } from '../interfaces/LikesInterface';
 interface FavoritesButtonProps {
   favorites: number;
@@ -12,8 +10,7 @@ interface FavoritesButtonProps {
 }
 
 export default function FavoritesButton({ favorites, recipe }: FavoritesButtonProps) {
-  const { handleUpdateRecipeFavorites } = useRecipeActions();
-  const { handleCheckRecipeLikes } = useRecipeActions();
+  const { handleUpdateRecipeFavorites, handleCheckRecipeLikes } = useDbActionHandler();
   // State to manage the favorites count
   const [localFavorites, setLocalFavorites] = useState(favorites);
   // State to manage the liked state

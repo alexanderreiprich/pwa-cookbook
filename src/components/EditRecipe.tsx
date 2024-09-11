@@ -6,10 +6,10 @@ import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 
 import { DocumentData, Timestamp } from "firebase/firestore";
-import { MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { useRecipeActions } from "../db/useRecipes";
+import { useDbActionHandler } from "../db/dbActionHandler";
 import { Key, useRef, useState } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -110,7 +110,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
     handleCreateRecipe, 
     handleDeleteRecipe,
     handleGetRecipeById 
-} = useRecipeActions();
+} = useDbActionHandler();
   
   const handleClose = () => {
     setOpen(false);

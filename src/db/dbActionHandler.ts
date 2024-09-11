@@ -1,4 +1,3 @@
-// useRecipes.ts
 import { useAuth } from '../components/Authentication';
 import { RecipeInterface } from '../interfaces/RecipeInterface';
 import { useNetworkStatus } from '../helpers/NetworkStatusProvider'; // Adjust path as needed
@@ -13,10 +12,10 @@ import {
     changeRecipeVisibility,
     getUsersRecipes,
     getUsersSavedRecipes
-} from "../helpers/dbHelper";
+} from "../helpers/dbActions";
 import { FilterInterface } from '../interfaces/FilterInterface';
 
-export function useRecipeActions() {
+export function useDbActionHandler() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
     const { currentUser } = useAuth();
 

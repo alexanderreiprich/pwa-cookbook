@@ -1,4 +1,4 @@
-import { Navigate, Route, RouteProps, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./Authentication";
 
 const PrivateRoute = ({children}: {children: any}) => {

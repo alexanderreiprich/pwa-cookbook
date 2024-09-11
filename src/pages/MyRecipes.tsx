@@ -3,7 +3,6 @@ import CreateRecipe from "../components/CreateRecipe";
 import NavigationBar from "../components/NavigationBar";
 
 import "../style/BrowseRecipes.css";
-import { collection, CollectionReference, getDocs, query, Query, Timestamp, where } from "firebase/firestore";
 import { db } from "..";
 import { useAuth } from "../components/Authentication";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
@@ -13,7 +12,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import FilterComponent from "../components/Filter";
 import SortComponent from "../components/Sort";
-import { useRecipeActions } from "../db/useRecipes";
+import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
 import { sort } from "../helpers/Sorting";
@@ -30,7 +29,7 @@ function MyRecipes () {
 
 	const { currentUser } = useAuth();
 
-  const { handleGetUsersRecipes } = useRecipeActions();
+  const { handleGetUsersRecipes } = useDbActionHandler();
 
 	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 	

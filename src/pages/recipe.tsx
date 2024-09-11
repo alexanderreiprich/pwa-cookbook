@@ -20,7 +20,7 @@ import "../style/Images.css";
 import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
-import { useRecipeActions } from "../db/useRecipes";
+import { useDbActionHandler } from "../db/dbActionHandler";
 import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 import EditRecipe from "../components/EditRecipe";
 import RecipeCookMode from "../components/RecipeCookMode";
@@ -33,7 +33,7 @@ function Recipe() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean>(false);
-  const { handleGetRecipeById, handleChangeRecipeVisibility } = useRecipeActions();
+  const { handleGetRecipeById, handleChangeRecipeVisibility } = useDbActionHandler();
   const { isOnline } = useNetworkStatus();
 
   const handleVisibilityChange = (

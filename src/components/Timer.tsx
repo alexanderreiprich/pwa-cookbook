@@ -1,6 +1,6 @@
 import { Button } from '@mui/material';
 import { blue } from '@mui/material/colors';
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // Timer component
 export default function Timer({ defaultTime }: { defaultTime: number }) {
