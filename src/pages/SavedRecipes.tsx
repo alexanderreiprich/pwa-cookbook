@@ -13,10 +13,12 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import FilterComponent from "../components/Filter";
 import SortComponent from "../components/Sort";
+import { FilterInterface } from "../interfaces/FilterInterface";
+import { useRecipeActions } from "../db/useRecipes";
 
 function SavedRecipes () {
 	
-  const [filters, setFilters] = useState<{ timeMin?: number; timeMax?: number; tags?: string[]; difficulty?: string }>({});
+  const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
   const handleApplyFilters = (newFilters: any) => {
     setFilters(newFilters);
   };
@@ -27,39 +29,12 @@ function SavedRecipes () {
 	const { currentUser } = useAuth();
 	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 	
+  const { handleGetUsersSavedRecipes } = useRecipeActions();
+
 	useEffect(() => {
 		const fetchItems = async () => {
-			let q: Query | CollectionReference = collection(db, "recipes");
-			let s: Query | CollectionReference = collection(db, "users");
-			s = query(s, where("email", "==", user));
-			const savedRecipes = await getDocs(s);
-			let savedRecipeList: string[] = [];
-			savedRecipes.docs.map((user) => (savedRecipeList = user.get("favorites"))); 
-			q = query(q, where("id", "in", savedRecipeList));
 
-			if (filters.timeMin) {
-        q = query(q, where("time", ">=", Number(filters.timeMin)));
-      }
-      if (filters.timeMax) {
-        q = query(q, where("time", "<=", Number(filters.timeMax)));
-      }
-      if (filters.tags && filters.tags?.length > 0) {
-        let chosenTags = []
-        for (let i = 0; i < filters.tags?.length; i++) {
-          chosenTags.push(TAG[filters.tags[i] as keyof typeof TAG]);
-        }
-        q = query(q, where("tags", "array-contains-any", chosenTags))
-      }
-      if (filters.difficulty && filters.difficulty?.length > 0) {
-        console.log(filters.difficulty);
-        q = query(q, where("difficulty", "==", DIFFICULTY[filters.difficulty as keyof typeof DIFFICULTY]));
-      }
-
-			const querySnapshot = await getDocs(q);
-			let recipeList: RecipeInterface[] = querySnapshot.docs.map((recipe) => ({
-        id: recipe.id,
-        ...recipe.data(),
-      })) as RecipeInterface[];
+      let recipeList: RecipeInterface[] = await handleGetUsersSavedRecipes();
 
 			switch(sortOrder) {
         case "nameAsc":

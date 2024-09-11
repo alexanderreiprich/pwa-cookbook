@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import SortComponent from "./Sort";
 import { useRecipeActions } from "../db/useRecipes";
+import { FilterInterface } from "../interfaces/FilterInterface";
 
 export default function RecipeList() {
 
-  const [filters, setFilters] = useState<{ timeMin?: number; timeMax?: number; tags?: string[]; difficulty?: string }>({});
-  const handleApplyFilters = (newFilters: any) => {
+  const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
+  const handleApplyFilters = (newFilters: FilterInterface) => {
     setFilters(newFilters);
   };
 
