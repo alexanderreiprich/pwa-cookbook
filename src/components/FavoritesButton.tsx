@@ -23,7 +23,7 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     setLocalFavorites(favorites);
   }, [favorites]);
 
-  function checkState() {
+  function changeLikeState() {
     if (hasLiked) {
       if(localFavorites > 1){
       setLocalFavorites(localFavorites - 1);
@@ -50,7 +50,7 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
         color="secondary"
         variant={hasLiked ? 'contained' : 'text'}
         startIcon={<FavoriteIcon />}
-        onClick={checkState}
+        onClick={changeLikeState}
       >
         {localFavorites}
       </Button>

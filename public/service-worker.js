@@ -22,271 +22,247 @@ const storeName = 'recipes';
 const userStoreName = 'user';
 
 function openIndexedDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(dbName, 2);
-    request.onerror = (event) => {
-      console.error('IndexedDB error:', event);
-      reject(event);
-    };
-    request.onsuccess = (event) => {
-      resolve(event.target.result);
-    };
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(storeName)) {
-        db.createObjectStore(storeName, { keyPath: 'id' });
-      }
-    };
-  });
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 2);
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(userStoreName)) {
+                db.createObjectStore(userStoreName, { keyPath: 'id' });
+            }
+        };
+    });
 }
 
 function getAllFromIndexedDB() {
-  return openIndexedDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([storeName], 'readonly');
-      const objectStore = transaction.objectStore(storeName);
-      const request = objectStore.getAll();
-      request.onerror = (event) => {
-        reject(event);
-      };
-      request.onsuccess = (event) => {
-        resolve(event.target.result);
-      };
-    });
-  });
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const objectStore = transaction.objectStore(storeName);
+        const request = objectStore.getAll();
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+    }));
 }
 
 function getFromIndexedDB(id) {
-    return openIndexedDB().then((db) => {
-      return new Promise((resolve, reject) => {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readonly');
         const objectStore = transaction.objectStore(storeName);
         const request = objectStore.get(id);
-        request.onerror = (event) => {
-          reject(event);
-        };
-        request.onsuccess = (event) => {
-          resolve(event.target.result);
-        };
-      });
-    });
-  }
-
-function addToFirestore(doc) {
-  return firestore.collection('recipes').doc(doc.id).set(doc);
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+    }));
 }
 
-function addToIndexedDB(doc) {
-    return openIndexedDB().then((db) => {
-        return new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], 'readwrite');
-        const objectStore = transaction.objectStore(storeName);
-        const request = objectStore.put(doc);
-        request.onerror = (event) => {
-            reject(event);
-        };
-        request.onsuccess = (event) => {
-            resolve();
-        };
-        });
-    });
-}
-
-async function addFavoritesListToFirestore(email, favorites) {
-    console.log("add favorites to firestore", favorites);
-    let user = getUserFromFirestore(email);
-    console.log("addFavoritesListToFirestore", email, user, favorites);
-}
-
-function addFavoritesListToIndexedDB(favorites) {
-    console.log("add favorites to idb", favorites);
-    return openIndexedDB().then((db) => {
-        return new Promise((resolve, reject) => {
-        const transaction = db.transaction([userStoreName], 'readwrite');
+async function getUserFromIDB() {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([userStoreName], 'readonly');
         const objectStore = transaction.objectStore(userStoreName);
-        const favoritesEntry = { id: "userFavorites", favorites: favorites }; 
-        const request = objectStore.put(favoritesEntry);
-        console.log("request", request);
-        request.onerror = (event) => {
-            reject(event);
-        };
-        request.onsuccess = (event) => {
-            resolve();
-            console.log("event", event);
-        };
-        });
-    });
+        const request = objectStore.getAll();
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+    }));
 }
 
 function getFromFirestore(id) {
-    return firestore.collection('recipes').doc(id).get().then(doc => {
-        return doc.exists ? doc.data() : null;
-    });
+    return firestore.collection('recipes').doc(id).get().then(doc => doc.exists ? doc.data() : null);
+}
+
+async function getUserFromFirestore(email) {
+    const querySnapshot = await firestore.collection('users').where('email', '==', email).get();
+    return querySnapshot.docs.length ? querySnapshot.docs[0].data() : null;
+}
+
+async function getFavoritesIdsFromFirestore() {
+    const user = await getUserFromIDB();
+    if (user && user[0].email) {
+        const fireStoreUser = await getUserFromFirestore(user[0].email);
+        return fireStoreUser && fireStoreUser.favorites ? fireStoreUser.favorites : [];
+    }
+    return [];
+}
+
+function addToIndexedDB(doc) {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const objectStore = transaction.objectStore(storeName);
+        const request = objectStore.add(doc);
+        request.onerror = (event) => {
+            if (event.target.error.name === 'ConstraintError') {
+                console.error('Document with this ID already exists in IndexedDB');
+            }
+            reject(event);
+        };
+        request.onsuccess = () => resolve();
+    }));
+}
+
+function putToIndexedDB(doc) {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite');
+        const objectStore = transaction.objectStore(storeName);
+        const request = objectStore.put(doc);
+        request.onerror = (event) => reject(event);
+        request.onsuccess = () => resolve();
+    }));
+}
+
+function addFavoritesListToIndexedDB(favorites) {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([userStoreName], 'readwrite');
+        const objectStore = transaction.objectStore(userStoreName);
+        const favoritesEntry = { id: "userFavorites", favorites: favorites };
+        const request = objectStore.put(favoritesEntry);
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve();
+    }));
+}
+
+function addToFirestore(doc) {
+    return firestore.collection('recipes').doc(doc.id).set(doc);
+}
+
+async function addFavoritesListToFirestore(email, favorites) {
+    const userDoc = firestore.collection('users').doc(email);
+    const userSnapshot = await userDoc.get();
+    if (userSnapshot.exists) {
+        return userDoc.update({ favorites });
+    } else {
+        return userDoc.set({ email, favorites });
+    }
+}
+
+async function syncDBs() {
+    await syncFirestoreWithIndexedDB();
+    await syncFavoritesFromFirestore();
+    await syncOwnRecipesFromFirestore();
+    const docs = await getAllFromIndexedDB();
+    await Promise.all(docs.map(syncIndexedDBDocToFirestore));
+    console.log("Service worker synced DBs");
 }
 
 async function syncOwnRecipesFromFirestore() {
-    let recipes = []
-        // gets email from idb to find the right user in the firestore and get the favorites ids from there
-    let user = await getEmailFromIDB();
-    if(user && user[0].email){
-        let email = user[0].email;
-        if(email){
-            // get all recipes where author has the email saved in the idb
-            let querySnapshot = await firestore.collection('recipes').where('author', '==', email).get();
-            recipes = querySnapshot.docs.map(doc => doc.data());
-        }
+    const user = await getUserFromIDB();
+    if (user && user[0].email) {
+        const querySnapshot = await firestore.collection('recipes').where('author', '==', user[0].email).get();
+        const recipes = querySnapshot.docs.map(doc => doc.data());
+        return Promise.all(recipes.map(syncFirestoreDocToIndexedDB));
     }
-    recipes.map(doc => syncFirestoreDocToIndexedDB(doc));
 }
 
-
-function syncIndexedDBDocToFirestore(doc) {
-    if(doc && doc.id){
-        return getFromFirestore(doc.id).then(firestoreDoc => {
-            if (firestoreDoc) {
-            const indexedDBDate = doc.date_edit;
-            const firestoreDate = firestoreDoc.date_edit;
-
-            if (indexedDBDate > firestoreDate) {
-                return addToFirestore(doc).then(() => addToIndexedDB(doc));
-            } else {
-                return addToIndexedDB(firestoreDoc).then(() => addToFirestore(firestoreDoc));
+async function syncIndexedDBDocToFirestore(doc) {
+    console.log("syncIndexedDBDocToFirestore", doc.id);
+    if (doc && doc.id) {
+        const firestoreDoc = await getFromFirestore(doc.id);
+        if (firestoreDoc && firestoreDoc.date_edit) {
+            if (doc.date_edit && doc.date_edit.seconds && firestoreDoc.date_edit.seconds && doc.date_edit.seconds > firestoreDoc.date_edit.seconds) {
+                console.log("idb fresherr");
+                await addToFirestore(doc);
+                return putToIndexedDB(doc);
             }
-            } else {
+            else if(!doc.date_edit || !doc.date_edit.seconds){
+                console.log("idb invaliddd");
+                await putToIndexedDB(firestoreDoc);
+                return addToFirestore(firestoreDoc);
+            }
+            else if(!firestoreDoc.date_edit.seconds){
+                console.log("firestore invaliddd");
+                return addToFirestore(doc);
+            }
+        } else {
             return addToFirestore(doc);
-            }
-        });
+        }
     }
 }
 
 function syncFirestoreDocToIndexedDB(doc) {
-    if(doc && doc.id){
-        getFromIndexedDB(doc.id).then(idbDoc => {
+    if (doc && doc.id) {
+        return getFromIndexedDB(doc.id).then(idbDoc => {
             if (!idbDoc) {
-                addToIndexedDB(doc);
+                return addToIndexedDB(doc);
             }
         });
     }
 }
 
 function syncFirestoreWithIndexedDB() {
-  return getAllFromIndexedDB().then((docs) => {
-    const promises = docs.map(doc => addToFirestore(doc));
-    return Promise.all(promises);
-  });
+    return getAllFromIndexedDB().then(docs => Promise.all(docs.map(syncIndexedDBDocToFirestore)));
 }
 
 async function syncFavoritesFromFirestore() {
-    let ids = await getFavoritesIdsFromFirestore();
-    ids.forEach(id => {
-        getFromFirestore(id).then(doc => syncFirestoreDocToIndexedDB(doc));
-    })
-    syncFavoritesList(ids);
-}
-
-async function getFavoritesIdsFromFirestore() {
-    let favorites = [];
-    // gets email from idb to find the right user in the firestore and get the favorites ids from there
-    let user = await getEmailFromIDB();
-    if(user && user[0].email){
-        let email = user[0].email;
-        if(email){
-            let fireStoreUser = await getUserFromFirestore(email);
-                if(fireStoreUser.favorites){
-                    favorites = fireStoreUser.favorites;
-                }
-            }
-    }
-    return favorites;
-}
-
-async function getUserFromFirestore(email) {
-    let fireStoreUser;
-    await firestore.collection('users').get().then(querySnapshot => {
-        querySnapshot.docs.map(doc => {
-            let user = doc.data();
-            if(user.email && user.email == email){
-                fireStoreUser = user;
-            }
-        });
-    });
-    return fireStoreUser;
-}
-
-async function getEmailFromIDB() {
-    return openIndexedDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([userStoreName], 'readonly');
-            const objectStore = transaction.objectStore(userStoreName);
-            const request = objectStore.getAll();
-            request.onerror = (event) => {
-                reject(event);
-            };
-            request.onsuccess = (event) => {
-                resolve(event.target.result);
-            };
-        });
-    });
-}
-
-async function getUserFromIDB() {
-    return openIndexedDB().then((db) => {
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction([userStoreName], 'readonly');
-            const objectStore = transaction.objectStore(userStoreName);
-            const request = objectStore.getAll();
-            request.onerror = (event) => {
-                reject(event);
-            };
-            request.onsuccess = (event) => {
-                resolve(event.target.result);
-            };
-        });
-    })
+    const ids = await getFavoritesIdsFromFirestore();
+    await Promise.all(ids.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
+    return syncFavoritesList(ids);
 }
 
 async function syncFavoritesList(ids) {
-   return getUserFromIDB().then( idbUser => {
-        let newFavorites = ids;
-        if(idbUser && idbUser[1] && idbUser[1].favorites){
-            if(idbUser[1].favorites == newFavorites) return;
-            idbUser[1].favorites.forEach(favorite => {
-                if(!newFavorites.includes(favorite)) newFavorites.push(favorite);
-            })
-        }
-        addFavoritesListToIndexedDB(newFavorites);
-        if(newFavorites != ids && idbUser.email)addFavoritesListToFirestore(idbUser.email, newFavorites);
-        }).catch((err) => {
-            console.log(err);
-            return ids;
-    }).catch((err) => {
-        console.log(err);
-        return ids;
-    });
+    console.log("syncFavoritesList", ids);
+    const idbUser = await getUserFromIDB();
+    let newFavorites = [...ids];
+    if (idbUser && idbUser[1] && idbUser[1].favorites) {
+        if (arraysEqual(idbUser[1].favorites, newFavorites)) return;
+        idbUser[1].favorites.forEach(favorite => {
+            if (!newFavorites.includes(favorite)) newFavorites.push(favorite);
+        });
+    }
+    console.log(idbUser[0], idbUser[0].email);
+    console.log("idbUser[1].favorites !== newFavorites", idbUser[1].favorites, newFavorites, idbUser[1].favorites !== newFavorites);
+    if (!arraysEqual(idbUser[1].favorites, newFavorites)) {
+        await addFavoritesListToIndexedDB(newFavorites);
+    }
+    console.log("newFavorites != ids", !arraysEqual(ids, newFavorites), newFavorites, ids)
+    if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {
+        console.log("email", idbUser[0].email);
+        await addFavoritesListToFirestore(idbUser[0].email, newFavorites);
+    }
 }
 
-async function syncDBs(event) {
-    event.waitUntil(syncFirestoreWithIndexedDB());
-    event.waitUntil(syncFavoritesFromFirestore());
-    event.waitUntil(syncOwnRecipesFromFirestore());
-    event.waitUntil(getAllFromIndexedDB().then(doc => doc.map(recipe => syncIndexedDBDocToFirestore(recipe))));
-}
 
+// Boiler plate comaparison function
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    
+    // Sort both arrays
+    let sortedArr1 = [...arr1].sort();
+    let sortedArr2 = [...arr2].sort();
+  
+    // Compare sorted arrays
+    for (let i = 0; i < sortedArr1.length; i++) {
+      if (sortedArr1[i] !== sortedArr2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+async function handleNetworkStatusChange(isOnline) {
+    if (isOnline) {
+        console.log('Network is online');
+        await syncDBs();
+    } else {
+        console.log('Network is offline');
+    }
+}
 
 // Service Worker events
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installed');
-  self.skipWaiting();
+    console.log('Service Worker installed');
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activated');
-  syncDBs(event);
+    console.log('Activation event', event);
+    event.waitUntil(syncDBs());
 });
 
-self.addEventListener('sync', (event) => {
-  console.log('Background sync', event);
-  if (event.tag === 'sync-recipes') {
-    syncDBs(event);
-  }
-});
+self.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'NETWORK_STATUS_CHANGE') {
+      event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
+    }
+  });

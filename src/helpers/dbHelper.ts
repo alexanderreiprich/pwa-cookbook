@@ -94,12 +94,13 @@ export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean
 
 // Function to delete a recipe
 export async function deleteRecipe(id: string, isOnline: boolean) {
-    // Delete from IndexedDB
-    await deleteRecipeInIndexedDB(id);
     
-    // Delete from Firestore if online
+    // Delete from Firestore and indexed db if online
     if (isOnline) {
+        await deleteRecipeInIndexedDB(id);
         await deleteRecipeInFirestore(id);
+    } else {
+        alert("Im Offline Modus können leider keine Rezepte gelöscht werden.")
     }
 }
 

@@ -2,6 +2,9 @@ import { doc, Timestamp, writeBatch } from "firebase/firestore";
 import { getAllRecipesFromDB } from "../db/idb";
 import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
+import { getRecipeByIdFromFirestore } from "../db/firestore";
+
+
 export async function syncFirestoreWithIndexedDB() {
   const recipes = await getAllRecipesFromDB();
   
@@ -15,14 +18,19 @@ export async function syncFirestoreWithIndexedDB() {
   await batch.commit();
 }
 
-export function convertToDate(date: any): Date {
-  if (date instanceof Date) {
-    return date;
-  } else if (date.toDate) {
-    return date.toDate();
-  } else {
-    return new Date(date);
-  }
+export async function checkRecipeVersioning(id: string, oldDateEdit: Timestamp): Promise<boolean> {
+  console.log(id);
+  if(!id) return true;
+    const firestoreDoc = await getRecipeByIdFromFirestore(id);
+    if (firestoreDoc && oldDateEdit) {
+        if (oldDateEdit >= firestoreDoc.date_edit) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
 }
 
 export function convertToTimestamp(date: Date | Timestamp | undefined): Timestamp {

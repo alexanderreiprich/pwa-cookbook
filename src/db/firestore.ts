@@ -125,8 +125,8 @@ export async function deleteRecipeInFirestore(id: string): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
 
-    await deleteDoc(recipeRef);
-    console.log('Rezept erfolgreich aus Firestore gelöscht.');
+    await deleteDoc(recipeRef).then( () =>
+    console.log('Rezept erfolgreich aus Firestore gelöscht.'));
 
   } catch (err) {
       console.log(err);
@@ -141,6 +141,7 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
     if (docSnap.exists()) {
       const data = docSnap.data() as any;
       let favorites: Array<string> = data.favorites;
+      console.log("checkRecipeLikesInFirestore", favorites);
       return(favorites.includes(id));
     } else {
       return false;
