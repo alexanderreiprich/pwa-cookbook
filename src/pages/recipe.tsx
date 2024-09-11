@@ -11,6 +11,7 @@ import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
 import { useRecipeActions } from "../db/useRecipes";
 import EditRecipe from "../components/EditRecipe";
+import RecipeCookMode from "../components/RecipeCookMode";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -69,7 +70,7 @@ function Recipe() {
     return (
       <div>
       <NavigationBar title="Rezepte" />
-        <p>Rezept konnte leider nicht geladen werden...</p>
+        <p>Rezept konnte leider nicht geladen werden... vielleicht wurde es gelöscht?</p>
       </div>
     )
       
@@ -92,16 +93,17 @@ function Recipe() {
             <div><i>von: {recipe.author}</i></div>
             <div>erstellt am: {formatDate(recipe.date_create)}</div>
           </div>
+          <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
+            <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
-        <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
