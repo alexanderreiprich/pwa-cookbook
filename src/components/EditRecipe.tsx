@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { DocumentData } from "firebase/firestore";
+import { DocumentData, Timestamp } from "firebase/firestore";
 import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { useRecipeActions } from "../db/useRecipes";
@@ -13,6 +13,7 @@ import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import { checkRecipeVersioning, convertToTimestamp } from "../helpers/synchDBHelper";
 
 const style = {
   position: "absolute" as "absolute",
@@ -119,9 +120,14 @@ const createRecipe = async (newRecipe: RecipeInterface) => {
   }
 };
 
-const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
-  if (id && updatedRecipe) {
-      await handleUpdateRecipe(id, updatedRecipe);
+const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateEdit: Timestamp) => {
+  let canUpdate = await checkRecipeVersioning(id, oldDateEdit);
+  if (canUpdate) {
+    if (id && updatedRecipe) {
+        await handleUpdateRecipe(id, updatedRecipe);
+    }
+  } else {
+    alert("In der Online Datenbank wurde eine aktuellere Version des Rezeptes gefunden. Bitte lade die Seite neu, bevor du das Rezept editierst");
   }
 };
 
@@ -176,9 +182,9 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: new Date()
+      date_edit: Timestamp.now()
     }
-    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit);
     handleClose();
   }
 

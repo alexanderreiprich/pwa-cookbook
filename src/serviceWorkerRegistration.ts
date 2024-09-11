@@ -36,8 +36,6 @@ export function register(config?: Config) {
 
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-
-      console.log('isLocalhost', isLocalhost);
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
         checkValidServiceWorker(swUrl, config);
@@ -68,6 +66,7 @@ function registerValidSW(swUrl: string, config?: Config) {
           return;
         }
         installingWorker.onstatechange = () => {
+          console.log("onstatechange", installingWorker);
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,

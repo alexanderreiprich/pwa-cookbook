@@ -26,7 +26,7 @@ function App() {
     <FirestoreProvider sdk={db}>
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
+        <Routes>
               <Route path="/" element={<PrivateRoute><BrowseRecipes /></PrivateRoute>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />

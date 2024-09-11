@@ -5,6 +5,7 @@ import {
     deleteRecipeInIndexedDB, 
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
+    syncEmailToFirestore,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB 
 } from "../db/idb";
@@ -21,13 +22,13 @@ import {
 import { User } from "firebase/auth";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
-    updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
+    updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
 
     // Update in Firestore if online
     if (isOnline) {
-        await updateRecipeFavoritesInFirestore(currentUser, id, newFavorites, likes);
+        await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
 }
 
@@ -93,12 +94,13 @@ export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean
 
 // Function to delete a recipe
 export async function deleteRecipe(id: string, isOnline: boolean) {
-    // Delete from IndexedDB
-    await deleteRecipeInIndexedDB(id);
     
-    // Delete from Firestore if online
+    // Delete from Firestore and indexed db if online
     if (isOnline) {
+        await deleteRecipeInIndexedDB(id);
         await deleteRecipeInFirestore(id);
+    } else {
+        alert("Im Offline Modus können leider keine Rezepte gelöscht werden.")
     }
 }
 
@@ -109,4 +111,8 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
         return checkRecipeLikesInIndexedDB(id);
 
     }
+}
+
+export async function syncEmail(user: User | null){
+    if(user && user.email) syncEmailToFirestore(user.email);
 }

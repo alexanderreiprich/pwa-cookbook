@@ -10,6 +10,7 @@ import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { formatDate } from "../helpers/templateHelper";
 import { useRecipeActions } from "../db/useRecipes";
+import EditRecipe from "../components/EditRecipe";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -94,12 +95,13 @@ function Recipe() {
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
-            <FavoritesButton recipeId={recipe.id} favorites={recipe.favorites}/>
+            <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
+        <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           <div id="recipeImgContainer">
             <img className="image" src={recipe.image} />
           </div>
@@ -108,7 +110,7 @@ function Recipe() {
           <h2>Zutaten</h2>
           <p>Anzahl der Personen: 
             <Box sx={{padding: 3}}>
-              <TextField type="number" value={servings} onChange={handleServingsChange} inputProps={{min: 1}} sx={{width: '100px'}} />
+              <TextField type="number" size="small" value={servings} onChange={handleServingsChange} inputProps={{min: 1}} sx={{width: '100px'}} />
             </Box>
           </p>
           <ul>
