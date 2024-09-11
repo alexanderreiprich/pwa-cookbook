@@ -22,11 +22,10 @@ import {
     updateRecipeInFirestore 
 } from "../db/firestore";
 import { User } from "firebase/auth";
-import { OfflineUser } from "../components/Authentication";
 import { FilterInterface } from "../interfaces/FilterInterface";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | OfflineUser | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
     updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
 
@@ -107,7 +106,7 @@ export async function deleteRecipe(id: string, isOnline: boolean) {
     }
 }
 
-export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | OfflineUser | null): Promise<boolean> {
+export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<boolean> {
     if(isOnline) {
         return checkRecipeLikesInFirestore(id, currentUser);    
     } else {
@@ -120,7 +119,7 @@ export async function changeRecipeVisibility(id: string) {
     return changeRecipeVisibilityInFirestore(id);
 }
 
-export function getUsersRecipes(currentUser: User | OfflineUser | null, isOnline: boolean): Promise<RecipeInterface[]> {
+export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
     if(isOnline) {
         return getUsersRecipesInFirestore(currentUser);
     }
@@ -129,7 +128,7 @@ export function getUsersRecipes(currentUser: User | OfflineUser | null, isOnline
     }
 }
 
-export function getUsersSavedRecipes(currentUser: User | OfflineUser | null, isOnline: boolean): Promise<RecipeInterface[]> {
+export function getUsersSavedRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
     if(isOnline) {
         return getUsersSavedRecipesInFirestore(currentUser);
     }

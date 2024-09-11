@@ -4,12 +4,9 @@ import { auth } from "..";
 import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 
 interface AuthContextType {
-  currentUser: User | OfflineUser | null
+  currentUser: User  | null
 }
-export type OfflineUser = {
-  displayName: string,
-  email: string
-}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -21,7 +18,7 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({children}: {children: any}) => {
-  const [currentUser, setCurrentUser] = useState<User | OfflineUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { isOnline } = useNetworkStatus();
 
@@ -36,7 +33,7 @@ export const AuthProvider = ({children}: {children: any}) => {
       }
     }
     else {
-      setCurrentUser({displayName: "localUser", email:"offline@user.com"})
+      setCurrentUser(null)
     }
 
   }, []);
