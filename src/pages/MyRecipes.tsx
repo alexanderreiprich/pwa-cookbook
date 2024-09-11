@@ -46,7 +46,6 @@ function MyRecipes () {
         q = query(q, where("tags", "array-contains-any", chosenTags))
       }
       if (filters.difficulty && filters.difficulty?.length > 0) {
-        console.log(filters.difficulty);
         q = query(q, where("difficulty", "==", DIFFICULTY[filters.difficulty as keyof typeof DIFFICULTY]));
       }
 

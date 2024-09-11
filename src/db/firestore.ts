@@ -5,6 +5,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { parseDate, saveRecipe } from "../helpers/synchDBHelper";
 import { User } from "firebase/auth";
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -52,10 +53,13 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
     }
   }
 
-export async function updateRecipeInFirestore(id: string, updatedRecipe: Partial<RecipeInterface>): Promise<void> {
+export async function updateRecipeInFirestore(id: string, updatedRecipe: Partial<RecipeInterface>, image?: File): Promise<void> {
     try {
       const recipeRef = doc(db, 'recipes', id);
-      // updates recipe in firestore
+      if (image) {
+        let imgLink = await uploadImage(updatedRecipe.id!, image);
+        updatedRecipe.image = imgLink;
+      }
       await setDoc(recipeRef, saveRecipe(updatedRecipe), { merge: true });
       console.log('Rezept erfolgreich in Firestore aktualisiert.');
     } catch (e) {
@@ -116,10 +120,13 @@ export async function getAllRecipesFromFirestore(filters: any): Promise<RecipeIn
     }
   }
 
-export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promise<void> {
+export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?: File): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', newRecipe.id);
-
+    if (image) {
+      let imgLink = await uploadImage(newRecipe.id, image);
+      newRecipe.image = imgLink;
+    }
     await setDoc(recipeRef, saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in Firestore erstellt.');
 
@@ -170,4 +177,17 @@ async function getUserId(currentUser: User | null): Promise<string> {
       }
     }
     return userId;
+}
+
+async function uploadImage(id: string, image: File): Promise<string> {
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, `recipes/${id}.jpg`);
+    const uploadResult = await uploadBytes(storageRef, image);
+    return getDownloadURL(uploadResult.ref);
+  }
+  catch (error) {
+    return "Error - " + error;
+  }
+
 }

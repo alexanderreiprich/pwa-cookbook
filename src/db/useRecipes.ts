@@ -20,8 +20,8 @@ export function useRecipeActions() {
         await updateRecipeFavorites(currentUser, id, newFavorites, likes, isOnline);
     };
 
-    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
-        await updateRecipe(id, updatedRecipe, isOnline);
+    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) => {
+        await updateRecipe(id, updatedRecipe, isOnline, image);
     };
 
     const handleGetAllRecipes = async (filters: any) => {
@@ -32,8 +32,8 @@ export function useRecipeActions() {
         return await getRecipeById(id, isOnline);
     };
 
-    const handleCreateRecipe = async (newRecipe: RecipeInterface) => {
-        await createRecipe(newRecipe, isOnline);
+    const handleCreateRecipe = async (newRecipe: RecipeInterface, image?: File) => {
+        await createRecipe(newRecipe, isOnline, image);
     };
 
     const handleDeleteRecipe = async (id: string) => {

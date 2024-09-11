@@ -32,13 +32,13 @@ export async function updateRecipeFavorites(currentUser: User | null, id: string
 }
 
 // Function to update a recipe
-export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean) {
+export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean, image?: File) {
     // Update in IndexedDB
     updateRecipeInIndexedDB(id, updatedRecipe);
 
     // Update in Firestore if online
     if (isOnline) {
-        await updateRecipeInFirestore(id, updatedRecipe);
+        await updateRecipeInFirestore(id, updatedRecipe, image);
     }
 }
 
@@ -81,13 +81,13 @@ export async function getRecipeById(id: string, isOnline: boolean): Promise<Reci
 }
 
 // Function to create a new recipe
-export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean) {
+export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean, image?: File,) {
     // Create in IndexedDB
     createRecipeInIndexedDB(newRecipe);
     
     // Create in Firestore if online
     if (isOnline) {
-        await createRecipeInFirestore(newRecipe);
+        await createRecipeInFirestore(newRecipe, image);
     }
 }
 

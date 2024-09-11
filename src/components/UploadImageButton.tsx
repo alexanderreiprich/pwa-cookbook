@@ -9,48 +9,21 @@ import {
   CardMedia,
 } from "@mui/material";
 import { CloudUploadOutlined } from "@mui/icons-material";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
 import { useState } from "react";
 
-function UploadImageButton() {
+interface UploadImageProps {
+  onImageSelect: (image: File) => void;
+}
+
+const UploadImageButton: React.FC<UploadImageProps> = ({onImageSelect}) => {
   const [image, setImage] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
-  const [progress, setProgress] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setImage(event.target.files[0]);
-    }
-  };
-
-  const handleUpload = () => {
-    if (image) {
-      const storage = getStorage();
-      const storageRef = ref(storage, "recipes/${image.name}");
-      const uploadTask = uploadBytesResumable(storageRef, image);
-
-      setUploading(true);
-
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progress);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            setImageURL(downloadURL);
-            setUploading(false);
-          });
-        }
-      );
+      onImageSelect(event.target.files[0]);
     }
   };
 
@@ -79,7 +52,7 @@ function UploadImageButton() {
             Ausgewählte Datei: {image.name}
           </Typography>
         )}
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={handleUpload}
@@ -87,15 +60,7 @@ function UploadImageButton() {
           sx={{ width: "100%" }}
         >
           Hochladen
-        </Button>
-        {uploading && (
-          <Box sx={{ width: "100%", mt: 2 }}>
-            <LinearProgress variant="determinate" value={progress} />
-            <Typography variant="body2" color="textSecondary">
-              Upload-Fortschritt: {Math.round(progress)}%
-            </Typography>
-          </Box>
-        )}
+        </Button> */}
       </Box>
       {imageURL && (
         <Grid item xs={12} md={6}>

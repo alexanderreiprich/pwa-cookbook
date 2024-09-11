@@ -95,6 +95,12 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [ingredients, setIngredients] = useState<IngredientInterface[]>(recipe.ingredients);
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
   
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const handleImageSelect = (image: File) => {
+    setSelectedImage(image);
+  }
+
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
 
@@ -114,15 +120,15 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
     }
 };
 
-const createRecipe = async (newRecipe: RecipeInterface) => {
+const createRecipe = async (newRecipe: RecipeInterface, image?: File) => {
   if (newRecipe) {
-      await handleCreateRecipe(newRecipe);
+      await handleCreateRecipe(newRecipe, image);
   }
 };
 
-const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
+const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, image?: File) => {
   if (id && updatedRecipe) {
-      await handleUpdateRecipe(id, updatedRecipe);
+      await handleUpdateRecipe(id, updatedRecipe, image);
   }
 };
 
@@ -179,7 +185,12 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
       date_create: recipe.date_create,
       date_edit: new Date()
     }
-    isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+    if (selectedImage) {
+      isNew ? createRecipe(updatedRecipe, selectedImage) : updateRecipe(recipe.id, updatedRecipe, selectedImage);
+    }
+    else {
+      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+    }
     handleClose();
   }
 
@@ -298,7 +309,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface) => {
               )}
           </Box> */}
 
-          <UploadImageButton />
+          <UploadImageButton onImageSelect={handleImageSelect}/>
 
           {/* Ingredients */}
 
