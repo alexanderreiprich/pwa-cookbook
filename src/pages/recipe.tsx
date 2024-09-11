@@ -185,6 +185,7 @@ function Recipe() {
           </ol>
         </Grid>
       </Grid>
+      <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
     </div>
   );
 }

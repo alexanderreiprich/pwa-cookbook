@@ -1,36 +1,54 @@
 import { Button } from '@mui/material';
-import blue from '@mui/material/colors/blue';
+import { blue } from '@mui/material/colors';
 import React, { useState, useRef, useEffect } from 'react';
 
 // Timer component
-export default function Timer( {defaultTime}: {defaultTime: number}) {
+export default function Timer({ defaultTime }: { defaultTime: number }) {
   const [time, setTime] = useState(defaultTime);
   const [isRunning, setIsRunning] = useState(false);
   const timerRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-
-  const startTimer = () => {
-    if (!isRunning) {
-      setIsRunning(true);
+    if (isRunning && time > 0) {
       timerRef.current = window.setInterval(() => {
         setTime(prevTime => prevTime - 1);
       }, 1000);
     }
+
+    if (time === 0 && isRunning) {
+      // Play alarm sound
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+      // Show alert and stop timer
+      alert('Zeit ist abgelaufen!');
+      stopTimer();
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isRunning, time]);
+
+  const startTimer = () => {
+    if (!isRunning) {
+      setIsRunning(true);
+    }
   };
 
   const stopTimer = () => {
-    if (isRunning) {
-      setIsRunning(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+    setIsRunning(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0; // Reset the audio to the start
     }
   };
 
@@ -38,8 +56,13 @@ export default function Timer( {defaultTime}: {defaultTime: number}) {
     setIsRunning(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
     setTime(defaultTime);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0; // Reset the audio to the start
+    }
   };
 
   const setTimer = () => {
@@ -47,9 +70,9 @@ export default function Timer( {defaultTime}: {defaultTime: number}) {
     if (userInput) {
       const userTime = parseInt(userInput, 10);
       if (!isNaN(userTime)) {
-        setTime(userTime*60);
+        setTime(userTime * 60);
       } else {
-        alert('Invalid input. Please enter a number.');
+        alert('Ungültige Eingabe. Bitte geben Sie eine Zahl ein.');
       }
     }
   };
@@ -63,7 +86,7 @@ export default function Timer( {defaultTime}: {defaultTime: number}) {
   return (
     <div style={{
         position: "sticky",
-        bottom: 0,
+        bottom: 2,
         width: "auto",
         backgroundColor: blue[200],
         borderRadius: 10,
@@ -71,16 +94,17 @@ export default function Timer( {defaultTime}: {defaultTime: number}) {
         flexDirection: 'column',
         alignItems: 'center'
       }}>
-        <div style={{ fontSize: '2rem' , paddingBottom: 10 }}>
+        <div style={{ fontSize: '2rem', paddingBottom: 10 }}>
             <span style={{ paddingRight: 20 }}>Timer</span>
             <span>{formatTime(time)}</span>
         </div>
-        <span style={{ display: 'flex', gap: '1rem' }}>
+        <span style={{ display: 'flex', gap: '1rem', paddingBottom: 5 }}>
           <Button onClick={startTimer} disabled={isRunning}>Start</Button>
           <Button onClick={stopTimer} disabled={!isRunning}>Stop</Button>
           <Button onClick={setTimer}>Timer stellen</Button>
           <Button onClick={resetTimer}>Reset</Button>
         </span>
+        <audio ref={audioRef} src="/timeralarm.mp3" />
       </div>
   );
 };
