@@ -15,6 +15,10 @@ export interface RecipeInterface {
   steps: string[]
   favorites: number,
   author: string,
+  date_create: Date,
+  date_edit: Date,
+  public: boolean
   date_create: Timestamp,
-  date_edit: Timestamp
+  date_edit: Timestamp,
+  public: boolean
 };

@@ -9,8 +9,12 @@ import {
     getRecipeById, 
     createRecipe, 
     deleteRecipe,
-    checkRecipeLikes
+    checkRecipeLikes,
+    changeRecipeVisibility,
+    getUsersRecipes,
+    getUsersSavedRecipes
 } from "../helpers/dbHelper";
+import { FilterInterface } from '../interfaces/FilterInterface';
 
 export function useRecipeActions() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
@@ -24,7 +28,7 @@ export function useRecipeActions() {
         await updateRecipe(id, updatedRecipe, isOnline);
     };
 
-    const handleGetAllRecipes = async (filters: any) => {
+    const handleGetAllRecipes = async (filters: FilterInterface) => {
         return await getAllRecipes(filters, isOnline);
     };
 
@@ -44,6 +48,18 @@ export function useRecipeActions() {
         return await checkRecipeLikes(id, isOnline, currentUser);
     }
 
+    const handleChangeRecipeVisibility = async (id: string) => {
+        return await changeRecipeVisibility(id);
+    }
+
+    const handleGetUsersRecipes = async () => {
+        return await getUsersRecipes(currentUser, isOnline);
+    }
+
+    const handleGetUsersSavedRecipes = async () => {
+        return await getUsersSavedRecipes(currentUser, isOnline);
+    }
+
     return {
         handleUpdateRecipeFavorites,
         handleUpdateRecipe,
@@ -51,6 +67,9 @@ export function useRecipeActions() {
         handleGetRecipeById,
         handleCreateRecipe,
         handleDeleteRecipe,
-        handleCheckRecipeLikes
+        handleCheckRecipeLikes,
+        handleChangeRecipeVisibility,
+        handleGetUsersRecipes,
+        handleGetUsersSavedRecipes
     };
 }

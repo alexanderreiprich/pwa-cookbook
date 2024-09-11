@@ -7,68 +7,26 @@ import { useEffect, useState } from "react";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import SortComponent from "./Sort";
 import { useRecipeActions } from "../db/useRecipes";
+import { FilterInterface } from "../interfaces/FilterInterface";
+import { SortOrder } from "../interfaces/SortOrderEnum";
+import { sort } from "../helpers/Sorting";
 
 export default function RecipeList() {
 
-  const [filters, setFilters] = useState<{ timeMin?: number; timeMax?: number; tags?: string[]; difficulty?: string }>({});
-  const handleApplyFilters = (newFilters: any) => {
+  const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
+  const handleApplyFilters = (newFilters: FilterInterface) => {
     setFilters(newFilters);
   };
 
   const [recipes, setRecipes] = useState<RecipeInterface[]>([]);
-  const [sortOrder, setSortOrder] = useState<"nameAsc" | "favsAsc" | "dateAsc" | "nameDsc" | "favsDsc" | "dateDsc">("nameAsc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.NAMEASC);
   const { handleGetAllRecipes } = useRecipeActions();
   
   useEffect(() => {
     const fetchItems = async () => {
       let recipeList = await handleGetAllRecipes(filters);
 
-      switch(sortOrder) {
-        case "nameAsc":
-          recipeList = recipeList.sort((a, b) => 
-            a.name.localeCompare(b.name)
-          );
-          break;
-        case "nameDsc":
-          recipeList = recipeList.sort((a, b) => 
-            b.name.localeCompare(a.name)
-          );
-          break;
-        case "favsAsc":
-          recipeList = recipeList.sort((a, b) => 
-            a.favorites - b.favorites
-          );
-          break;
-        case "favsDsc":
-          recipeList = recipeList.sort((a, b) => 
-            b.favorites - a.favorites
-          );
-          break;
-        case "dateAsc":
-          recipeList = recipeList.sort((a, b) => {
-            let aJson = JSON.parse(JSON.stringify(a.date_create));
-            let bJson = JSON.parse(JSON.stringify(b.date_create));
-            let aTimestamp: Timestamp = new Timestamp(aJson.seconds, aJson.nanoseconds);
-            let bTimeStamp: Timestamp = new Timestamp(bJson.seconds, bJson.nanoseconds);
-            let x = new Date(aTimestamp.toDate()).getTime();
-            let y = new Date(bTimeStamp.toDate()).getTime();
-            return x - y;
-          });
-          break;
-        case "dateDsc":
-          recipeList = recipeList.sort((a, b) => {
-            let aJson = JSON.parse(JSON.stringify(a.date_create));
-            let bJson = JSON.parse(JSON.stringify(b.date_create));
-            let aTimestamp: Timestamp = new Timestamp(aJson.seconds, aJson.nanoseconds);
-            let bTimeStamp: Timestamp = new Timestamp(bJson.seconds, bJson.nanoseconds);
-            let x = new Date(aTimestamp.toDate()).getTime();
-            let y = new Date(bTimeStamp.toDate()).getTime();
-            return y - x;
-          });
-          break;
-        default:
-          break;
-      }      
+      sort(recipeList, sortOrder);
 
       setRecipes(recipeList);
     };

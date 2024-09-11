@@ -7,24 +7,25 @@ import {
   Drawer,
   List,
   ListItemButton,
-  ListItemText
+  ListItemText,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ScrollToHide from "./ScrollToHide";
-import { useState } from 'react';
+import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 
-export default function NavigationBar({title}: {title: string}) {
-
-  const [open, setOpen]= useState(false);
+export default function NavigationBar({ title }: { title: string }) {
+  const [open, setOpen] = useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
-  }
+  };
 
   const auth = getAuth();
-  const user = auth.currentUser;
   const navigate = useNavigate();
+
+  const { isOnline } = useNetworkStatus();
 
   const handleLogout = () => {
     signOut(auth)
@@ -41,18 +42,16 @@ export default function NavigationBar({title}: {title: string}) {
       <ScrollToHide threshold={0}>
         <AppBar position="fixed">
           <Toolbar>
-            {user && (
-              <IconButton
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{ mr: 2 }}
-                onClick={toggleDrawer}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+              onClick={toggleDrawer}
+            >
+              <MenuIcon />
+            </IconButton>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               {title}
             </Typography>
@@ -64,12 +63,18 @@ export default function NavigationBar({title}: {title: string}) {
                 <ListItemButton component="a" href="/my_recipes">
                   <ListItemText primary="Meine Rezepte" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/">
-                  <ListItemText primary="Einstellungen" />
+                <ListItemButton component="a" href="/saved_recipes">
+                  <ListItemText primary="Favorisierte Rezepte" />
                 </ListItemButton>
-                <ListItemButton component="button" onClick={handleLogout}>
-                  <ListItemText primary="Abmelden" />
-                </ListItemButton>
+                {isOnline ? (
+                  <ListItemButton component="button" onClick={handleLogout}>
+                    <ListItemText primary="Abmelden" />
+                  </ListItemButton>
+                ) : (
+                  <ListItemButton component="a" href="/login">
+                    <ListItemText primary="Anmelden" />
+                  </ListItemButton>
+                )}
               </List>
             </Drawer>
           </Toolbar>
