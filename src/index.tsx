@@ -6,6 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { FirebaseAppProvider} from "reactfire";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { NetworkStatusProvider } from "./helpers/NetworkStatusProvider";
@@ -28,6 +29,7 @@ const root = ReactDOM.createRoot(
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const storage = getStorage(app);
 
 initDB();
 
