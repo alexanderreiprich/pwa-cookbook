@@ -1,3 +1,5 @@
+// Boiler plate service worker registration with minor adjustments, source: Progressive Web Apps Module at HTWK University in Leipzig, 2024
+
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
@@ -66,7 +68,6 @@ function registerValidSW(swUrl: string, config?: Config) {
           return;
         }
         installingWorker.onstatechange = () => {
-          console.log("onstatechange", installingWorker);
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,
@@ -102,7 +103,6 @@ function registerValidSW(swUrl: string, config?: Config) {
 }
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
-  console.log('checkValidServiceWorker');
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
