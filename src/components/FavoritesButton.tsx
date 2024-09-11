@@ -4,13 +4,14 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useAuth } from './Authentication';
 import { useRecipeActions } from '../db/useRecipes'; // Adjust path as needed
 import { RecipeInterface } from '../interfaces/RecipeInterface';
+import { useNetworkStatus } from '../helpers/NetworkStatusProvider';
+import { LikesInterface } from '../interfaces/LikesInterface';
 interface FavoritesButtonProps {
   favorites: number;
   recipe: RecipeInterface;
 }
 
 export default function FavoritesButton({ favorites, recipe }: FavoritesButtonProps) {
-  const { currentUser } = useAuth();
   const { handleUpdateRecipeFavorites } = useRecipeActions();
   const { handleCheckRecipeLikes } = useRecipeActions();
   // State to manage the favorites count
@@ -22,6 +23,13 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     // Update local favorites if the prop changes
     setLocalFavorites(favorites);
   }, [favorites]);
+
+  useEffect(() => {
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
+    }
+  }, []);
 
   function changeLikeState() {
     if (hasLiked) {
@@ -38,9 +46,16 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     setHasLiked(!hasLiked);
   }
 
+  const handleMessage = async (event: MessageEvent) => {
+    if (event.data && event.data.type === 'NETWORK_STATUS_PROCESSED') {
+      await checkLikes();
+    }
+  };
+
   async function checkLikes () {
-    await handleCheckRecipeLikes(recipe.id).then(likes => {
-      setHasLiked(likes)
+    await handleCheckRecipeLikes(recipe.id).then( (likes: LikesInterface) => {
+      setHasLiked(likes.likes);
+      setLocalFavorites(likes.numberOfLikes);
     });
   }
 

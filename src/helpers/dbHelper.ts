@@ -7,7 +7,8 @@ import {
     getRecipeByIdFromIndexedDB,
     syncEmailToFirestore,
     updateRecipeFavoritesInIndexedDB, 
-    updateRecipeInIndexedDB 
+    updateRecipeInIndexedDB,
+    changeRecipeVisibilityInIndexedDB 
 } from "../db/idb";
 import { 
     changeRecipeVisibilityInFirestore,
@@ -24,6 +25,7 @@ import {
 } from "../db/firestore";
 import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
+import { LikesInterface } from "../interfaces/LikesInterface";
 
 // Function to update recipe favorites
 export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
@@ -31,7 +33,7 @@ export async function updateRecipeFavorites(currentUser: User | null, recipe: Re
     updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
 
     // Update in Firestore if online
-    if (isOnline) {
+    if (isOnline && recipe.public) {
         await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
 }
@@ -42,7 +44,7 @@ export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInte
     updateRecipeInIndexedDB(id, updatedRecipe);
 
     // Update in Firestore if online
-    if (isOnline) {
+    if (isOnline && updatedRecipe.public) {
         await updateRecipeInFirestore(id, updatedRecipe);
     }
 }
@@ -91,24 +93,26 @@ export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean
     createRecipeInIndexedDB(newRecipe);
     
     // Create in Firestore if online
-    if (isOnline) {
+    if (isOnline && newRecipe && newRecipe.public) {
         await createRecipeInFirestore(newRecipe);
     }
 }
 
 // Function to delete a recipe
-export async function deleteRecipe(id: string, isOnline: boolean, currentUser: User | null) {
+export async function deleteRecipe(id: string, isOnline: boolean, isPublic: boolean, currentUser: User | null) {
     
     // Delete from Firestore and indexed db if online
-    if (isOnline) {
+    if (isOnline && isPublic) {
         await deleteRecipeInIndexedDB(id);
         await deleteRecipeInFirestore(id, currentUser);
+    } else if( !isPublic) {
+        await deleteRecipeInIndexedDB(id);
     } else {
-        alert("Im Offline Modus können leider keine Rezepte gelöscht werden.")
+        alert("Im Offline Modus können leider keine öffentlichen Rezepte gelöscht werden.")
     }
 }
 
-export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<boolean> {
+export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<LikesInterface> {
     if(isOnline) {
         return checkRecipeLikesInFirestore(id, currentUser);    
     } else {
@@ -117,8 +121,11 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
     }
 }
 
-export async function changeRecipeVisibility(id: string) {
-    return changeRecipeVisibilityInFirestore(id);
+export async function changeRecipeVisibility(recipe: Partial<RecipeInterface>, visibility: boolean, isOnline: boolean) {
+    await changeRecipeVisibilityInIndexedDB(recipe, visibility);
+    if(isOnline) {
+        await changeRecipeVisibilityInFirestore(recipe, visibility);
+    }
 }
 
 export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {

@@ -118,7 +118,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
 
   const deleteRecipe = async () => {
     if (recipe.id) {
-        await handleDeleteRecipe(recipe.id);
+        await handleDeleteRecipe(recipe.id, recipe.public);
     }
 };
 

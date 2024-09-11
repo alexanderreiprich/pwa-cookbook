@@ -2,6 +2,7 @@ import { openDB } from "idb";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { saveRecipe } from "../helpers/synchDBHelper";
 import { Timestamp } from "firebase/firestore";
+import { LikesInterface } from "../interfaces/LikesInterface";
 
 const dbPromise = openDB('recipes-db', 2, {
   upgrade(db, oldVersion, newVersion) {
@@ -163,7 +164,7 @@ async function updateFavoritesListInIndexedDB ( id: string, likes: boolean) {
 
 }
 
-export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean> {
+export async function checkRecipeLikesInIndexedDB (id: string): Promise<LikesInterface> {
   const db = await initDB();
     const tx = db.transaction(['user'], 'readwrite');
     const userStore = tx.objectStore('user');
@@ -180,8 +181,10 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean>
     } else if (!Array.isArray(userFavorites)) {
       userFavoritesList = [];
     }
+    const recipe = await getRecipeByIdFromIndexedDB(id);
+    const numberOfLikes = recipe && recipe.favorites ? recipe.favorites : 0;
 
-    return userFavoritesList.includes(id);
+    return {likes: userFavoritesList.includes(id), numberOfLikes: numberOfLikes} as LikesInterface;
 }
 
 export async function syncEmailToFirestore (email: string) {
@@ -195,4 +198,9 @@ export async function syncEmailToFirestore (email: string) {
   const emailEntry = { id: "email", email: email };
     await userStore.put(emailEntry);
  }
+}
+
+export async function changeRecipeVisibilityInIndexedDB (recipe: Partial<RecipeInterface>, visibility: boolean) {
+  const recipeDoc: Partial<RecipeInterface> = {...recipe, public: visibility, date_edit: Timestamp.now()}
+  if (recipe.id) updateRecipeInIndexedDB(recipe.id, recipeDoc).then((event) => console.log("idb event", event));
 }

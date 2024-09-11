@@ -112,7 +112,8 @@ async function addFavoritesListToIndexedDB(favorites, edit_date) {
 }
 
 function addToFirestore(doc) {
-    return firestore.collection('recipes').doc(doc.id).set(doc);
+    if(doc && doc.public) return firestore.collection('recipes').doc(doc.id).set(doc);
+    else return null;
 }
 
 async function addFavoritesListToFirestore(email, favorites) {
@@ -255,5 +256,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'NETWORK_STATUS_CHANGE') {
       event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
+      event.source.postMessage({ type: 'NETWORK_STATUS_PROCESSED' });
     }
 });

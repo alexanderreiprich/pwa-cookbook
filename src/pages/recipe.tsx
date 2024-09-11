@@ -39,8 +39,8 @@ function Recipe() {
   const handleVisibilityChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (id) {
-      handleChangeRecipeVisibility(id);
+    if (recipe) {
+      handleChangeRecipeVisibility(recipe, !checked);
       setChecked(!checked);
     }
   };
@@ -139,7 +139,7 @@ function Recipe() {
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
-                  <b>Privat</b>
+                  <b>Lokal</b>
                   <Switch
                     onChange={handleVisibilityChange}
                     checked={checked}

@@ -40,16 +40,16 @@ export function useRecipeActions() {
         await createRecipe(newRecipe, isOnline);
     };
 
-    const handleDeleteRecipe = async (id: string) => {
-        await deleteRecipe(id, isOnline, currentUser);
+    const handleDeleteRecipe = async (id: string, isPublic: boolean) => {
+        await deleteRecipe(id, isOnline, isPublic, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {
         return await checkRecipeLikes(id, isOnline, currentUser);
     }
 
-    const handleChangeRecipeVisibility = async (id: string) => {
-        return await changeRecipeVisibility(id);
+    const handleChangeRecipeVisibility = async (recipe: Partial<RecipeInterface>, visibility: boolean) => {
+        return await changeRecipeVisibility(recipe, visibility, isOnline);
     }
 
     const handleGetUsersRecipes = async () => {
