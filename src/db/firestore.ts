@@ -3,7 +3,7 @@ import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { saveRecipe } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
@@ -44,9 +44,9 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
       const userId: string = await getUserId(user);
       const userRef = doc(db, 'users', userId);
       if (likes) {
-        await updateDoc(userRef, { favorites: arrayUnion(id), edit_date: Timestamp.now() });
+        await updateDoc(userRef, { favorites: arrayUnion(id), date_edit: Timestamp.now() });
       } else {
-        await updateDoc(userRef, { favorites: arrayRemove(id), edit_date: Timestamp.now() });
+        await updateDoc(userRef, { favorites: arrayRemove(id), date_edit: Timestamp.now() });
       }
       console.log('Benutzerfavoriten erfolgreich in Firestore aktualisiert.');
     } catch (error) {
@@ -214,7 +214,7 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
   return recipes;
 }
 
-export async function getUsersSavedRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
+export async function getUsersFavoriteRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
   let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 
@@ -230,7 +230,6 @@ export async function getUsersSavedRecipesInFirestore(currentUser: User | null):
     recipes = await fetchFromFirestore(q);
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore:', error);
-    return [];
   }
   return recipes;
 }

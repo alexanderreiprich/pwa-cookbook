@@ -1,7 +1,7 @@
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import EditRecipe from "./EditRecipe";
-import { useAuth } from "./Authentication";
+import { useAuth } from "../provider/Authentication";
 import { Timestamp } from "firebase/firestore";
 
 export default function CreateRecipe() {

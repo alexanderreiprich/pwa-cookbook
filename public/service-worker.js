@@ -66,7 +66,14 @@ async function getFavoritesIdsFromFirestore() {
     const user = await getUserFromIDB();
     if (user && user[0].email) {
         const fireStoreUser = await getUserFromFirestore(user[0].email);
-        return fireStoreUser && fireStoreUser.favorites ? fireStoreUser.favorites : [];
+        let ids = { favorites: [], date_edit: null};
+        if(fireStoreUser && fireStoreUser.favorites) {
+            ids.favorites = fireStoreUser.favorites
+        }
+        if(fireStoreUser && fireStoreUser.date_edit) {
+            ids.date_edit = fireStoreUser.date_edit
+        }
+        return ids;
     }
     return [];
 }
@@ -100,11 +107,11 @@ function putToIndexedDB(doc) {
     }));
 }
 
-async function addFavoritesListToIndexedDB(favorites, edit_date) {
+async function addFavoritesListToIndexedDB(favorites, date_edit) {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([userStoreName], 'readwrite');
         const objectStore = transaction.objectStore(userStoreName);
-        const favoritesEntry = { id: "userFavorites", favorites: favorites, edit_date: edit_date };
+        const favoritesEntry = { id: "userFavorites", favorites: favorites, date_edit: date_edit };
         const request = objectStore.put(favoritesEntry);
         request.onerror = (event) => reject(event);
         request.onsuccess = (event) => resolve();
@@ -173,7 +180,7 @@ function syncFirestoreDocToIndexedDB(doc) {
 
 async function syncFavoritesFromFirestore() {
     const ids = await getFavoritesIdsFromFirestore();
-    await Promise.all(ids.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
+    await Promise.all(ids?.favorites.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
     return syncFavoritesList(ids);
 }
 
@@ -182,18 +189,21 @@ async function syncFavoritesList(ids) {
     let newFavorites = [];
     let newEditDate = {};
     let firestoreFavorites = ids.favorites ? [...ids.favorites] : [];
-    let firestoreEditDate = ids.edit_date ? ids.edit_date : {};
+    let firestoreEditDate = ids.date_edit ? ids.date_edit : {};
     if (idbUser && idbUser[1]) {
         let idbFavorites = idbUser[1].favorites ? idbUser[1].favorites : [];
-        let idbEditDate = idbUser[1].edit_date ? idbUser[1].edit_date : {};
-        if (arraysEqual(idbUser[1].favorites, newFavorites)) return;
+        let idbEditDate = idbUser[1].date ? idbUser[1].date_edit : {};
+        if (arraysEqual(idbUser[1].favorites, newFavorites) && newFavorites.length > 0) return;
         else if (idbEditDate && firestoreEditDate) {
             if (firestoreEditDate.seconds > idbEditDate.seconds) {
                 newFavorites = firestoreFavorites;
                 newEditDate = firestoreEditDate;
-            } else {
+            } else if (firestoreEditDate.seconds <= idbEditDate.seconds) {
                 newFavorites = idbFavorites;
                 newEditDate = idbFavorites;
+            } else {
+                newFavorites = firestoreFavorites;
+                newEditDate = firestoreEditDate;
             }
         } else if (firestoreEditDate) {
             newFavorites = firestoreFavorites;
@@ -205,9 +215,12 @@ async function syncFavoritesList(ids) {
             newFavorites = firestoreFavorites;
             newEditDate = firestoreEditDate;
         }
+    } else if(idbUser) {
+        newFavorites = firestoreFavorites;
+        newEditDate = firestoreEditDate;
     }
-    if (!arraysEqual(idbUser[1].favorites, newFavorites)) {
-        await addFavoritesListToIndexedDB(newFavorites, edit_date);
+    if (!idbUser[1] || !idbUser[1].favorites || idbUser[1].favorites.length < 1|| !arraysEqual(idbUser[1].favorites, newFavorites)) {
+        await addFavoritesListToIndexedDB(newFavorites, newEditDate);
     }
     if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {
         await addFavoritesListToFirestore(idbUser[0].email, newFavorites, newEditDate);

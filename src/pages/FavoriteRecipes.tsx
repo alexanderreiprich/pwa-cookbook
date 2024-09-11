@@ -3,7 +3,7 @@ import CreateRecipe from "../components/CreateRecipe";
 import NavigationBar from "../components/NavigationBar";
 
 import "../style/BrowseRecipes.css";
-import { useAuth } from "../components/Authentication";
+import { useAuth } from "../provider/Authentication";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { Grid } from "@mui/material";
 import RecipeElement from "../components/RecipeElement";
@@ -11,10 +11,10 @@ import FilterComponent from "../components/Filter";
 import SortComponent from "../components/Sort";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { useDbActionHandler } from "../db/dbActionHandler";
-import { sort } from "../helpers/Sorting";
+import { sort } from "../helper/Sorting";
 import { SortOrder } from "../interfaces/SortOrderEnum";
 
-function SavedRecipes () {
+function FavoriteRecipes () {
 	
   const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
   const handleApplyFilters = (newFilters: any) => {
@@ -27,12 +27,12 @@ function SavedRecipes () {
 	const { currentUser } = useAuth();
 	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 	
-  const { handleGetUsersSavedRecipes } = useDbActionHandler();
+  const { handleGetUsersFavoriteRecipes } = useDbActionHandler();
 
 	useEffect(() => {
 		const fetchItems = async () => {
 
-      let recipeList: RecipeInterface[] = await handleGetUsersSavedRecipes();
+      let recipeList: RecipeInterface[] = await handleGetUsersFavoriteRecipes();
 			
       sort(recipeList, sortOrder);
 
@@ -43,7 +43,7 @@ function SavedRecipes () {
 
 	return (
 		<div>
-			<NavigationBar title="Deine Rezepte" />
+			<NavigationBar title="Favorisierte Rezepte" />
 			<CreateRecipe />
 			<Grid container>
         <FilterComponent onApplyFilters={handleApplyFilters} />
@@ -60,4 +60,4 @@ function SavedRecipes () {
 	)
 }
 
-export default SavedRecipes;
+export default FavoriteRecipes;

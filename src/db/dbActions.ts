@@ -6,10 +6,11 @@ import {
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
     syncEmailToFirestore,
+    getUsersFavoriteRecipesInIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
     changeRecipeVisibilityInIndexedDB 
-} from "../db/idb";
+} from "./idb";
 import { 
     changeRecipeVisibilityInFirestore,
     checkRecipeLikesInFirestore,
@@ -19,10 +20,10 @@ import {
     getAllRecipesFromFirestore, 
     getRecipeByIdFromFirestore,
     getUsersRecipesInFirestore,
-    getUsersSavedRecipesInFirestore,
+    getUsersFavoriteRecipesInFirestore,
     updateRecipeFavoritesInFirestore, 
     updateRecipeInFirestore 
-} from "../db/firestore";
+} from "./firestore";
 import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
@@ -137,15 +138,12 @@ export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Pr
     }
 }
 
-export function getUsersSavedRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
+export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
     if(isOnline) {
-        return getUsersSavedRecipesInFirestore(currentUser);
-    }
-    else {
-        return getUsersSavedRecipesInFirestore(currentUser);
-    }    
-
+        return getUsersFavoriteRecipesInFirestore(currentUser);
+    } else return getUsersFavoriteRecipesInIndexedDB();
 }
+
 export async function syncEmail(user: User | null){
     if(user && user.email) syncEmailToFirestore(user.email);
 }

@@ -17,7 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { useNavigate } from 'react-router-dom';
-import { checkRecipeVersioning } from "../helpers/synchDBHelper";
+import { checkRecipeVersioning } from "../helper/helperFunctions";
 
 const style = {
   position: "absolute" as "absolute",

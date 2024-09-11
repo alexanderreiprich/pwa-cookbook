@@ -4,7 +4,7 @@ import NavigationBar from "../components/NavigationBar";
 
 import "../style/BrowseRecipes.css";
 import { db } from "..";
-import { useAuth } from "../components/Authentication";
+import { useAuth } from "../provider/Authentication";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { Grid } from "@mui/material";
 import RecipeElement from "../components/RecipeElement";
@@ -15,7 +15,7 @@ import SortComponent from "../components/Sort";
 import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
-import { sort } from "../helpers/Sorting";
+import { sort } from "../helper/Sorting";
 
 function MyRecipes () {
 	

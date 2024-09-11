@@ -8,7 +8,7 @@ import { FirebaseAppProvider} from "reactfire";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { NetworkStatusProvider } from "./helpers/NetworkStatusProvider";
+import { NetworkStatusProvider } from "./provider/NetworkStatusProvider";
 import { initDB } from "./db/idb";
 
 // Logos by https://iconpacks.net/?utm_source=link-attribution&utm_content=5026

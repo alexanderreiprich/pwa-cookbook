@@ -1,6 +1,6 @@
-import { useAuth } from '../components/Authentication';
+import { useAuth } from '../provider/Authentication';
 import { RecipeInterface } from '../interfaces/RecipeInterface';
-import { useNetworkStatus } from '../helpers/NetworkStatusProvider'; // Adjust path as needed
+import { useNetworkStatus } from '../provider/NetworkStatusProvider'; // Adjust path as needed
 import { 
     updateRecipeFavorites, 
     updateRecipe, 
@@ -11,8 +11,8 @@ import {
     checkRecipeLikes,
     changeRecipeVisibility,
     getUsersRecipes,
-    getUsersSavedRecipes
-} from "../helpers/dbActions";
+    getUsersFavoriteRecipes
+} from "./dbActions";
 import { FilterInterface } from '../interfaces/FilterInterface';
 
 export function useDbActionHandler() {
@@ -55,8 +55,8 @@ export function useDbActionHandler() {
         return await getUsersRecipes(currentUser, isOnline);
     }
 
-    const handleGetUsersSavedRecipes = async () => {
-        return await getUsersSavedRecipes(currentUser, isOnline);
+    const handleGetUsersFavoriteRecipes = async () => {
+        return await getUsersFavoriteRecipes(currentUser, isOnline);
     }
 
     return {
@@ -69,6 +69,6 @@ export function useDbActionHandler() {
         handleCheckRecipeLikes,
         handleChangeRecipeVisibility,
         handleGetUsersRecipes,
-        handleGetUsersSavedRecipes
+        handleGetUsersFavoriteRecipes
     };
 }

@@ -19,9 +19,9 @@ import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
 import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { formatDate } from "../helpers/templateHelper";
+import { formatDate } from "../helper/helperFunctions";
 import { useDbActionHandler } from "../db/dbActionHandler";
-import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
+import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import EditRecipe from "../components/EditRecipe";
 import RecipeCookMode from "../components/RecipeCookMode";
 

@@ -8,7 +8,7 @@ import SortComponent from "./Sort";
 import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
-import { sort } from "../helpers/Sorting";
+import { sort } from "../helper/Sorting";
 
 export default function RecipeList() {
 
