@@ -21,7 +21,6 @@ export const useAuth = () => {
 export const AuthProvider = ({children}: {children: any}) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isOnline } = useNetworkStatus();
 
   useEffect(() => {
 
@@ -32,9 +31,6 @@ export const AuthProvider = ({children}: {children: any}) => {
 
     return () => {
       unsubscribe();
-    }
-    else {
-      setCurrentUser(null)
     }
 
   }, []);

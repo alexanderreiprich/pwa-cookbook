@@ -197,19 +197,8 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: new Date(),
+      date_edit: Timestamp.now(),
       public: recipe.public
-    }
-    if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
-      setHasError(true);
-    }
-    else {
-      setHasError(false);
-      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
-      handleClose();
-    }
-
-      date_edit: Timestamp.now()
     }
     if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
       setHasError(true);
