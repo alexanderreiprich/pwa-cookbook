@@ -85,6 +85,10 @@ export async function createRecipeInIndexedDB(newRecipe: RecipeInterface): Promi
 export async function deleteRecipeInIndexedDB(id: string): Promise<void> {
   try {
     const db = await initDB();
+    const isLiked = await checkRecipeLikesInIndexedDB(id);
+    if (isLiked) {
+      updateFavoritesListInIndexedDB(id, false);
+    }
     await db.delete('recipes', id);
     console.log('Rezept erfolgreich aus IndexedDB gelöscht.');
   } catch (error) {
@@ -97,9 +101,8 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
     const id = recipeDoc.id;
     // Open a transaction with readwrite access
     const db = await initDB();
-    const tx = db.transaction(['recipes', 'user'], 'readwrite');
+    const tx = db.transaction(['recipes'], 'readwrite');
     const recipesStore = tx.objectStore('recipes');
-    const userStore = tx.objectStore('user');
 
     // Update recipe favorites
     const recipe = await recipesStore.get(id);
@@ -116,40 +119,48 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
     }
 
     // Update user favorites
-    let userFavorites: string[] = await userStore.get('userFavorites') || []; // Retrieve existing favorites or initialize
-    let userFavoritesList: string[] = []; // Fallback in case the list is empty
-    let userFavoritesEditDate = Timestamp.now();
-  
-   // Convert userFavorites to an array if it's an object
-    if (userFavorites && typeof userFavorites === 'object' && !Array.isArray(userFavorites)) {
-      if(userFavorites["favorites"]){
-        // this is the standard case
-        userFavoritesList = userFavorites["favorites"];
-      }
-    } else if (!Array.isArray(userFavorites)) {
-      userFavorites = [];
-    }
-
-    if (likes) {
-      // Add the recipe ID to the user's favorites if it doesn't already exist
-      if (!userFavoritesList.includes(id)) {
-        userFavoritesList.push(id);
-      }
-    } else {
-      // Remove the recipe ID from the user's favorites if it exists
-      userFavoritesList = userFavoritesList.filter(favoriteId => favoriteId !== id);
-    }
-
-    // Store the updated list of favorites
-    const favoritesEntry = { id: "userFavorites", favorites: userFavoritesList, edit_date: userFavoritesEditDate }; // Use a fixed key and include the updated favorites list
-    await userStore.put(favoritesEntry);
-    console.log('Benutzerdaten erfolgreich in IndexedDB aktualisiert.');
+    updateFavoritesListInIndexedDB(id, likes);
 
     // Commit the transaction
     await tx.done;
   } catch (error) {
     console.error('Fehler beim Aktualisieren der Favoriten:', error);
   }
+}
+
+async function updateFavoritesListInIndexedDB ( id: string, likes: boolean) {
+  const db = await initDB();
+  const tx = db.transaction(['user'], 'readwrite');
+  const userStore = tx.objectStore('user');
+  let userFavorites: string[] = await userStore.get('userFavorites') || []; // Retrieve existing favorites or initialize
+  let userFavoritesList: string[] = []; // Fallback in case the list is empty
+  let userFavoritesEditDate = Timestamp.now();
+
+ // Convert userFavorites to an array if it's an object
+  if (userFavorites && typeof userFavorites === 'object' && !Array.isArray(userFavorites)) {
+    if(userFavorites["favorites"]){
+      // this is the standard case
+      userFavoritesList = userFavorites["favorites"];
+    }
+  } else if (!Array.isArray(userFavorites)) {
+    userFavorites = [];
+  }
+
+  if (likes) {
+    // Add the recipe ID to the user's favorites if it doesn't already exist
+    if (!userFavoritesList.includes(id)) {
+      userFavoritesList.push(id);
+    }
+  } else {
+    // Remove the recipe ID from the user's favorites if it exists
+    userFavoritesList = userFavoritesList.filter(favoriteId => favoriteId !== id);
+  }
+
+  // Store the updated list of favorites
+  const favoritesEntry = { id: "userFavorites", favorites: userFavoritesList, edit_date: userFavoritesEditDate }; // Use a fixed key and include the updated favorites list
+  await userStore.put(favoritesEntry);
+  console.log('Benutzerdaten erfolgreich in IndexedDB aktualisiert.');
+
 }
 
 export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean> {

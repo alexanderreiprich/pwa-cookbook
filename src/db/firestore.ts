@@ -33,6 +33,11 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
         console.log(err);
     }
 
+    updateFavoritesListInFirestore(user, id, likes);
+  }
+
+
+  async function updateFavoritesListInFirestore(user: User | null, id: string, likes: boolean): Promise<void> {
     try {
       const userId: string = await getUserId(user);
       const userRef = doc(db, 'users', userId);
@@ -121,10 +126,13 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promi
   }
 }
 
-export async function deleteRecipeInFirestore(id: string): Promise<void> {
+export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
-
+    const isLiked = await checkRecipeLikesInFirestore(id, user);
+    if(isLiked) {
+      updateFavoritesListInFirestore(user, id, false);
+    }
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
 
