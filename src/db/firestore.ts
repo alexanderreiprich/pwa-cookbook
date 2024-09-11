@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
@@ -27,7 +27,7 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
 export async function updateRecipeFavoritesInFirestore(user: User | null, id: string, newFavorites: number, likes: boolean): Promise<void> {
     try {
       const recipeRef = doc(db, 'recipes', id);
-      await updateDoc(recipeRef, { favorites: newFavorites });
+      await updateDoc(recipeRef, { favorites: newFavorites, date_edit: Timestamp.now() });
       console.log('Favoriten erfolgreich in Firestore aktualisiert.');
     } catch (err) {
         console.log(err);
@@ -37,9 +37,9 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
       const userId: string = await getUserId(user);
       const userRef = doc(db, 'users', userId);
       if (likes) {
-        await updateDoc(userRef, { favorites: arrayUnion(id) });
+        await updateDoc(userRef, { favorites: arrayUnion(id), edit_date: Timestamp.now() });
       } else {
-        await updateDoc(userRef, { favorites: arrayRemove(id) });
+        await updateDoc(userRef, { favorites: arrayRemove(id), edit_date: Timestamp.now() });
       }
       console.log('Benutzerfavoriten erfolgreich in Firestore aktualisiert.');
     } catch (error) {

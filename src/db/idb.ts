@@ -1,9 +1,10 @@
 import { openDB } from "idb";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { saveRecipe } from "../helpers/synchDBHelper";
+import { Timestamp } from "firebase/firestore";
 
 const dbPromise = openDB('recipes-db', 2, {
-  upgrade(db, oldVersion, newVersion, transaction) {
+  upgrade(db, oldVersion, newVersion) {
     console.log(`Upgrading from version ${oldVersion} to ${newVersion}`);
     if (oldVersion < 1) {
       db.createObjectStore('recipes', { keyPath: 'id' });
@@ -104,6 +105,7 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
     const recipe = await recipesStore.get(id);
     if (recipe) {
       recipe.favorites = newFavorites;
+      recipe.date_edit = Timestamp.now();
       await recipesStore.put(recipe); // No key provided; relies on keyPath defined in the store
       console.log('Favoriten erfolgreich in IndexedDB aktualisiert.');
     } else if (recipeDoc) {
@@ -115,12 +117,14 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
 
     // Update user favorites
     let userFavorites: string[] = await userStore.get('userFavorites') || []; // Retrieve existing favorites or initialize
+    let userFavoritesList: string[] = []; // Fallback in case the list is empty
+    let userFavoritesEditDate = Timestamp.now();
   
    // Convert userFavorites to an array if it's an object
     if (userFavorites && typeof userFavorites === 'object' && !Array.isArray(userFavorites)) {
       if(userFavorites["favorites"]){
         // this is the standard case
-        userFavorites = userFavorites["favorites"];
+        userFavoritesList = userFavorites["favorites"];
       }
     } else if (!Array.isArray(userFavorites)) {
       userFavorites = [];
@@ -128,16 +132,16 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
 
     if (likes) {
       // Add the recipe ID to the user's favorites if it doesn't already exist
-      if (!userFavorites.includes(id)) {
-        userFavorites.push(id);
+      if (!userFavoritesList.includes(id)) {
+        userFavoritesList.push(id);
       }
     } else {
       // Remove the recipe ID from the user's favorites if it exists
-      userFavorites = userFavorites.filter(favoriteId => favoriteId !== id);
+      userFavoritesList = userFavoritesList.filter(favoriteId => favoriteId !== id);
     }
 
     // Store the updated list of favorites
-    const favoritesEntry = { id: "userFavorites", favorites: userFavorites }; // Use a fixed key and include the updated favorites list
+    const favoritesEntry = { id: "userFavorites", favorites: userFavoritesList, edit_date: userFavoritesEditDate }; // Use a fixed key and include the updated favorites list
     await userStore.put(favoritesEntry);
     console.log('Benutzerdaten erfolgreich in IndexedDB aktualisiert.');
 
@@ -155,18 +159,18 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean>
 
     // Get user favorites
     let userFavorites: string[] = await userStore.get('userFavorites') || []; // Retrieve existing favorites or initialize
-  
+    let userFavoritesList: string[] = [];
    // Convert userFavorites to an array if it's an object
     if (userFavorites && typeof userFavorites === 'object' && !Array.isArray(userFavorites)) {
       if(userFavorites["favorites"]){
         // this is the standard case
-        userFavorites = userFavorites["favorites"];
+        userFavoritesList = userFavorites["favorites"];
       }
     } else if (!Array.isArray(userFavorites)) {
-      userFavorites = [];
+      userFavoritesList = [];
     }
 
-    return userFavorites.includes(id);
+    return userFavoritesList.includes(id);
 }
 
 export async function syncEmailToFirestore (email: string) {

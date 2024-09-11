@@ -182,7 +182,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: convertToTimestamp(new Date())
+      date_edit: Timestamp.now()
     }
     isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit);
     handleClose();
