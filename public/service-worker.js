@@ -155,22 +155,18 @@ async function syncOwnRecipesFromFirestore() {
 }
 
 async function syncIndexedDBDocToFirestore(doc) {
-    console.log("syncIndexedDBDocToFirestore", doc.id);
     if (doc && doc.id) {
         const firestoreDoc = await getFromFirestore(doc.id);
         if (firestoreDoc && firestoreDoc.date_edit) {
             if (doc.date_edit && doc.date_edit.seconds && firestoreDoc.date_edit.seconds && doc.date_edit.seconds > firestoreDoc.date_edit.seconds) {
-                console.log("idb fresherr");
                 await addToFirestore(doc);
                 return putToIndexedDB(doc);
             }
             else if(!doc.date_edit || !doc.date_edit.seconds){
-                console.log("idb invaliddd");
                 await putToIndexedDB(firestoreDoc);
                 return addToFirestore(firestoreDoc);
             }
             else if(!firestoreDoc.date_edit.seconds){
-                console.log("firestore invaliddd");
                 return addToFirestore(doc);
             }
         } else {

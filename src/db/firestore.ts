@@ -141,7 +141,6 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
     if (docSnap.exists()) {
       const data = docSnap.data() as any;
       let favorites: Array<string> = data.favorites;
-      console.log("checkRecipeLikesInFirestore", favorites);
       return(favorites.includes(id));
     } else {
       return false;
