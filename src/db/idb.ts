@@ -205,10 +205,10 @@ export async function getUsersRecipesInIndexedDB () {
   const userStore = tx.objectStore('user');
 
   // Get user favorites
-  let storedEmail = await userStore.get('email') || "";
-  console.log(storedEmail.email);
+  let storedEmail = await userStore.get('email') || {email: "unknown"};
   let recipes: RecipeInterface[] = []
   recipes = await fetchFromIndexedDB();
+  console.log()
   return recipes.filter(recipe => recipe.author == storedEmail.email);
 }
 

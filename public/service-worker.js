@@ -180,22 +180,25 @@ function syncFirestoreDocToIndexedDB(doc) {
 
 async function syncFavoritesFromFirestore() {
     const ids = await getFavoritesIdsFromFirestore();
-    await Promise.all(ids?.favorites.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
-    return syncFavoritesList(ids);
+    if(ids && Array.isArray(ids.favorites)) {
+        if(ids.favorites) await Promise.all(ids?.favorites.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
+        return syncFavoritesList(ids);
+    } else return syncFavoritesList([]);
 }
 
 async function syncFavoritesList(ids) {
+    console.log(ids);
     const idbUser = await getUserFromIDB();
     let newFavorites = [];
     let newEditDate = {};
     let firestoreFavorites = ids.favorites ? [...ids.favorites] : [];
     let firestoreEditDate = ids.date_edit ? ids.date_edit : {};
     let useFirestore = true;
-    if (idbUser && idbUser[1]) {
-        let idbFavorites = idbUser[1].favorites ? idbUser[1].favorites : [];
-        let idbEditDate = idbUser[1].date_edit ? idbUser[1].date_edit : {};
+    let idbFavorites = idbUser ? (idbUser[0].favorites ? idbUser[0].favorites : (idbUser[1].favorites ? idbUser[1].favorites : [])) : [];
+    let idbEditDate = idbUser ? (idbUser[0].date_edit ? idbUser[0].date_edit : (idbUser[1].date_edit ? idbUser[1].date_edit : {})) : {};
+    if (idbUser) {
         console.log("syncFavoritesList", "idb", idbFavorites, idbEditDate, "firestore", firestoreFavorites, firestoreEditDate)
-        if (arraysEqual(idbUser[1].favorites, newFavorites) && newFavorites.length > 0) return;
+        if (arraysEqual(idbFavorites, newFavorites) && newFavorites.length > 0) return;
         else if (idbEditDate && firestoreEditDate) {
             if (!compareTimestamps(firestoreEditDate, idbEditDate)) {
                 console.log("!compareTimestamps(firestoreEditDate, idbEditDate)");
@@ -215,7 +218,7 @@ async function syncFavoritesList(ids) {
         newFavorites = firestoreFavorites;
         newEditDate = firestoreEditDate;
     }
-    if (!idbUser[1] || !idbUser[1].favorites || idbUser[1].favorites.length < 1|| !arraysEqual(idbUser[1].favorites, newFavorites)) {
+    if (!idbUser[1] || !idbUser[1].favorites || (idbUser[1].favorites.length < 1 && newFavorites.length > 0) || !arraysEqual(idbUser[1].favorites, newFavorites)) {
         await addFavoritesListToIndexedDB(newFavorites, newEditDate);
     }
     if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {

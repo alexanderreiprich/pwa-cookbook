@@ -146,9 +146,11 @@ export async function getUsersRecipes(currentUser: User | null, isOnline: boolea
 }
 
 export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
-    if(isOnline) {
+    if(isOnline && currentUser) {
+        console.log("isOnline && currentUser")
         return getUsersFavoriteRecipesInFirestore(currentUser);
-    } else return getUsersFavoriteRecipesInIndexedDB();
+    }
+    return getUsersFavoriteRecipesInIndexedDB();
 }
 
 export async function syncEmail(user: User | null){
