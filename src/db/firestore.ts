@@ -177,6 +177,7 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
 }
 
 export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeInterface>, visibility: boolean): Promise<void> {
+  const storage = getStorage();
   try {
     if(recipe.id){
       if(visibility){
@@ -187,7 +188,12 @@ export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeIn
         // Not deleteRecipeFromFirestore to keep Favorites
         await deleteDoc(recipeRef).then( () =>
         console.log('Rezept erfolgreich aus Firestore gelöscht.'));
-    
+        let imageRef = ref(storage, `recipes/${recipe.id}.jpg`);
+        deleteObject(imageRef).then(() => {
+          console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
+        }).catch((error) => {
+          console.log(error)
+        });
       }
     }
   } catch (error) {
