@@ -212,16 +212,14 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
     }
     else {
       setHasError(false);
-      isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit).then(() => handleReload());
+      if (selectedImage) {
+        isNew ? createRecipe(updatedRecipe, selectedImage).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit, selectedImage).then(() => handleReload());
+      }
+      else {
+        isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit.then(() => handleReload()));
+      }
       handleClose();
     }
-    if (selectedImage) {
-      isNew ? createRecipe(updatedRecipe, selectedImage) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit, selectedImage);
-    }
-    else {
-      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit);
-    }
-    handleClose();
   }
 
   const handleDelete = () => {

@@ -5,7 +5,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
-import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 
@@ -137,13 +137,20 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?
 export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
+    const storage = getStorage();
     const isLiked = await checkRecipeLikesInFirestore(id, user);
     if(isLiked) {
       updateFavoritesListInFirestore(user, id, false);
     }
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
-
+    let imageRef = ref(storage, `recipes/${id}.jpg`);
+    deleteObject(imageRef).then(() => {
+      console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
+    }).catch((error) => {
+      console.log(error)
+    });
+    
   } catch (err) {
       console.log(err);
   }
