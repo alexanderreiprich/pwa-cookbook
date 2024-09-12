@@ -14,7 +14,7 @@ import ScrollToHide from "./ScrollToHide";
 import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
+import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 
 export default function NavigationBar({ title }: { title: string }) {
   const [open, setOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function NavigationBar({ title }: { title: string }) {
                 <ListItemButton component="a" href="/my_recipes">
                   <ListItemText primary="Meine Rezepte" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/saved_recipes">
+                <ListItemButton component="a" href="/favorite_recipes">
                   <ListItemText primary="Favorisierte Rezepte" />
                 </ListItemButton>
                 {isOnline ? (

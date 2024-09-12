@@ -1,7 +1,8 @@
 import { openDB } from "idb";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { saveRecipe } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helper/helperFunctions";
 import { Timestamp } from "firebase/firestore";
+import { LikesInterface } from "../interfaces/LikesInterface";
 
 const dbPromise = openDB('recipes-db', 2, {
   upgrade(db, oldVersion, newVersion) {
@@ -31,34 +32,20 @@ export async function getAllRecipesFromDB(): Promise<RecipeInterface[]> {
     const tx = db.transaction('recipes', 'readonly');
     const recipes = await tx.objectStore('recipes').getAll();
     await tx.done;
-    
-    // Date-Parsing
-    return recipes.map(recipe => ({
-      ...recipe
-    }));
+    return recipes
   }
   
 
 export async function fetchFromIndexedDB(): Promise<RecipeInterface[]> {
     const db = await initDB();
     const recipes = await db.getAll('recipes');
-
-    // Date-Parsing
-    return recipes.map(recipe => ({
-        ...recipe
-    }));
+    return recipes;
 }
 
 export async function getRecipeByIdFromIndexedDB(id: string): Promise<RecipeInterface | null> {
     const db = await initDB();
     const recipe = await db.get('recipes', id);
-
-    if (!recipe) return null;
-
-    // Date-Parsing
-    return {
-        ...recipe
-    };
+    return recipe;
 }
   
 
@@ -157,13 +144,13 @@ async function updateFavoritesListInIndexedDB ( id: string, likes: boolean) {
   }
 
   // Store the updated list of favorites
-  const favoritesEntry = { id: "userFavorites", favorites: userFavoritesList, edit_date: userFavoritesEditDate }; // Use a fixed key and include the updated favorites list
+  const favoritesEntry = { id: "userFavorites", favorites: userFavoritesList, date_edit: userFavoritesEditDate }; // Use a fixed key and include the updated favorites list
   await userStore.put(favoritesEntry);
   console.log('Benutzerdaten erfolgreich in IndexedDB aktualisiert.');
 
 }
 
-export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean> {
+export async function checkRecipeLikesInIndexedDB (id: string): Promise<LikesInterface> {
   const db = await initDB();
     const tx = db.transaction(['user'], 'readwrite');
     const userStore = tx.objectStore('user');
@@ -180,8 +167,10 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<boolean>
     } else if (!Array.isArray(userFavorites)) {
       userFavoritesList = [];
     }
+    const recipe = await getRecipeByIdFromIndexedDB(id);
+    const numberOfLikes = recipe && recipe.favorites ? recipe.favorites : 0;
 
-    return userFavoritesList.includes(id);
+    return {likes: userFavoritesList.includes(id), numberOfLikes: numberOfLikes} as LikesInterface;
 }
 
 export async function syncEmailToFirestore (email: string) {
@@ -191,8 +180,38 @@ export async function syncEmailToFirestore (email: string) {
 
   // Get user favorites
   let storedEmail:string = await userStore.get('email') || "";
- if(email && storedEmail != email){
+ if(email && storedEmail !== email){
   const emailEntry = { id: "email", email: email };
     await userStore.put(emailEntry);
  }
+}
+
+export async function changeRecipeVisibilityInIndexedDB (recipe: Partial<RecipeInterface>, visibility: boolean) {
+  const recipeDoc: Partial<RecipeInterface> = {...recipe, public: visibility, date_edit: Timestamp.now()}
+  if (recipe.id) updateRecipeInIndexedDB(recipe.id, recipeDoc).then((event) => console.log("idb event", event));
+}
+
+async function getUsersFavoritesList (): Promise<string[]> {
+  const db = await initDB();
+  const tx = db.transaction(['user'], 'readwrite');
+  const userStore = tx.objectStore('user');
+  let userFavorites: string[] = await userStore.get('userFavorites') || []; // Retrieve existing favorites or initialize
+  let userFavoritesList: string[] = [];
+   // Convert userFavorites to an array if it's an object
+    if (userFavorites && typeof userFavorites === 'object' && !Array.isArray(userFavorites)) {
+      if(userFavorites["favorites"]){
+        // this is the standard case
+        userFavoritesList = userFavorites["favorites"];
+      }
+    } else if (!Array.isArray(userFavorites)) {
+      userFavoritesList = [];
+    }
+    return userFavoritesList;
+}
+
+export async function getUsersFavoriteRecipesInIndexedDB (): Promise<RecipeInterface[]> {
+  let favoritesList = await getUsersFavoritesList();
+  let recipes: RecipeInterface[] = []
+  recipes = await fetchFromIndexedDB();
+  return recipes.filter(recipe => favoritesList.includes(recipe.id));
 }
