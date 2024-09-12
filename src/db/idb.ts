@@ -212,7 +212,7 @@ export async function getUsersRecipesInIndexedDB () {
   return recipes.filter(recipe => recipe.author == storedEmail.email);
 }
 
-async function getUsersFavoritesList (): Promise<string[]> {
+export async function getUsersFavoritesList (): Promise<string[]> {
   const db = await initDB();
   const tx = db.transaction(['user'], 'readwrite');
   const userStore = tx.objectStore('user');

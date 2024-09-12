@@ -10,7 +10,8 @@ import {
     getUsersFavoriteRecipesInIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
-    changeRecipeVisibilityInIndexedDB 
+    changeRecipeVisibilityInIndexedDB,
+    getUsersFavoritesList
 } from "./idb";
 import { 
     changeRecipeVisibilityInFirestore,
@@ -40,7 +41,6 @@ export async function updateRecipeFavorites(currentUser: User | null, recipe: Re
     await updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
     console.log("updateRecipeFavorites", recipe, newFavorites, likes, allowFirestorePush);
 }
-
 // Function to update a recipe
 export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, allowFirestorePush: boolean) {
     // Update in IndexedDB
@@ -116,18 +116,23 @@ export async function deleteRecipe(id: string, allowFirestorePush: boolean, isPu
 }
 
 export async function checkRecipeLikes(id: string, isPublic: boolean, isOnline: boolean, currentUser: User | null): Promise<LikesInterface> {
+    let likes: LikesInterface | null;
     if(isOnline && isPublic) {
-        return checkRecipeLikesInFirestore(id, currentUser);    
+        likes = await checkRecipeLikesInFirestore(id, currentUser);
+        if(!likes) likes = await checkRecipeLikesInIndexedDB(id);
     } else {
-        return checkRecipeLikesInIndexedDB(id);
-
+        likes = await checkRecipeLikesInIndexedDB(id);
     }
+    return likes;
 }
 
-export async function changeRecipeVisibility(id: string, visibility: boolean, allowFirestorePush: boolean) {
-    console.log("changeRecipeVisibility", id, visibility, allowFirestorePush);
+export async function changeRecipeVisibility(id: string, visibility: boolean, allowFirestorePush: boolean, user: User |null) {
     if(allowFirestorePush) {
-        await changeRecipeVisibilityInFirestore(id, visibility);
+        let isLiked: boolean = false;
+        if(visibility) {
+            isLiked = await getUsersFavoritesList().then((favorites: string[]) => favorites.includes(id));
+        }
+        await changeRecipeVisibilityInFirestore(id, visibility, user, isLiked);
     }
     await changeRecipeVisibilityInIndexedDB(id, visibility);
 }

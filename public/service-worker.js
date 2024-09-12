@@ -282,6 +282,5 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'NETWORK_STATUS_CHANGE') {
       event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
-      event.source.postMessage({ type: 'NETWORK_STATUS_PROCESSED' });
     }
 });

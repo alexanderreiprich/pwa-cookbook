@@ -54,7 +54,7 @@ export function useDbActionHandler() {
 
     const handleChangeRecipeVisibility = async (id: string, visibility: boolean) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
-        return await changeRecipeVisibility(id, visibility, allowFirestorePush);
+        return await changeRecipeVisibility(id, visibility, allowFirestorePush, currentUser);
     }
 
     const handleGetUsersRecipes = async () => {

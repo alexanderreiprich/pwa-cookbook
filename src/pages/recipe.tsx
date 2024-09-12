@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import { Key, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import NavigationBar from "../components/NavigationBar";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -31,8 +31,10 @@ function Recipe() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean>(false);
+  const [isPublic, setIsPublic] = useState<boolean>(false);
   const { handleGetRecipeById, handleChangeRecipeVisibility } = useDbActionHandler();
   const { isOnline } = useNetworkStatus();
+  const navigate = useNavigate();
 
   const handleVisibilityChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -40,6 +42,7 @@ function Recipe() {
     if (recipe) {
       handleChangeRecipeVisibility(recipe.id, !checked);
       setChecked(!checked);
+      setIsPublic(!isPublic);
     }
   };
 
@@ -47,6 +50,12 @@ function Recipe() {
   const handleServingsChange = (event: any) => {
     const newServings = Number(event.target.value);
     setServings(newServings);
+  }
+
+   
+  const handleReturnToBrowseRecipes = () => {
+    navigate('/', {replace: true});
+    window.location.reload();
   }
 
   useEffect(() => {
@@ -57,13 +66,19 @@ function Recipe() {
           setRecipe(recipe);
           
           setChecked(recipe!.public);
-          setServings(recipe!.number_of_people)
+          setServings(recipe!.number_of_people);
+          setIsPublic(recipe!.public);
         } else {
           setError("Fehler beim Abrufen der Id des Rezepts.");
         }
       } catch (err) {
-        setError("Fehler beim Abrufen des Rezepts.");
-        console.error(err);
+        return (
+          <div>
+      <NavigationBar title="Rezepte" />
+        <p>Fehler beim Laden des Rezeptes... es wurde vermutlich gelöscht oder depubliziert</p>
+        <Button onClick={handleReturnToBrowseRecipes} variant="contained"> Zurück zur Übersicht?</Button>
+      </div>
+        )
       } finally {
         setLoading(false);
       }
@@ -93,7 +108,8 @@ function Recipe() {
     return (
       <div>
       <NavigationBar title="Rezepte" />
-        <p>Rezept konnte leider nicht geladen werden... vielleicht wurde es gelöscht?</p>
+        <p>Rezept konnte leider nicht geladen werden... es wurde vermutlich gelöscht oder depubliziert</p>
+        <Button onClick={handleReturnToBrowseRecipes} variant="contained"> Zurück zur Übersicht?</Button>
       </div>
     );
   }
