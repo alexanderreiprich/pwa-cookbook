@@ -75,23 +75,19 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
     try {
       let q: any = collection(db, 'recipes');
       if (filters.timeMin) {
-        console.log("timemin")
         q = query(q, where('time', '>=', Number(filters.timeMin)));
       }
       if (filters.timeMax) {
-        console.log("timemax")
         q = query(q, where('time', '<=', Number(filters.timeMax)));
       }
       if (filters.tags && filters.tags.length > 0) {
         let chosenTags: string[] = [];
         filters.tags.map((tag) => chosenTags.push(TAG[tag].toString()));
-        console.log("tags", chosenTags)
         q = query(q, where('tags', 'array-contains-any', chosenTags));
       }
       if (filters.difficulty) {
         q = query(q, where('difficulty', '==', DIFFICULTY[filters.difficulty]));
       }
-      console.log(q);
       recipes = await fetchFromFirestore(q);
     } catch (error) {
       console.error('Fehler beim Abrufen von Firestore:', error);
