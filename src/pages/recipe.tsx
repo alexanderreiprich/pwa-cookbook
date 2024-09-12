@@ -23,6 +23,7 @@ import { formatDate } from "../helpers/templateHelper";
 import { useRecipeActions } from "../db/useRecipes";
 import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
 import EditRecipe from "../components/EditRecipe";
+import RecipeCookMode from "../components/RecipeCookMode";
 
 
 function Recipe() {
@@ -93,8 +94,8 @@ function Recipe() {
   if (!recipe) {
     return (
       <div>
-        <NavigationBar title="Rezepte" />
-        <p>Rezept konnte leider nicht geladen werden...</p>
+      <NavigationBar title="Rezepte" />
+        <p>Rezept konnte leider nicht geladen werden... vielleicht wurde es gelöscht?</p>
       </div>
     );
   }
@@ -153,6 +154,7 @@ function Recipe() {
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
+            <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
           </div>
           <p> Dauer: {recipe.time} min</p>
           <p>{recipe.description}</p>
@@ -183,6 +185,7 @@ function Recipe() {
           </ol>
         </Grid>
       </Grid>
+      <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
     </div>
   );
 }

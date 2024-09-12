@@ -228,7 +228,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
   return (
     <div>
       <h1>
-        <Button onClick={handleOpen}>{isNew ? "Rezept erstellen" : "Rezept bearbeiten"}</Button>
+        <Button onClick={handleOpen} variant="outlined">{isNew ? "Rezept erstellen" : "Rezept bearbeiten"}</Button>
       </h1>
       <Modal
         open={open}
