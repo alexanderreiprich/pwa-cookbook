@@ -1,7 +1,6 @@
-// useRecipes.ts
-import { useAuth } from '../components/Authentication';
+import { useAuth } from '../provider/Authentication';
 import { RecipeInterface } from '../interfaces/RecipeInterface';
-import { useNetworkStatus } from '../helpers/NetworkStatusProvider'; // Adjust path as needed
+import { useNetworkStatus } from '../provider/NetworkStatusProvider'; // Adjust path as needed
 import { 
     updateRecipeFavorites, 
     updateRecipe, 
@@ -12,11 +11,11 @@ import {
     checkRecipeLikes,
     changeRecipeVisibility,
     getUsersRecipes,
-    getUsersSavedRecipes
-} from "../helpers/dbHelper";
+    getUsersFavoriteRecipes
+} from "./dbActions";
 import { FilterInterface } from '../interfaces/FilterInterface';
 
-export function useRecipeActions() {
+export function useDbActionHandler() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
     const { currentUser } = useAuth();
 
@@ -40,24 +39,24 @@ export function useRecipeActions() {
         await createRecipe(newRecipe, isOnline, image);
     };
 
-    const handleDeleteRecipe = async (id: string) => {
-        await deleteRecipe(id, isOnline, currentUser);
+    const handleDeleteRecipe = async (id: string, isPublic: boolean) => {
+        await deleteRecipe(id, isOnline, isPublic, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {
         return await checkRecipeLikes(id, isOnline, currentUser);
     }
 
-    const handleChangeRecipeVisibility = async (id: string) => {
-        return await changeRecipeVisibility(id);
+    const handleChangeRecipeVisibility = async (recipe: Partial<RecipeInterface>, visibility: boolean) => {
+        return await changeRecipeVisibility(recipe, visibility, isOnline);
     }
 
     const handleGetUsersRecipes = async () => {
         return await getUsersRecipes(currentUser, isOnline);
     }
 
-    const handleGetUsersSavedRecipes = async () => {
-        return await getUsersSavedRecipes(currentUser, isOnline);
+    const handleGetUsersFavoriteRecipes = async () => {
+        return await getUsersFavoriteRecipes(currentUser, isOnline);
     }
 
     return {
@@ -70,6 +69,6 @@ export function useRecipeActions() {
         handleCheckRecipeLikes,
         handleChangeRecipeVisibility,
         handleGetUsersRecipes,
-        handleGetUsersSavedRecipes
+        handleGetUsersFavoriteRecipes
     };
 }

@@ -6,10 +6,10 @@ import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 
 import { DocumentData, Timestamp } from "firebase/firestore";
-import { MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { useRecipeActions } from "../db/useRecipes";
+import { useDbActionHandler } from "../db/dbActionHandler";
 import { Key, useRef, useState } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -18,7 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import UploadImageButton from "./UploadImageButton";
 
 import { useNavigate } from 'react-router-dom';
-import { checkRecipeVersioning } from "../helpers/synchDBHelper";
+import { checkRecipeVersioning } from "../helper/helperFunctions";
 
 const style = {
   position: "absolute" as "absolute",
@@ -117,7 +117,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
     handleCreateRecipe, 
     handleDeleteRecipe,
     handleGetRecipeById 
-} = useRecipeActions();
+} = useDbActionHandler();
   
   const handleClose = () => {
     setOpen(false);
@@ -125,7 +125,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
 
   const deleteRecipe = async () => {
     if (recipe.id) {
-        await handleDeleteRecipe(recipe.id);
+        await handleDeleteRecipe(recipe.id, recipe.public);
     }
 };
 
@@ -207,7 +207,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       date_edit: Timestamp.now(),
       public: recipe.public
     }
-    if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
+    if (isNew && await handleIdCheck(updatedRecipe.id) === false) {
       setHasError(true);
     }
     else {

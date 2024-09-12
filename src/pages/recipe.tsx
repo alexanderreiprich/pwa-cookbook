@@ -1,13 +1,11 @@
 import {
   Box,
   Button,
-  FormControlLabel,
   FormGroup,
   Grid,
   Stack,
   Switch,
   TextField,
-  Typography,
 } from "@mui/material";
 
 import { Key, useEffect, useState } from "react";
@@ -19,9 +17,9 @@ import { TAG } from "../interfaces/TagEnum";
 import "../style/Images.css";
 import FavoritesButton from "../components/FavoritesButton";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { formatDate } from "../helpers/templateHelper";
-import { useRecipeActions } from "../db/useRecipes";
-import { useNetworkStatus } from "../helpers/NetworkStatusProvider";
+import { formatDate } from "../helper/helperFunctions";
+import { useDbActionHandler } from "../db/dbActionHandler";
+import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import EditRecipe from "../components/EditRecipe";
 import RecipeCookMode from "../components/RecipeCookMode";
 
@@ -33,14 +31,14 @@ function Recipe() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean>(false);
-  const { handleGetRecipeById, handleChangeRecipeVisibility } = useRecipeActions();
+  const { handleGetRecipeById, handleChangeRecipeVisibility } = useDbActionHandler();
   const { isOnline } = useNetworkStatus();
 
   const handleVisibilityChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (id) {
-      handleChangeRecipeVisibility(id);
+    if (recipe) {
+      handleChangeRecipeVisibility(recipe, !checked);
       setChecked(!checked);
     }
   };
@@ -139,7 +137,7 @@ function Recipe() {
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
-                  <b>Privat</b>
+                  <b>Lokal</b>
                   <Switch
                     onChange={handleVisibilityChange}
                     checked={checked}
@@ -161,7 +159,7 @@ function Recipe() {
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
           <div id="recipeImgContainer">
-            <img className="image" src={recipe.image} />
+            <img className="image" src={recipe.image} alt={recipe.name}/>
           </div>
         </Grid>
         <Grid item id="recipeContent" xs={10}>

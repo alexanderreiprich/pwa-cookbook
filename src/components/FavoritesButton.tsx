@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { useAuth } from './Authentication';
-import { useRecipeActions } from '../db/useRecipes'; // Adjust path as needed
+import { useDbActionHandler } from '../db/dbActionHandler'; // Adjust path as needed
 import { RecipeInterface } from '../interfaces/RecipeInterface';
+import { LikesInterface } from '../interfaces/LikesInterface';
 interface FavoritesButtonProps {
   favorites: number;
   recipe: RecipeInterface;
 }
 
 export default function FavoritesButton({ favorites, recipe }: FavoritesButtonProps) {
-  const { currentUser } = useAuth();
-  const { handleUpdateRecipeFavorites } = useRecipeActions();
-  const { handleCheckRecipeLikes } = useRecipeActions();
+  const { handleUpdateRecipeFavorites, handleCheckRecipeLikes } = useDbActionHandler();
   // State to manage the favorites count
   const [localFavorites, setLocalFavorites] = useState(favorites);
   // State to manage the liked state
@@ -22,6 +20,13 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     // Update local favorites if the prop changes
     setLocalFavorites(favorites);
   }, [favorites]);
+
+  useEffect(() => {
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
+    }
+  }, []);
 
   function changeLikeState() {
     if (hasLiked) {
@@ -38,9 +43,16 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     setHasLiked(!hasLiked);
   }
 
+  const handleMessage = async (event: MessageEvent) => {
+    if (event.data && event.data.type === 'NETWORK_STATUS_PROCESSED') {
+      await checkLikes();
+    }
+  };
+
   async function checkLikes () {
-    await handleCheckRecipeLikes(recipe.id).then(likes => {
-      setHasLiked(likes)
+    await handleCheckRecipeLikes(recipe.id).then( (likes: LikesInterface) => {
+      setHasLiked(likes.likes);
+      setLocalFavorites(likes.numberOfLikes);
     });
   }
 

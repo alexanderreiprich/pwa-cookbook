@@ -3,10 +3,11 @@ import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { saveRecipe } from "../helpers/synchDBHelper";
+import { saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
 import { getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
+import { LikesInterface } from "../interfaces/LikesInterface";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -44,9 +45,9 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
       const userId: string = await getUserId(user);
       const userRef = doc(db, 'users', userId);
       if (likes) {
-        await updateDoc(userRef, { favorites: arrayUnion(id), edit_date: Timestamp.now() });
+        await updateDoc(userRef, { favorites: arrayUnion(id), date_edit: Timestamp.now() });
       } else {
-        await updateDoc(userRef, { favorites: arrayRemove(id), edit_date: Timestamp.now() });
+        await updateDoc(userRef, { favorites: arrayRemove(id), date_edit: Timestamp.now() });
       }
       console.log('Benutzerfavoriten erfolgreich in Firestore aktualisiert.');
     } catch (error) {
@@ -152,36 +153,38 @@ export async function deleteRecipeInFirestore(id: string, user: User | null): Pr
   }
 }
 
-export async function checkRecipeLikesInFirestore(id: string, currentUser: User | null): Promise<boolean> {
+export async function checkRecipeLikesInFirestore(id: string, currentUser: User | null): Promise<LikesInterface> {
+  let likes: LikesInterface = { likes: false, numberOfLikes: 0 };
   try {
-    let userId: string = await getUserId(currentUser);
+    const userId: string = await getUserId(currentUser);
     const userRef = doc(db, 'users', userId);
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
       const data = docSnap.data() as any;
-      let favorites: Array<string> = data.favorites;
-      return(favorites.includes(id));
-    } else {
-      return false;
+      const favorites: Array<string> = data.favorites;
+      const recipe = await getRecipeByIdFromFirestore(id);
+      const numberOfLikes = recipe && recipe.favorites ? recipe.favorites : 0;
+      likes = { likes: favorites.includes(id), numberOfLikes: numberOfLikes };
     }
+    return likes;
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore-Daten:', error);
-    return false;
+    return likes;
   }
 }
 
-export async function changeRecipeVisibilityInFirestore(id: string): Promise<void> {
+export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeInterface>, visibility: boolean): Promise<void> {
   try {
-    const recipeRef = doc(db, 'recipes', id);
-    const docSnap = await getDoc(recipeRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data() as any;
-      let isPublic: boolean = data.public;
-      if (isPublic) {
-        await updateDoc(recipeRef, { public: false });
-      }
-      else {
-        await updateDoc(recipeRef, { public: true });
+    if(recipe.id){
+      if(visibility){
+        const recipeRef = { ...recipe,  public: visibility, date_edit: Timestamp.now()}
+        await updateRecipeInFirestore(recipe.id, recipeRef);
+      } else {
+        const recipeRef = doc(db, 'recipes', recipe.id);
+        // Not deleteRecipeFromFirestore to keep Favorites
+        await deleteDoc(recipeRef).then( () =>
+        console.log('Rezept erfolgreich aus Firestore gelöscht.'));
+    
       }
     }
   } catch (error) {
@@ -230,7 +233,7 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
   return recipes;
 }
 
-export async function getUsersSavedRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
+export async function getUsersFavoriteRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
   let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 
@@ -246,7 +249,6 @@ export async function getUsersSavedRecipesInFirestore(currentUser: User | null):
     recipes = await fetchFromFirestore(q);
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore:', error);
-    return [];
   }
   return recipes;
 }

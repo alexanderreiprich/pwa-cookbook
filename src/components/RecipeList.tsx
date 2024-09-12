@@ -1,4 +1,3 @@
-import { Timestamp } from "firebase/firestore";
 import RecipeElement from "../components/RecipeElement";
 import "../style/BrowseRecipes.css";
 import { Grid } from "@mui/material";
@@ -6,10 +5,10 @@ import FilterComponent from "../components/Filter";
 import { useEffect, useState } from "react";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import SortComponent from "./Sort";
-import { useRecipeActions } from "../db/useRecipes";
+import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
-import { sort } from "../helpers/Sorting";
+import { sort } from "../helper/Sorting";
 
 export default function RecipeList() {
 
@@ -20,7 +19,7 @@ export default function RecipeList() {
 
   const [recipes, setRecipes] = useState<RecipeInterface[]>([]);
   const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.NAMEASC);
-  const { handleGetAllRecipes } = useRecipeActions();
+  const { handleGetAllRecipes } = useDbActionHandler();
   
   useEffect(() => {
     const fetchItems = async () => {
