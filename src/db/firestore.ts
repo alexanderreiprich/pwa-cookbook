@@ -7,6 +7,7 @@ import { saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
+import { getRecipeByIdFromIndexedDB } from "./idb";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -98,6 +99,7 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
 
 
   export async function getRecipeByIdFromFirestore(id: string): Promise<RecipeInterface | null> {
+    console.log("getRecipeByIdFromFirestore", id)
     try {
       const recipeRef = doc(db, 'recipes', id);
       const docSnap = await getDoc(recipeRef);
@@ -131,13 +133,10 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promi
   }
 }
 
-export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
+export async function deleteRecipeInFirestore(id: string): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
-    const isLiked = await checkRecipeLikesInFirestore(id, user);
-    if(isLiked) {
-      updateFavoritesListInFirestore(user, id, false);
-    }
+    deleteRecipeFromAllFavoritesListsInFireStore(id);
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
 
@@ -166,17 +165,15 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
   }
 }
 
-export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeInterface>, visibility: boolean): Promise<void> {
+export async function changeRecipeVisibilityInFirestore(id: string, visibility: boolean): Promise<void> {
   try {
-    if(recipe.id){
+    if(id){
       if(visibility){
-        const recipeRef = { ...recipe,  public: visibility, date_edit: Timestamp.now()}
-        await updateRecipeInFirestore(recipe.id, recipeRef);
+        const recipe = await getRecipeByIdFromIndexedDB(id)
+        const updatedRecipe: Partial<RecipeInterface> = { ...recipe, public: visibility, date_edit: Timestamp.now() };
+        if(recipe) await updateRecipeInFirestore(id, updatedRecipe);
       } else {
-        const recipeRef = doc(db, 'recipes', recipe.id);
-        // Not deleteRecipeFromFirestore to keep Favorites
-        await deleteDoc(recipeRef).then( () =>
-        console.log('Rezept erfolgreich aus Firestore gelöscht.'));
+        await deleteRecipeInFirestore(id);
     
       }
     }
@@ -232,4 +229,33 @@ export async function getUsersFavoriteRecipesInFirestore(currentUser: User | nul
     console.error('Fehler beim Abrufen von Firestore:', error);
   }
   return recipes;
+}
+
+export async function deleteRecipeFromAllFavoritesListsInFireStore (id: string) {
+  try {
+    // Get all users
+    const usersCollection = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersCollection);
+    
+    // Iterate through all users
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+
+      // Check whether favoritesList contains id
+      if (userData.favorites && Array.isArray(userData.favorites)) {
+        const updatedFavorites = userData.favorites.filter((favoriteId: string) => favoriteId !== id);
+        // if filtering was effective: update list with new date_edit
+        if (updatedFavorites.length !== userData.favorites.length) {
+          await updateDoc(doc(db, 'users', userDoc.id), {
+            favorites: updatedFavorites,
+            date_edit: Timestamp.now()
+          });
+        }
+      }
+    }
+    
+    console.log(`Rezept mit ID ${id} wurde aus allen Favoritenlisten entfernt.`);
+  } catch (error) {
+    console.error('Fehler beim Entfernen des Rezepts aus den Favoritenlisten:', error);
+  }
 }

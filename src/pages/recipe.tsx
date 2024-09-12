@@ -38,7 +38,7 @@ function Recipe() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (recipe) {
-      handleChangeRecipeVisibility(recipe, !checked);
+      handleChangeRecipeVisibility(recipe.id, !checked);
       setChecked(!checked);
     }
   };

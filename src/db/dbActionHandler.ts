@@ -45,16 +45,16 @@ export function useDbActionHandler() {
 
     const handleDeleteRecipe = async (id: string, isPublic: boolean) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
-        await deleteRecipe(id, allowFirestorePush, isPublic, currentUser);
+        await deleteRecipe(id, allowFirestorePush, isPublic);
     };
 
-    const handleCheckRecipeLikes = async (id: string) => {
-        return await checkRecipeLikes(id, isOnline, currentUser);
+    const handleCheckRecipeLikes = async (id: string, isPublic: boolean) => {
+        return await checkRecipeLikes(id, isPublic, isOnline, currentUser);
     }
 
-    const handleChangeRecipeVisibility = async (recipe: Partial<RecipeInterface>, visibility: boolean) => {
+    const handleChangeRecipeVisibility = async (id: string, visibility: boolean) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
-        return await changeRecipeVisibility(recipe, visibility, allowFirestorePush);
+        return await changeRecipeVisibility(id, visibility, allowFirestorePush);
     }
 
     const handleGetUsersRecipes = async () => {

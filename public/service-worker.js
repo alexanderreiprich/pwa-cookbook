@@ -194,21 +194,24 @@ async function syncFavoritesList(ids) {
     if (idbUser && idbUser[1]) {
         let idbFavorites = idbUser[1].favorites ? idbUser[1].favorites : [];
         let idbEditDate = idbUser[1].date_edit ? idbUser[1].date_edit : {};
-        
+        console.log("syncFavoritesList", "idb", idbFavorites, idbEditDate, "firestore", firestoreFavorites, firestoreEditDate)
         if (arraysEqual(idbUser[1].favorites, newFavorites) && newFavorites.length > 0) return;
         else if (idbEditDate && firestoreEditDate) {
-            if (firestoreEditDate.seconds <= idbEditDate.seconds) {
+            if (!compareTimestamps(firestoreEditDate, idbEditDate)) {
+                console.log("!compareTimestamps(firestoreEditDate, idbEditDate)");
                 newFavorites = idbFavorites;
                 newEditDate = idbEditDate;
                 useFirestore = false;
             }
         }  else if (idbEditDate) {
+            console.log("idbEditDate");
             newFavorites = idbFavorites;
             newEditDate = idbEditDate;
             useFirestore = false;
         }
     }
     if (useFirestore) {
+        console.log("useFirestore");
         newFavorites = firestoreFavorites;
         newEditDate = firestoreEditDate;
     }
@@ -245,6 +248,23 @@ async function handleNetworkStatusChange(isOnline) {
         await syncDBs();
     } else {
         console.log('Network is offline');
+    }
+}
+
+function compareTimestamps(a, b) {
+    if(!a.seconds || !b.seconds) return false;
+    if (a.seconds < b.seconds) {
+        return false;
+    } else if (a.seconds > b.seconds) {
+        return true;
+    } else {
+        if (a.nanoseconds < b.nanoseconds) {
+            return false;
+        } else if (a.nanoseconds > b.nanoseconds) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

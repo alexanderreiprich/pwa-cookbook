@@ -85,6 +85,7 @@ export async function deleteRecipeInIndexedDB(id: string): Promise<void> {
 
 export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterface, newFavorites: number, likes: boolean): Promise<void> {
   try {
+    console.log("updateRecipeFavoritesInIndexedDB", recipeDoc, newFavorites, likes);
     const id = recipeDoc.id;
     // Open a transaction with readwrite access
     const db = await initDB();
@@ -99,6 +100,7 @@ export async function updateRecipeFavoritesInIndexedDB(recipeDoc: RecipeInterfac
       await recipesStore.put(recipe); // No key provided; relies on keyPath defined in the store
       console.log('Favoriten erfolgreich in IndexedDB aktualisiert.');
     } else if (recipeDoc) {
+      console.log("recipeDoc for updateRecipeInIndexedDB");
       updateRecipeInIndexedDB(id, recipeDoc);
     }
     else {
@@ -169,8 +171,8 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<LikesInt
     }
     const recipe = await getRecipeByIdFromIndexedDB(id);
     const numberOfLikes = recipe && recipe.favorites ? recipe.favorites : 0;
-
-    return {likes: userFavoritesList.includes(id), numberOfLikes: numberOfLikes} as LikesInterface;
+    const isPublic = recipe && recipe.public ? recipe.public : false;
+    return {likes: userFavoritesList.includes(id), numberOfLikes: numberOfLikes, isPublic: isPublic} as LikesInterface;
 }
 
 // only used by authentication.tsx, after user is logged in
@@ -186,9 +188,15 @@ export async function syncEmailToFirestore (email: string) {
  }
 }
 
-export async function changeRecipeVisibilityInIndexedDB (recipe: Partial<RecipeInterface>, visibility: boolean) {
-  const recipeDoc: Partial<RecipeInterface> = {...recipe, public: visibility, date_edit: Timestamp.now()}
-  if (recipe.id) updateRecipeInIndexedDB(recipe.id, recipeDoc).then((event) => console.log("idb event", event));
+export async function changeRecipeVisibilityInIndexedDB (id: string, visibility: boolean) {
+
+  if (id) { 
+    const favoritesList = await getUsersFavoritesList();
+    const newNumberOfFavorites = id && favoritesList.includes(id) ? 1 : 0;
+    const recipe = await getRecipeByIdFromIndexedDB(id);
+    const recipeDoc: Partial<RecipeInterface> = {...recipe, favorites: newNumberOfFavorites, public: visibility, date_edit: Timestamp.now()}
+    updateRecipeInIndexedDB(id, recipeDoc);
+  }
 }
 
 export async function getUsersRecipesInIndexedDB () {
