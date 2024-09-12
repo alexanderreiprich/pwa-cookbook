@@ -3,6 +3,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import EditRecipe from "./EditRecipe";
 import { useAuth } from "../provider/Authentication";
 import { Timestamp } from "firebase/firestore";
+import { USER_UNKNOWN } from "../App";
 
 export default function CreateRecipe() {
   const { currentUser } = useAuth();
@@ -19,7 +20,7 @@ export default function CreateRecipe() {
     difficulty: DIFFICULTY.EASY,
     tags: [],
     favorites: 0,
-    author: currentUser ? (currentUser.displayName ? currentUser.displayName : (currentUser.email ? currentUser.email : "unknown")) : "unknown",
+    author: currentUser ? (currentUser.displayName ? currentUser.displayName : (currentUser.email ? currentUser.email : USER_UNKNOWN)) : USER_UNKNOWN,
     date_create: Timestamp.now(),
     date_edit: Timestamp.now(),
     public: false

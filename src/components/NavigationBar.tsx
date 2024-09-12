@@ -16,6 +16,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import { useAuth } from "../provider/Authentication";
+import { logout } from "../db/dbActions";
 
 export default function NavigationBar({ title }: { title: string }) {
   const [open, setOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function NavigationBar({ title }: { title: string }) {
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
+        logout();
         navigate("/login");
       })
       .catch((error) => {
@@ -68,7 +70,7 @@ export default function NavigationBar({ title }: { title: string }) {
                 <ListItemButton component="a" href="/favorite_recipes">
                   <ListItemText primary="Favorisierte Rezepte" />
                 </ListItemButton>
-                {isOnline ? (
+                {Boolean(currentUser) ? (
                   <ListItemButton component="button" onClick={handleLogout}>
                     <ListItemText primary="Abmelden" />
                   </ListItemButton>

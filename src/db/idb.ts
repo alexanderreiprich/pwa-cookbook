@@ -3,6 +3,7 @@ import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { saveRecipe } from "../helper/helperFunctions";
 import { Timestamp } from "firebase/firestore";
 import { LikesInterface } from "../interfaces/LikesInterface";
+import { USER_UNKNOWN } from "../App";
 
 const dbPromise = openDB('recipes-db', 2, {
   upgrade(db, oldVersion, newVersion) {
@@ -205,11 +206,11 @@ export async function getUsersRecipesInIndexedDB () {
   const userStore = tx.objectStore('user');
 
   // Get user favorites
-  let storedEmail = await userStore.get('email') || {email: "unknown"};
+  let storedEmail = await userStore.get('email') || {email: USER_UNKNOWN};
   let recipes: RecipeInterface[] = []
   recipes = await fetchFromIndexedDB();
   console.log()
-  return recipes.filter(recipe => recipe.author == storedEmail.email);
+  return recipes.filter(recipe => recipe.author == storedEmail.email || recipe.author == USER_UNKNOWN);
 }
 
 export async function getUsersFavoritesList (): Promise<string[]> {
@@ -235,4 +236,11 @@ export async function getUsersFavoriteRecipesInIndexedDB (): Promise<RecipeInter
   let recipes: RecipeInterface[] = []
   recipes = await fetchFromIndexedDB();
   return recipes.filter(recipe => favoritesList.includes(recipe.id));
+}
+
+export async function logoutInIndexedDB () {
+  const db = await initDB();
+  const tx = db.transaction(['user'], 'readwrite');
+  const userStore = tx.objectStore('user');
+  await userStore.delete('email');
 }

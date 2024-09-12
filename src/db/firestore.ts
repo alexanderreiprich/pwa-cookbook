@@ -8,6 +8,7 @@ import { User } from "firebase/auth";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 import { getRecipeByIdFromIndexedDB } from "./idb";
+import { USER_UNKNOWN } from "../App";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -206,7 +207,7 @@ async function getUserId(currentUser: User | null): Promise<string> {
 
 export async function getUsersRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
-  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
   try {
     let q: any = collection(db, 'recipes');
     q = query(q, where('author', "==", user));
@@ -220,7 +221,7 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
 
 export async function getUsersFavoriteRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
-  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
 
   try {
     let s: any = collection(db, "users");

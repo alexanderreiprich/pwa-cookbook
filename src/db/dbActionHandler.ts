@@ -22,11 +22,13 @@ export function useDbActionHandler() {
 
     const handleUpdateRecipeFavorites = async (recipe: RecipeInterface, newFavorites: number, likes: boolean) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
+        if(isOnline && !currentUser) alert("Die Rezeptfavoriten werden nur lokal auf diesem Gerät gespeichert!");
         await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, allowFirestorePush);
     };
 
     const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
+        if(isOnline && !currentUser) alert("Das Rezeptupdate wird nur lokal auf diesem Gerät gespeichert!");
         await updateRecipe(id, updatedRecipe, allowFirestorePush);
     };
 
@@ -40,11 +42,13 @@ export function useDbActionHandler() {
 
     const handleCreateRecipe = async (newRecipe: RecipeInterface) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
+        if(isOnline && !currentUser) alert("Das Rezept wird nur lokal auf diesem Gerät gespeichert!");
         await createRecipe(newRecipe, allowFirestorePush);
     };
 
     const handleDeleteRecipe = async (id: string, isPublic: boolean) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
+        if(!isOnline || !currentUser) alert("Das Rezept wird nur lokal von diesem Gerät gelöscht! Wurde es veröffentlicht, so brauchst du eine Internetverbindung zum löschen und damit depublizieren");
         await deleteRecipe(id, allowFirestorePush, isPublic);
     };
 

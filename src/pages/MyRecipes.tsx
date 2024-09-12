@@ -13,6 +13,7 @@ import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
 import { sort } from "../helper/Sorting";
+import { USER_UNKNOWN } from "../App";
 
 function MyRecipes () {
 	
@@ -28,7 +29,7 @@ function MyRecipes () {
 
   const { handleGetUsersRecipes } = useDbActionHandler();
 
-	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
 	
 	useEffect(() => {
 		const fetchItems = async () => {

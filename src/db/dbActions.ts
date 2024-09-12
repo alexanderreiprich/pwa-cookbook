@@ -11,7 +11,8 @@ import {
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
     changeRecipeVisibilityInIndexedDB,
-    getUsersFavoritesList
+    getUsersFavoritesList,
+    logoutInIndexedDB
 } from "./idb";
 import { 
     changeRecipeVisibilityInFirestore,
@@ -110,8 +111,6 @@ export async function deleteRecipe(id: string, allowFirestorePush: boolean, isPu
         await deleteRecipeInFirestore(id);
     } else if( !isPublic) {
         await deleteRecipeInIndexedDB(id);
-    } else {
-        alert("Im Offline Modus können leider keine öffentlichen Rezepte gelöscht werden.")
     }
 }
 
@@ -155,4 +154,8 @@ export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline
 
 export async function syncEmail(user: User | null){
     if(user && user.email) syncEmailToFirestore(user.email);
+}
+
+export function logout() {
+    logoutInIndexedDB();
 }
