@@ -15,9 +15,11 @@ import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useNetworkStatus } from "../provider/NetworkStatusProvider";
+import { useAuth } from "../provider/Authentication";
 
 export default function NavigationBar({ title }: { title: string }) {
   const [open, setOpen] = useState(false);
+  const { currentUser } = useAuth();
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -77,6 +79,7 @@ export default function NavigationBar({ title }: { title: string }) {
                 )}
               </List>
             </Drawer>
+            { currentUser ? "Angemeldet" : "Abgemeldet" }
           </Toolbar>
         </AppBar>
       </ScrollToHide>
