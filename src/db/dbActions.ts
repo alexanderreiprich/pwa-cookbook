@@ -6,6 +6,7 @@ import {
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
     syncEmailToFirestore,
+    getUsersRecipesInIndexedDB,
     getUsersFavoriteRecipesInIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
@@ -29,23 +30,23 @@ import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, allowFirestorePush: boolean) {
     // Update in IndexedDB
     updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
 
     // Update in Firestore if online
-    if (isOnline && recipe.public) {
+    if (allowFirestorePush && recipe.public) {
         await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
 }
 
 // Function to update a recipe
-export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean) {
+export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, allowFirestorePush: boolean) {
     // Update in IndexedDB
     updateRecipeInIndexedDB(id, updatedRecipe);
 
     // Update in Firestore if online
-    if (isOnline && updatedRecipe.public) {
+    if (allowFirestorePush && updatedRecipe.public) {
         await updateRecipeInFirestore(id, updatedRecipe);
     }
 }
@@ -89,21 +90,21 @@ export async function getRecipeById(id: string, isOnline: boolean): Promise<Reci
 }
 
 // Function to create a new recipe
-export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean) {
+export async function createRecipe(newRecipe: RecipeInterface, allowFirestorePush: boolean) {
     // Create in IndexedDB
     createRecipeInIndexedDB(newRecipe);
     
     // Create in Firestore if online
-    if (isOnline && newRecipe && newRecipe.public) {
+    if (allowFirestorePush && newRecipe && newRecipe.public) {
         await createRecipeInFirestore(newRecipe);
     }
 }
 
 // Function to delete a recipe
-export async function deleteRecipe(id: string, isOnline: boolean, isPublic: boolean, currentUser: User | null) {
+export async function deleteRecipe(id: string, allowFirestorePush: boolean, isPublic: boolean, currentUser: User | null) {
     
     // Delete from Firestore and indexed db if online
-    if (isOnline && isPublic) {
+    if (allowFirestorePush && isPublic) {
         await deleteRecipeInIndexedDB(id);
         await deleteRecipeInFirestore(id, currentUser);
     } else if( !isPublic) {
@@ -122,20 +123,20 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
     }
 }
 
-export async function changeRecipeVisibility(recipe: Partial<RecipeInterface>, visibility: boolean, isOnline: boolean) {
+export async function changeRecipeVisibility(recipe: Partial<RecipeInterface>, visibility: boolean, allowFirestorePush: boolean) {
     await changeRecipeVisibilityInIndexedDB(recipe, visibility);
-    if(isOnline) {
+    if(allowFirestorePush) {
         await changeRecipeVisibilityInFirestore(recipe, visibility);
     }
 }
 
-export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
-    if(isOnline) {
-        return getUsersRecipesInFirestore(currentUser);
+export async function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
+    let recipes = await getUsersRecipesInIndexedDB();
+    console.log(recipes);
+    if(isOnline && (!recipes || recipes.length < 1)) {
+        recipes = await getUsersRecipesInFirestore(currentUser);
     }
-    else {
-        return getUsersRecipesInFirestore(currentUser);
-    }
+    return recipes;
 }
 
 export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {

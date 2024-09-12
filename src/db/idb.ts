@@ -173,12 +173,12 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<LikesInt
     return {likes: userFavoritesList.includes(id), numberOfLikes: numberOfLikes} as LikesInterface;
 }
 
+// only used by authentication.tsx, after user is logged in
 export async function syncEmailToFirestore (email: string) {
   const db = await initDB();
   const tx = db.transaction(['user'], 'readwrite');
   const userStore = tx.objectStore('user');
 
-  // Get user favorites
   let storedEmail:string = await userStore.get('email') || "";
  if(email && storedEmail !== email){
   const emailEntry = { id: "email", email: email };
@@ -189,6 +189,19 @@ export async function syncEmailToFirestore (email: string) {
 export async function changeRecipeVisibilityInIndexedDB (recipe: Partial<RecipeInterface>, visibility: boolean) {
   const recipeDoc: Partial<RecipeInterface> = {...recipe, public: visibility, date_edit: Timestamp.now()}
   if (recipe.id) updateRecipeInIndexedDB(recipe.id, recipeDoc).then((event) => console.log("idb event", event));
+}
+
+export async function getUsersRecipesInIndexedDB () {
+  const db = await initDB();
+  const tx = db.transaction(['user'], 'readwrite');
+  const userStore = tx.objectStore('user');
+
+  // Get user favorites
+  let storedEmail = await userStore.get('email') || "";
+  console.log(storedEmail.email);
+  let recipes: RecipeInterface[] = []
+  recipes = await fetchFromIndexedDB();
+  return recipes.filter(recipe => recipe.author == storedEmail.email);
 }
 
 async function getUsersFavoritesList (): Promise<string[]> {

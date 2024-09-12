@@ -190,32 +190,25 @@ async function syncFavoritesList(ids) {
     let newEditDate = {};
     let firestoreFavorites = ids.favorites ? [...ids.favorites] : [];
     let firestoreEditDate = ids.date_edit ? ids.date_edit : {};
+    let useFirestore = true;
     if (idbUser && idbUser[1]) {
         let idbFavorites = idbUser[1].favorites ? idbUser[1].favorites : [];
-        let idbEditDate = idbUser[1].date ? idbUser[1].date_edit : {};
+        let idbEditDate = idbUser[1].date_edit ? idbUser[1].date_edit : {};
+        
         if (arraysEqual(idbUser[1].favorites, newFavorites) && newFavorites.length > 0) return;
         else if (idbEditDate && firestoreEditDate) {
-            if (firestoreEditDate.seconds > idbEditDate.seconds) {
-                newFavorites = firestoreFavorites;
-                newEditDate = firestoreEditDate;
-            } else if (firestoreEditDate.seconds <= idbEditDate.seconds) {
+            if (firestoreEditDate.seconds <= idbEditDate.seconds) {
                 newFavorites = idbFavorites;
-                newEditDate = idbFavorites;
-            } else {
-                newFavorites = firestoreFavorites;
-                newEditDate = firestoreEditDate;
+                newEditDate = idbEditDate;
+                useFirestore = false;
             }
-        } else if (firestoreEditDate) {
-            newFavorites = firestoreFavorites;
-            newEditDate = firestoreEditDate;
         }  else if (idbEditDate) {
             newFavorites = idbFavorites;
-            newEditDate = idbFavorites;
-        } else {
-            newFavorites = firestoreFavorites;
-            newEditDate = firestoreEditDate;
+            newEditDate = idbEditDate;
+            useFirestore = false;
         }
-    } else if(idbUser) {
+    }
+    if (useFirestore) {
         newFavorites = firestoreFavorites;
         newEditDate = firestoreEditDate;
     }

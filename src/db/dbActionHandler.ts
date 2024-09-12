@@ -1,4 +1,5 @@
 import { useAuth } from '../provider/Authentication';
+import { User } from "firebase/auth";
 import { RecipeInterface } from '../interfaces/RecipeInterface';
 import { useNetworkStatus } from '../provider/NetworkStatusProvider'; // Adjust path as needed
 import { 
@@ -20,11 +21,13 @@ export function useDbActionHandler() {
     const { currentUser } = useAuth();
 
     const handleUpdateRecipeFavorites = async (recipe: RecipeInterface, newFavorites: number, likes: boolean) => {
-        await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, isOnline);
+        const allowFirestorePush = Boolean(currentUser) && isOnline;
+        await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, allowFirestorePush);
     };
 
     const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
-        await updateRecipe(id, updatedRecipe, isOnline);
+        const allowFirestorePush = Boolean(currentUser) && isOnline;
+        await updateRecipe(id, updatedRecipe, allowFirestorePush);
     };
 
     const handleGetAllRecipes = async (filters: FilterInterface) => {
@@ -36,11 +39,13 @@ export function useDbActionHandler() {
     };
 
     const handleCreateRecipe = async (newRecipe: RecipeInterface) => {
-        await createRecipe(newRecipe, isOnline);
+        const allowFirestorePush = Boolean(currentUser) && isOnline;
+        await createRecipe(newRecipe, allowFirestorePush);
     };
 
     const handleDeleteRecipe = async (id: string, isPublic: boolean) => {
-        await deleteRecipe(id, isOnline, isPublic, currentUser);
+        const allowFirestorePush = Boolean(currentUser) && isOnline;
+        await deleteRecipe(id, allowFirestorePush, isPublic, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {
@@ -48,7 +53,8 @@ export function useDbActionHandler() {
     }
 
     const handleChangeRecipeVisibility = async (recipe: Partial<RecipeInterface>, visibility: boolean) => {
-        return await changeRecipeVisibility(recipe, visibility, isOnline);
+        const allowFirestorePush = Boolean(currentUser) && isOnline;
+        return await changeRecipeVisibility(recipe, visibility, allowFirestorePush);
     }
 
     const handleGetUsersRecipes = async () => {

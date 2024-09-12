@@ -19,14 +19,11 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
   useEffect(() => {
     // Update local favorites if the prop changes
     setLocalFavorites(favorites);
-  }, [favorites]);
-
-  useEffect(() => {
     navigator.serviceWorker.addEventListener('message', handleMessage);
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
     }
-  }, []);
+  }, [favorites]);
 
   function changeLikeState() {
     if (hasLiked) {
