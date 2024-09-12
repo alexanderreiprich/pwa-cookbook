@@ -9,6 +9,7 @@ const dbPromise = openDB('recipes-db', 2, {
     console.log(`Upgrading from version ${oldVersion} to ${newVersion}`);
     if (oldVersion < 1) {
       db.createObjectStore('recipes', { keyPath: 'id' });
+      db.createObjectStore('images', { keyPath: 'id' });
     }
     if (oldVersion < 2) {
       db.createObjectStore('user', { keyPath: 'id' });
@@ -49,19 +50,34 @@ export async function getRecipeByIdFromIndexedDB(id: string): Promise<RecipeInte
 }
   
 
-export async function updateRecipeInIndexedDB( id: string, updatedRecipe: Partial<RecipeInterface>) {
+export async function updateRecipeInIndexedDB(id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) {
     try{
-    const db = await initDB();
-      await db.put('recipes', { id, ...saveRecipe(updatedRecipe) });
+      const db = await initDB();
+      const tx = db.transaction('images', 'readwrite');
+      const store = tx.objectStore('images');
+      let imageRecord = { id: id, image: image};
+      await store.put(imageRecord);                       // Save to db and retrieve it again to convert image to blob
+      imageRecord = await db.get('images', id)
+      const imageBlob: Blob = imageRecord.image as Blob;
+      const url =  URL.createObjectURL(imageBlob);        // Generate URL to blob in idb and overwrite recipe
+      updatedRecipe.image = url;
+      await db.put('recipes', { id, ...saveRecipe(updatedRecipe)});
       console.log('Rezept erfolgreich in IndexedDB aktualisiert.');
     } catch (error) {
       console.error('Fehler beim Aktualisieren des Rezepts in der Indexed DB:', error);
     }
 }
 
-export async function createRecipeInIndexedDB(newRecipe: RecipeInterface): Promise<void> {
+export async function createRecipeInIndexedDB(newRecipe: RecipeInterface, image?: File): Promise<void> {
   try {
     const db = await initDB();
+    const tx = db.transaction('images', 'readwrite');
+    const store = tx.objectStore('images');
+    let imageRecord = { id: newRecipe.id, image: image};
+    await store.put(imageRecord);
+    imageRecord = await db.get('images', newRecipe.id);
+    const imageBlob: Blob = imageRecord.image as Blob;
+    newRecipe.image = URL.createObjectURL(imageBlob);
     await db.put('recipes', saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in IndexedDB gespeichert.');
   } catch (error) {
