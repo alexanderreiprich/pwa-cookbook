@@ -25,7 +25,7 @@ dbPromise.then(() => {
 });
 
 export async function initDB() {
-return dbPromise;
+  return dbPromise;
 }
 
 export async function getAllRecipesFromDB(): Promise<RecipeInterface[]> {
@@ -55,7 +55,7 @@ export async function updateRecipeInIndexedDB(id: string, updatedRecipe: Partial
       const db = await initDB();
       const tx = db.transaction('images', 'readwrite');
       const store = tx.objectStore('images');
-      let imageRecord = { id: id, image: image};
+      let imageRecord = { id: id, image: image, date_edit: Timestamp.now() };
       await store.put(imageRecord);                       // Save to db and retrieve it again to convert image to blob
       imageRecord = await db.get('images', id)
       const imageBlob: Blob = imageRecord.image as Blob;
@@ -73,7 +73,7 @@ export async function createRecipeInIndexedDB(newRecipe: RecipeInterface, image?
     const db = await initDB();
     const tx = db.transaction('images', 'readwrite');
     const store = tx.objectStore('images');
-    let imageRecord = { id: newRecipe.id, image: image};
+    let imageRecord = { id: newRecipe.id, image: image, date_edit: Timestamp.now() };
     await store.put(imageRecord);
     imageRecord = await db.get('images', newRecipe.id);
     const imageBlob: Blob = imageRecord.image as Blob;
