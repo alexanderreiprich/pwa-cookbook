@@ -13,12 +13,12 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import FilterComponent from "../components/Filter";
 import SortComponent from "../components/Sort";
-import { useRecipeActions } from "../db/useRecipes";
 import { FilterInterface } from "../interfaces/FilterInterface";
-import { SortOrder } from "../interfaces/SortOrderEnum";
+import { useRecipeActions } from "../db/useRecipes";
 import { sort } from "../helpers/Sorting";
+import { SortOrder } from "../interfaces/SortOrderEnum";
 
-function MyRecipes () {
+function SavedRecipes () {
 	
   const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
   const handleApplyFilters = (newFilters: any) => {
@@ -29,19 +29,18 @@ function MyRecipes () {
 	const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.NAMEASC);
 
 	const { currentUser } = useAuth();
-
-  const { handleGetUsersRecipes } = useRecipeActions();
-
 	let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
 	
+  const { handleGetUsersSavedRecipes } = useRecipeActions();
+
 	useEffect(() => {
 		const fetchItems = async () => {
-		
-      let recipeList: RecipeInterface[] = await handleGetUsersRecipes();
 
-			sort(recipeList, sortOrder);
+      let recipeList: RecipeInterface[] = await handleGetUsersSavedRecipes();
+			
+      sort(recipeList, sortOrder);
 
-			setRecipes(recipeList);
+      setRecipes(recipeList);
 		};
 		fetchItems();
 	}, [filters, sortOrder]);
@@ -65,4 +64,4 @@ function MyRecipes () {
 	)
 }
 
-export default MyRecipes;
+export default SavedRecipes;

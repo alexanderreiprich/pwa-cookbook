@@ -3,12 +3,13 @@ import { Button } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useAuth } from './Authentication';
 import { useRecipeActions } from '../db/useRecipes'; // Adjust path as needed
+import { RecipeInterface } from '../interfaces/RecipeInterface';
 interface FavoritesButtonProps {
   favorites: number;
-  recipeId: string;
+  recipe: RecipeInterface;
 }
 
-export default function FavoritesButton({ favorites, recipeId }: FavoritesButtonProps) {
+export default function FavoritesButton({ favorites, recipe }: FavoritesButtonProps) {
   const { currentUser } = useAuth();
   const { handleUpdateRecipeFavorites } = useRecipeActions();
   const { handleCheckRecipeLikes } = useRecipeActions();
@@ -22,23 +23,23 @@ export default function FavoritesButton({ favorites, recipeId }: FavoritesButton
     setLocalFavorites(favorites);
   }, [favorites]);
 
-  function checkState() {
+  function changeLikeState() {
     if (hasLiked) {
       if(localFavorites > 1){
       setLocalFavorites(localFavorites - 1);
-      handleUpdateRecipeFavorites(recipeId, localFavorites - 1, false);
+      handleUpdateRecipeFavorites(recipe, localFavorites - 1, false);
       } else {
-        handleUpdateRecipeFavorites(recipeId, localFavorites, false);
+        handleUpdateRecipeFavorites(recipe, localFavorites, false);
       }
     } else {
       setLocalFavorites(localFavorites + 1);
-      handleUpdateRecipeFavorites(recipeId, localFavorites + 1, true);
+      handleUpdateRecipeFavorites(recipe, localFavorites + 1, true);
     }
     setHasLiked(!hasLiked);
   }
 
   async function checkLikes () {
-    await handleCheckRecipeLikes(recipeId).then(likes => {
+    await handleCheckRecipeLikes(recipe.id).then(likes => {
       setHasLiked(likes)
     });
   }
@@ -49,7 +50,7 @@ export default function FavoritesButton({ favorites, recipeId }: FavoritesButton
         color="secondary"
         variant={hasLiked ? 'contained' : 'text'}
         startIcon={<FavoriteIcon />}
-        onClick={checkState}
+        onClick={changeLikeState}
       >
         {localFavorites}
       </Button>

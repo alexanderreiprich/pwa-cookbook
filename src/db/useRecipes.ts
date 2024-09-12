@@ -9,22 +9,26 @@ import {
     getRecipeById, 
     createRecipe, 
     deleteRecipe,
-    checkRecipeLikes
+    checkRecipeLikes,
+    changeRecipeVisibility,
+    getUsersRecipes,
+    getUsersSavedRecipes
 } from "../helpers/dbHelper";
+import { FilterInterface } from '../interfaces/FilterInterface';
 
 export function useRecipeActions() {
     const { isOnline } = useNetworkStatus(); // Retrieve the current network status
     const { currentUser } = useAuth();
 
-    const handleUpdateRecipeFavorites = async (id: string, newFavorites: number, likes: boolean) => {
-        await updateRecipeFavorites(currentUser, id, newFavorites, likes, isOnline);
+    const handleUpdateRecipeFavorites = async (recipe: RecipeInterface, newFavorites: number, likes: boolean) => {
+        await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, isOnline);
     };
 
     const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) => {
         await updateRecipe(id, updatedRecipe, isOnline, image);
     };
 
-    const handleGetAllRecipes = async (filters: any) => {
+    const handleGetAllRecipes = async (filters: FilterInterface) => {
         return await getAllRecipes(filters, isOnline);
     };
 
@@ -37,11 +41,23 @@ export function useRecipeActions() {
     };
 
     const handleDeleteRecipe = async (id: string) => {
-        await deleteRecipe(id, isOnline);
+        await deleteRecipe(id, isOnline, currentUser);
     };
 
     const handleCheckRecipeLikes = async (id: string) => {
         return await checkRecipeLikes(id, isOnline, currentUser);
+    }
+
+    const handleChangeRecipeVisibility = async (id: string) => {
+        return await changeRecipeVisibility(id);
+    }
+
+    const handleGetUsersRecipes = async () => {
+        return await getUsersRecipes(currentUser, isOnline);
+    }
+
+    const handleGetUsersSavedRecipes = async () => {
+        return await getUsersSavedRecipes(currentUser, isOnline);
     }
 
     return {
@@ -51,6 +67,9 @@ export function useRecipeActions() {
         handleGetRecipeById,
         handleCreateRecipe,
         handleDeleteRecipe,
-        handleCheckRecipeLikes
+        handleCheckRecipeLikes,
+        handleChangeRecipeVisibility,
+        handleGetUsersRecipes,
+        handleGetUsersSavedRecipes
     };
 }

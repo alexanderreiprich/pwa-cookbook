@@ -5,29 +5,34 @@ import {
     deleteRecipeInIndexedDB, 
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
+    syncEmailToFirestore,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB 
 } from "../db/idb";
 import { 
+    changeRecipeVisibilityInFirestore,
     checkRecipeLikesInFirestore,
     createRecipeInFirestore, 
     deleteRecipeInFirestore, 
     fetchFromFirestore, 
     getAllRecipesFromFirestore, 
     getRecipeByIdFromFirestore,
+    getUsersRecipesInFirestore,
+    getUsersSavedRecipesInFirestore,
     updateRecipeFavoritesInFirestore, 
     updateRecipeInFirestore 
 } from "../db/firestore";
 import { User } from "firebase/auth";
+import { FilterInterface } from "../interfaces/FilterInterface";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, id: string, newFavorites: number, likes: boolean, isOnline: boolean) {
+export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
     // Update in IndexedDB
-    updateRecipeFavoritesInIndexedDB(id, newFavorites, likes);
+    updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
 
     // Update in Firestore if online
     if (isOnline) {
-        await updateRecipeFavoritesInFirestore(currentUser, id, newFavorites, likes);
+        await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
 }
 
@@ -43,7 +48,7 @@ export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInte
 }
 
 // Function to get all recipes
-export async function getAllRecipes(filters: any, isOnline: boolean): Promise<RecipeInterface[]> {
+export async function getAllRecipes(filters: FilterInterface, isOnline: boolean): Promise<RecipeInterface[]> {
     let recipes: RecipeInterface[] = [];
     
     // Fetch from Firestore if online
@@ -92,13 +97,14 @@ export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean
 }
 
 // Function to delete a recipe
-export async function deleteRecipe(id: string, isOnline: boolean) {
-    // Delete from IndexedDB
-    await deleteRecipeInIndexedDB(id);
+export async function deleteRecipe(id: string, isOnline: boolean, currentUser: User | null) {
     
-    // Delete from Firestore if online
+    // Delete from Firestore and indexed db if online
     if (isOnline) {
-        await deleteRecipeInFirestore(id);
+        await deleteRecipeInIndexedDB(id);
+        await deleteRecipeInFirestore(id, currentUser);
+    } else {
+        alert("Im Offline Modus können leider keine Rezepte gelöscht werden.")
     }
 }
 
@@ -109,4 +115,30 @@ export async function checkRecipeLikes(id: string, isOnline: boolean, currentUse
         return checkRecipeLikesInIndexedDB(id);
 
     }
+}
+
+export async function changeRecipeVisibility(id: string) {
+    return changeRecipeVisibilityInFirestore(id);
+}
+
+export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
+    if(isOnline) {
+        return getUsersRecipesInFirestore(currentUser);
+    }
+    else {
+        return getUsersRecipesInFirestore(currentUser);
+    }
+}
+
+export function getUsersSavedRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
+    if(isOnline) {
+        return getUsersSavedRecipesInFirestore(currentUser);
+    }
+    else {
+        return getUsersSavedRecipesInFirestore(currentUser);
+    }    
+
+}
+export async function syncEmail(user: User | null){
+    if(user && user.email) syncEmailToFirestore(user.email);
 }

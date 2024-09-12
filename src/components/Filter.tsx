@@ -29,7 +29,7 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
   }
 
   const handleApplyFilters = () => {
-    onApplyFilters({ tags: categoryFilter, difficulty: difficultyFilter, timeMin: timeMinFilter, timeMax: timeMaxFilter });
+    onApplyFilters({ tags: categoryFilter, difficulty: difficultyFilter, timeMin: timeMinFilter, timeMax: timeMaxFilter, user: undefined, favorite: undefined });
   };
 
   const tags: string[] = Object.keys(TAG).slice(Object.keys(TAG).length / 2);

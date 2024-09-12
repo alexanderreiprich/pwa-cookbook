@@ -4,8 +4,10 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
-import { DocumentData } from "firebase/firestore";
-import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+
+import { DocumentData, Timestamp } from "firebase/firestore";
+import { MenuItem, Paper, Select, Stack, styled, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { useRecipeActions } from "../db/useRecipes";
 import { Key, useRef, useState } from "react";
@@ -14,6 +16,9 @@ import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import UploadImageButton from "./UploadImageButton";
+
+import { useNavigate } from 'react-router-dom';
+import { checkRecipeVersioning } from "../helpers/synchDBHelper";
 
 const style = {
   position: "absolute" as "absolute",
@@ -94,6 +99,7 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [tags, setTags] = useState<TAG[]>(recipe.tags);
   const [ingredients, setIngredients] = useState<IngredientInterface[]>(recipe.ingredients);
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
+  const [hasError, setHasError] = useState(false);
   
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
@@ -104,10 +110,13 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
 
+  const navigate = useNavigate();
+
   const { 
     handleUpdateRecipe, 
     handleCreateRecipe, 
-    handleDeleteRecipe 
+    handleDeleteRecipe,
+    handleGetRecipeById 
 } = useRecipeActions();
   
   const handleClose = () => {
@@ -126,9 +135,14 @@ const createRecipe = async (newRecipe: RecipeInterface, image?: File) => {
   }
 };
 
-const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, image?: File) => {
-  if (id && updatedRecipe) {
-      await handleUpdateRecipe(id, updatedRecipe, image);
+const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateEdit: Timestamp, image?: File) => {
+  let canUpdate = await checkRecipeVersioning(id, oldDateEdit);
+  if (canUpdate) {
+    if (id && updatedRecipe) {
+        await handleUpdateRecipe(id, updatedRecipe, image);
+    }
+  } else {
+    alert("In der Online Datenbank wurde eine aktuellere Version des Rezeptes gefunden. Bitte lade die Seite neu, bevor du das Rezept editierst");
   }
 };
 
@@ -168,13 +182,20 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, image?: 
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => { 
+  const handleIdCheck = async (id: string): Promise<boolean> => {
+    if (await handleGetRecipeById(id)) {
+      return false;
+    }
+    return true
+  }
+
+  const handleSave = async () => { 
     let updatedRecipe: RecipeInterface = {
       id: idRef.current && isNew ? idRef.current.value : recipe.id,
       name: nameRef.current ? nameRef.current.value : recipe.name,
       ingredients: ingredients,
-      number_of_people: numberOfPeopleRef.current ? numberOfPeopleRef.current.value : recipe.number_of_people,
-      time: timeRef.current ? timeRef.current.value : recipe.time,
+      number_of_people: numberOfPeopleRef.current ? parseInt(numberOfPeopleRef.current.value) : parseInt(recipe.number_of_people),
+      time: timeRef.current ? parseInt(timeRef.current.value) : parseInt(recipe.time),
       image: imageRef.current ? imageRef.current.value : recipe.image,
       steps: steps,
       description: descriptionRef.current ? descriptionRef.current.value : recipe.description,
@@ -183,27 +204,45 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, image?: 
       favorites: recipe.favorites,
       author: recipe.author,
       date_create: recipe.date_create,
-      date_edit: new Date()
+      date_edit: Timestamp.now(),
+      public: recipe.public
     }
-    if (selectedImage) {
-      isNew ? createRecipe(updatedRecipe, selectedImage) : updateRecipe(recipe.id, updatedRecipe, selectedImage);
+    if (isNew && await handleIdCheck(updatedRecipe.id) == false) {
+      setHasError(true);
     }
     else {
-      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe);
+      setHasError(false);
+      isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit).then(() => handleReload());
+      handleClose();
+    }
+    if (selectedImage) {
+      isNew ? createRecipe(updatedRecipe, selectedImage) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit, selectedImage);
+    }
+    else {
+      isNew ? createRecipe(updatedRecipe) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit);
     }
     handleClose();
   }
 
   const handleDelete = () => {
-    if(!isNew) deleteRecipe();
+    if(!isNew) deleteRecipe().then(() => {
+      navigate('/my_recipes', {replace: true});
+      handleReload();
+    });
     handleClose();
+  }
+
+  const handleReload = () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 0);
   }
 
 
   return (
     <div>
       <h1>
-        <Button onClick={handleOpen}>{isNew ? "Rezept erstellen" : "Rezept bearbeiten"}</Button>
+        <Button onClick={handleOpen} variant="outlined">{isNew ? "Rezept erstellen" : "Rezept bearbeiten"}</Button>
       </h1>
       <Modal
         open={open}
@@ -224,7 +263,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, image?: 
               Allgemeine Informationen
             </Typography>
             <Stack spacing={{ xs: 2, sm: 2, md: 4 }} paddingBottom={2}>
-              <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id}/>
+              <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id} error={hasError} helperText={hasError? 'ID bereits vergeben' : ''}/>
               <TextField size="small" inputRef={nameRef} required id="name" label="Name des Rezeptes" defaultValue={recipe.name}/>
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
