@@ -26,7 +26,7 @@ const imagesStoreName = 'images';
 
 function openIndexedDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, 2);
+        const request = indexedDB.open(dbName, 3);
         request.onerror = (event) => reject(event);
         request.onsuccess = (event) => resolve(event.target.result);
         request.onupgradeneeded = (event) => {
