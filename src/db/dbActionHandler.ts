@@ -23,8 +23,8 @@ export function useDbActionHandler() {
         await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, isOnline);
     };
 
-    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
-        await updateRecipe(id, updatedRecipe, isOnline);
+    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) => {
+        await updateRecipe(id, updatedRecipe, isOnline, image);
     };
 
     const handleGetAllRecipes = async (filters: FilterInterface) => {
@@ -35,8 +35,8 @@ export function useDbActionHandler() {
         return await getRecipeById(id, isOnline);
     };
 
-    const handleCreateRecipe = async (newRecipe: RecipeInterface) => {
-        await createRecipe(newRecipe, isOnline);
+    const handleCreateRecipe = async (newRecipe: RecipeInterface, image?: File) => {
+        await createRecipe(newRecipe, isOnline, image);
     };
 
     const handleDeleteRecipe = async (id: string, isPublic: boolean) => {

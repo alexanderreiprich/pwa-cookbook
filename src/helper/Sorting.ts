@@ -4,7 +4,6 @@ import { SortOrder } from "../interfaces/SortOrderEnum";
 
 export function sort(recipeList: RecipeInterface[], sortOrder: SortOrder): RecipeInterface[] {
 	let allRecipes: RecipeInterface[] = recipeList;
-	console.log(sortOrder, SortOrder[sortOrder])
 	switch (sortOrder) {
 		case SortOrder.NAMEASC:
 			allRecipes = allRecipes.sort((a, b) =>

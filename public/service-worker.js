@@ -1,6 +1,7 @@
 // Import Firebase scripts
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js')
 
 // Firebase configuration
 const firebaseConfig = {
@@ -15,11 +16,13 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
+const storage = firebase.storage();
 
 // IndexedDB setup
 const dbName = 'recipes-db';
 const storeName = 'recipes';
 const userStoreName = 'user';
+const imagesStoreName = 'images';
 
 function openIndexedDB() {
     return new Promise((resolve, reject) => {
@@ -34,6 +37,9 @@ function openIndexedDB() {
             if (!db.objectStoreNames.contains(userStoreName)) {
                 db.createObjectStore(userStoreName, { keyPath: 'id' });
             }
+            if (!db.objectStoreNames.contains(imagesStoreName)) {
+                db.createObjectStore(imagesStoreName, { keyPath: 'id' });
+            }
         };
     });
 }
@@ -47,11 +53,32 @@ async function getFromIndexedDB(id) {
         request.onsuccess = (event) => resolve(event.target.result);
     }));
 }
+
+async function getAllRecipesFromIndexedDB() {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readonly');
+        const objectStore = transaction.objectStore(storeName);
+        const request = objectStore.getAll();
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+    }));
+}
+
 async function getUserFromIDB() {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([userStoreName], 'readonly');
         const objectStore = transaction.objectStore(userStoreName);
         const request = objectStore.getAll();
+        request.onerror = (event) => reject(event);
+        request.onsuccess = (event) => resolve(event.target.result);
+    }));
+}
+
+async function getImageFromIDB(id) {
+    return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        const transaction = db.transaction([imagesStoreName], 'readonly');
+        const objectStore = transaction.objectStore(imagesStoreName);
+        const request = objectStore.get(id);
         request.onerror = (event) => reject(event);
         request.onsuccess = (event) => resolve(event.target.result);
     }));
@@ -136,6 +163,7 @@ async function addFavoritesListToFirestore(email, favorites) {
 async function syncDBs() {
     await syncFavoritesFromFirestore();
     await syncOwnRecipesFromFirestore();
+    await syncRecipeImages();
     console.log("Service worker synced DBs");
 }
 
@@ -146,6 +174,15 @@ async function syncOwnRecipesFromFirestore() {
         const recipes = querySnapshot.docs.map(doc => doc.data());
         return Promise.all(recipes.map(syncFirestoreDocToIndexedDB));
     }
+}
+
+async function syncRecipeImages() {
+    const recipes = await getAllRecipesFromIndexedDB();
+    return Promise.all(recipes.map((recipe) => {
+        if (recipe.public) {
+            syncImages(recipe.id)
+        }
+    }));
 }
 
 async function syncFileInDBs(firestoreDoc, idbDoc) {
@@ -224,6 +261,19 @@ async function syncFavoritesList(ids) {
     }
     if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {
         await addFavoritesListToFirestore(idbUser[0].email, newFavorites, newEditDate);
+    }
+}
+
+async function syncImages(id) {
+    const indexedDBImage = await getImageFromIDB(id);
+    const storageRef = storage.ref(`recipes/${id}.jpg`);
+    let storageLastEdit = null;
+    firebase.getMetadata(storageRef).then((metadata) => {
+        metadata.updated ? storageLastEdit = firebase.Timestamp(new Date(metadata.updated)) : null;
+    });
+    if (!storageLastEdit || indexedDBImage.last_edit > storageLastEdit) {
+        await firestore.uploadBytes(storageRef, indexedDBImage.image);
+        console.log("Image updated.")
     }
 }
 

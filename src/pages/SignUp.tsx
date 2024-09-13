@@ -64,7 +64,6 @@ export default function SignUp() {
       const docRef = doc(db, "users", chosenUsername);
       const docSnap = await getDoc(docRef);
       const submitButton = document.getElementById("submitBtn")! as HTMLButtonElement;
-      console.log(docSnap.exists());
       if (docSnap.exists()) {
         submitButton.disabled = true;
         setUsernameError("Nutzername bereits vergeben.")

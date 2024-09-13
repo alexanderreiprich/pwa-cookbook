@@ -15,6 +15,7 @@ import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import UploadImageButton from "./UploadImageButton";
 
 import { useNavigate } from 'react-router-dom';
 import { checkRecipeVersioning } from "../helper/helperFunctions";
@@ -100,6 +101,12 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
   const [hasError, setHasError] = useState(false);
   
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const handleImageSelect = (image: File) => {
+    setSelectedImage(image);
+  }
+
   const allTags = Object.keys(TAG);
   const allDifficulties = Object.keys(DIFFICULTY);
 
@@ -122,17 +129,17 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
     }
 };
 
-const createRecipe = async (newRecipe: RecipeInterface) => {
+const createRecipe = async (newRecipe: RecipeInterface, image?: File) => {
   if (newRecipe) {
-      await handleCreateRecipe(newRecipe);
+      await handleCreateRecipe(newRecipe, image);
   }
 };
 
-const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateEdit: Timestamp) => {
+const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateEdit: Timestamp, image?: File) => {
   let canUpdate = await checkRecipeVersioning(id, oldDateEdit);
   if (canUpdate) {
     if (id && updatedRecipe) {
-        await handleUpdateRecipe(id, updatedRecipe);
+        await handleUpdateRecipe(id, updatedRecipe, image);
     }
   } else {
     alert("In der Online Datenbank wurde eine aktuellere Version des Rezeptes gefunden. Bitte lade die Seite neu, bevor du das Rezept editierst");
@@ -205,7 +212,12 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
     }
     else {
       setHasError(false);
-      isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit).then(() => handleReload());
+      if (selectedImage) {
+        isNew ? createRecipe(updatedRecipe, selectedImage).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit, selectedImage).then(() => handleReload());
+      }
+      else {
+        isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit.then(() => handleReload()));
+      }
       handleClose();
     }
   }
@@ -254,7 +266,6 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
               <TextField size="small" type="number" inputRef={timeRef} id="time" label="Dauer in Minuten" defaultValue={recipe.time}/>
-              
               <CustomSelect
                 size="small"
                 name="Schwierigkeit"
@@ -334,6 +345,8 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
                 </div>
               )}
           </Box> */}
+
+          <UploadImageButton onImageSelect={handleImageSelect}/>
 
           {/* Ingredients */}
 

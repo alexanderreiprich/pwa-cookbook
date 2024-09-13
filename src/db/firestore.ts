@@ -5,6 +5,7 @@ import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 
@@ -54,10 +55,13 @@ export async function updateRecipeFavoritesInFirestore(user: User | null, id: st
     }
   }
 
-export async function updateRecipeInFirestore(id: string, updatedRecipe: Partial<RecipeInterface>): Promise<void> {
+export async function updateRecipeInFirestore(id: string, updatedRecipe: Partial<RecipeInterface>, image?: File): Promise<void> {
     try {
       const recipeRef = doc(db, 'recipes', id);
-      // updates recipe in firestore
+      if (image) {
+        let imgLink = await uploadImage(updatedRecipe.id!, image);
+        updatedRecipe.image = imgLink;
+      }
       await setDoc(recipeRef, saveRecipe(updatedRecipe), { merge: true });
       console.log('Rezept erfolgreich in Firestore aktualisiert.');
     } catch (e) {
@@ -71,23 +75,19 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
     try {
       let q: any = collection(db, 'recipes');
       if (filters.timeMin) {
-        console.log("timemin")
         q = query(q, where('time', '>=', Number(filters.timeMin)));
       }
       if (filters.timeMax) {
-        console.log("timemax")
         q = query(q, where('time', '<=', Number(filters.timeMax)));
       }
       if (filters.tags && filters.tags.length > 0) {
         let chosenTags: string[] = [];
         filters.tags.map((tag) => chosenTags.push(TAG[tag].toString()));
-        console.log("tags", chosenTags)
         q = query(q, where('tags', 'array-contains-any', chosenTags));
       }
       if (filters.difficulty) {
         q = query(q, where('difficulty', '==', DIFFICULTY[filters.difficulty]));
       }
-      console.log(q);
       recipes = await fetchFromFirestore(q);
     } catch (error) {
       console.error('Fehler beim Abrufen von Firestore:', error);
@@ -119,10 +119,13 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
     }
   }
 
-export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promise<void> {
+export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?: File): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', newRecipe.id);
-
+    if (image) {
+      let imgLink = await uploadImage(newRecipe.id, image);
+      newRecipe.image = imgLink;
+    }
     await setDoc(recipeRef, saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in Firestore erstellt.');
 
@@ -134,13 +137,20 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface): Promi
 export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
+    const storage = getStorage();
     const isLiked = await checkRecipeLikesInFirestore(id, user);
     if(isLiked) {
       updateFavoritesListInFirestore(user, id, false);
     }
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
-
+    let imageRef = ref(storage, `recipes/${id}.jpg`);
+    deleteObject(imageRef).then(() => {
+      console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
+    }).catch((error) => {
+      console.log(error)
+    });
+    
   } catch (err) {
       console.log(err);
   }
@@ -167,6 +177,7 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
 }
 
 export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeInterface>, visibility: boolean): Promise<void> {
+  const storage = getStorage();
   try {
     if(recipe.id){
       if(visibility){
@@ -177,7 +188,12 @@ export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeIn
         // Not deleteRecipeFromFirestore to keep Favorites
         await deleteDoc(recipeRef).then( () =>
         console.log('Rezept erfolgreich aus Firestore gelöscht.'));
-    
+        let imageRef = ref(storage, `recipes/${recipe.id}.jpg`);
+        deleteObject(imageRef).then(() => {
+          console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
+        }).catch((error) => {
+          console.log(error)
+        });
       }
     }
   } catch (error) {
@@ -198,6 +214,18 @@ async function getUserId(currentUser: User | null): Promise<string> {
       }
     }
     return userId;
+}
+
+async function uploadImage(id: string, image: File): Promise<string> {
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, `recipes/${id}.jpg`);
+    const uploadResult = await uploadBytes(storageRef, image);
+    return getDownloadURL(uploadResult.ref);
+  }
+  catch (error) {
+    return "Error - " + error;
+  }
 }
 
 export async function getUsersRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
