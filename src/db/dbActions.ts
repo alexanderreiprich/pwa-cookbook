@@ -6,10 +6,13 @@ import {
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
     syncEmailToFirestore,
+    getUsersRecipesInIndexedDB,
     getUsersFavoriteRecipesInIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
-    changeRecipeVisibilityInIndexedDB 
+    changeRecipeVisibilityInIndexedDB,
+    getUsersFavoritesList,
+    logoutInIndexedDB
 } from "./idb";
 import { 
     changeRecipeVisibilityInFirestore,
@@ -29,23 +32,23 @@ import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 
 // Function to update recipe favorites
-export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, isOnline: boolean) {
-    // Update in IndexedDB
-    updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
-
+export async function updateRecipeFavorites(currentUser: User | null, recipe: RecipeInterface, newFavorites: number, likes: boolean, allowFirestorePush: boolean) {
+    // mind the order, to prevent a false firestore to idb sync by the service worker!
     // Update in Firestore if online
-    if (isOnline && recipe.public) {
+    if (allowFirestorePush && recipe.public) {
         await updateRecipeFavoritesInFirestore(currentUser, recipe.id, newFavorites, likes);
     }
+    // Update in IndexedDB
+    await updateRecipeFavoritesInIndexedDB(recipe, newFavorites, likes);
+    console.log("updateRecipeFavorites", recipe, newFavorites, likes, allowFirestorePush);
 }
-
 // Function to update a recipe
-export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, isOnline: boolean, image?: File) {
+export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, allowFirestorePush: boolean, image?: File) {
     // Update in IndexedDB
     updateRecipeInIndexedDB(id, updatedRecipe, image);
 
     // Update in Firestore if online
-    if (isOnline && updatedRecipe.public) {
+    if (allowFirestorePush && updatedRecipe.public) {
         await updateRecipeInFirestore(id, updatedRecipe, image);
     }
 }
@@ -89,61 +92,70 @@ export async function getRecipeById(id: string, isOnline: boolean): Promise<Reci
 }
 
 // Function to create a new recipe
-export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean, image?: File,) {
+export async function createRecipe(newRecipe: RecipeInterface, allowFirestorePush: boolean, image?: File) {
     // Create in IndexedDB
     createRecipeInIndexedDB(newRecipe, image);
     
     // Create in Firestore if online
-    if (isOnline && newRecipe && newRecipe.public) {
+    if (allowFirestorePush && newRecipe && newRecipe.public) {
         await createRecipeInFirestore(newRecipe, image);
     }
 }
 
 // Function to delete a recipe
-export async function deleteRecipe(id: string, isOnline: boolean, isPublic: boolean, currentUser: User | null) {
+export async function deleteRecipe(id: string, allowFirestorePush: boolean, isPublic: boolean) {
     
     // Delete from Firestore and indexed db if online
-    if (isOnline && isPublic) {
+    if (allowFirestorePush && isPublic) {
         await deleteRecipeInIndexedDB(id);
-        await deleteRecipeInFirestore(id, currentUser);
+        await deleteRecipeInFirestore(id);
     } else if( !isPublic) {
         await deleteRecipeInIndexedDB(id);
+    }
+}
+
+export async function checkRecipeLikes(id: string, isPublic: boolean, isOnline: boolean, currentUser: User | null): Promise<LikesInterface> {
+    let likes: LikesInterface | null;
+    if(isOnline && isPublic) {
+        likes = await checkRecipeLikesInFirestore(id, currentUser);
+        if(!likes) likes = await checkRecipeLikesInIndexedDB(id);
     } else {
-        alert("Im Offline Modus können leider keine öffentlichen Rezepte gelöscht werden.")
+        likes = await checkRecipeLikesInIndexedDB(id);
     }
+    return likes;
 }
 
-export async function checkRecipeLikes(id: string, isOnline: boolean, currentUser: User | null): Promise<LikesInterface> {
-    if(isOnline) {
-        return checkRecipeLikesInFirestore(id, currentUser);    
-    } else {
-        return checkRecipeLikesInIndexedDB(id);
-
+export async function changeRecipeVisibility(id: string, visibility: boolean, allowFirestorePush: boolean, user: User |null) {
+    if(allowFirestorePush) {
+        let isLiked: boolean = false;
+        if(visibility) {
+            isLiked = await getUsersFavoritesList().then((favorites: string[]) => favorites.includes(id));
+        }
+        await changeRecipeVisibilityInFirestore(id, visibility, user, isLiked);
     }
+    await changeRecipeVisibilityInIndexedDB(id, visibility);
 }
 
-export async function changeRecipeVisibility(recipe: Partial<RecipeInterface>, visibility: boolean, isOnline: boolean) {
-    await changeRecipeVisibilityInIndexedDB(recipe, visibility);
-    if(isOnline) {
-        await changeRecipeVisibilityInFirestore(recipe, visibility);
+export async function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
+    let recipes = await getUsersRecipesInIndexedDB();
+    if(isOnline && (!recipes || recipes.length < 1)) {
+        recipes = await getUsersRecipesInFirestore(currentUser);
     }
-}
-
-export function getUsersRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
-    if(isOnline) {
-        return getUsersRecipesInFirestore(currentUser);
-    }
-    else {
-        return getUsersRecipesInFirestore(currentUser);
-    }
+    return recipes;
 }
 
 export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline: boolean): Promise<RecipeInterface[]> {
-    if(isOnline) {
+    if(isOnline && currentUser) {
+        console.log("isOnline && currentUser")
         return getUsersFavoriteRecipesInFirestore(currentUser);
-    } else return getUsersFavoriteRecipesInIndexedDB();
+    }
+    return getUsersFavoriteRecipesInIndexedDB();
 }
 
 export async function syncEmail(user: User | null){
     if(user && user.email) syncEmailToFirestore(user.email);
+}
+
+export function logout() {
+    logoutInIndexedDB();
 }

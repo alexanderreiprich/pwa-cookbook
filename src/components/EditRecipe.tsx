@@ -6,11 +6,11 @@ import Modal from "@mui/material/Modal";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 
 import { DocumentData, Timestamp } from "firebase/firestore";
-import { MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
+import { Checkbox, FormControlLabel, FormGroup, MenuItem, Paper, Select, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from "@mui/material";
 
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { useDbActionHandler } from "../db/dbActionHandler";
-import { Key, useRef, useState } from "react";
+import { Key, useRef, useState, useEffect } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -19,6 +19,8 @@ import UploadImageButton from "./UploadImageButton";
 
 import { useNavigate } from 'react-router-dom';
 import { checkRecipeVersioning } from "../helper/helperFunctions";
+import { USER_UNKNOWN } from "../App";
+import { useAuth } from "../provider/Authentication";
 
 const style = {
   position: "absolute" as "absolute",
@@ -99,10 +101,12 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const [tags, setTags] = useState<TAG[]>(recipe.tags);
   const [ingredients, setIngredients] = useState<IngredientInterface[]>(recipe.ingredients);
   const [difficulty, setDifficulty] = useState<DIFFICULTY>(recipe.difficulty);
-  const [hasError, setHasError] = useState(false);
-  
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [checked, setChecked] =  useState<boolean>(false)
+  const [canClaimRecipe, setCanClaimRecipe] =  useState<boolean>(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const { currentUser } = useAuth();
   const handleImageSelect = (image: File) => {
     setSelectedImage(image);
   }
@@ -111,6 +115,11 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const allDifficulties = Object.keys(DIFFICULTY);
 
   const navigate = useNavigate();
+
+  useEffect(() => { 
+    console.log("setCanClaimRecipe", recipe.author != USER_UNKNOWN, Boolean(currentUser))
+    setCanClaimRecipe((recipe.author == USER_UNKNOWN) && Boolean(currentUser));
+  }, [currentUser]);
 
   const { 
     handleUpdateRecipe, 
@@ -161,7 +170,10 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
     setSteps(newSteps);
   };
 
-  
+  const handleHasAuthorChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+    setChecked(event.target.checked);
+  };
+
   // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   if (e.target.files && e.target.files.length > 0) {
   //     setImage(e.target.files[0]);
@@ -202,7 +214,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       difficulty: difficulty,
       tags: tags,
       favorites: recipe.favorites,
-      author: recipe.author,
+      author: checked ? (currentUser?.email ? currentUser.email : recipe.author) : recipe.author,
       date_create: recipe.date_create,
       date_edit: Timestamp.now(),
       public: recipe.public
@@ -263,6 +275,14 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
             <Stack spacing={{ xs: 2, sm: 2, md: 4 }} paddingBottom={2}>
               <TextField size="small" inputRef={idRef} disabled={!isNew} required id="id" label="Id des Rezeptes" defaultValue={recipe.id} error={hasError} helperText={hasError? 'ID bereits vergeben' : ''}/>
               <TextField size="small" inputRef={nameRef} required id="name" label="Name des Rezeptes" defaultValue={recipe.name}/>
+              { canClaimRecipe? (
+                <FormGroup>
+                  <FormControlLabel
+                    control={<Checkbox checked={checked} onChange={handleHasAuthorChange} />}
+                    label="Rezept aneignen"
+                  />
+                </FormGroup>
+              ) : null }
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
               <TextField size="small" type="number" inputRef={timeRef} id="time" label="Dauer in Minuten" defaultValue={recipe.time}/>
@@ -313,7 +333,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
               variant="outlined"
               >
                 {allTags.map((tag) => (
-                  <MenuItem key={tag} value={tag}>
+                  <MenuItem key={tag + "recipe-edit"} value={tag}>
                     {TAG[parseInt(tag)]}
                   </MenuItem>
                 ))}

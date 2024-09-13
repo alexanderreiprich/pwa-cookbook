@@ -16,21 +16,10 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
   // State to manage the liked state
   const [hasLiked, setHasLiked] = useState<boolean>(false);
   checkLikes();
-  useEffect(() => {
-    // Update local favorites if the prop changes
-    setLocalFavorites(favorites);
-  }, [favorites]);
-
-  useEffect(() => {
-    navigator.serviceWorker.addEventListener('message', handleMessage);
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', handleMessage);
-    }
-  }, []);
 
   function changeLikeState() {
     if (hasLiked) {
-      if(localFavorites > 1){
+      if(localFavorites > 0){
       setLocalFavorites(localFavorites - 1);
       handleUpdateRecipeFavorites(recipe, localFavorites - 1, false);
       } else {
@@ -43,14 +32,8 @@ export default function FavoritesButton({ favorites, recipe }: FavoritesButtonPr
     setHasLiked(!hasLiked);
   }
 
-  const handleMessage = async (event: MessageEvent) => {
-    if (event.data && event.data.type === 'NETWORK_STATUS_PROCESSED') {
-      await checkLikes();
-    }
-  };
-
   async function checkLikes () {
-    await handleCheckRecipeLikes(recipe.id).then( (likes: LikesInterface) => {
+    await handleCheckRecipeLikes(recipe.id, recipe.public).then( (likes: LikesInterface) => {
       setHasLiked(likes.likes);
       setLocalFavorites(likes.numberOfLikes);
     });

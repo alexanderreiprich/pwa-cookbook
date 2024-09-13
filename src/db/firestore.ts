@@ -8,6 +8,8 @@ import { User } from "firebase/auth";
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
+import { getRecipeByIdFromIndexedDB } from "./idb";
+import { USER_UNKNOWN } from "../App";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
     try{
@@ -28,16 +30,16 @@ export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
 
 
 export async function updateRecipeFavoritesInFirestore(user: User | null, id: string, newFavorites: number, likes: boolean): Promise<void> {
-    try {
-      const recipeRef = doc(db, 'recipes', id);
-      await updateDoc(recipeRef, { favorites: newFavorites, date_edit: Timestamp.now() });
-      console.log('Favoriten erfolgreich in Firestore aktualisiert.');
-    } catch (err) {
-        console.log(err);
-    }
-
-    updateFavoritesListInFirestore(user, id, likes);
+  try {
+    const recipeRef = doc(db, 'recipes', id);
+    await updateDoc(recipeRef, { favorites: newFavorites, date_edit: Timestamp.now() });
+    console.log('Favoriten erfolgreich in Firestore aktualisiert.');
+  } catch (err) {
+      console.log(err);
   }
+
+  updateFavoritesListInFirestore(user, id, likes);
+}
 
 
   async function updateFavoritesListInFirestore(user: User | null, id: string, likes: boolean): Promise<void> {
@@ -98,6 +100,7 @@ export async function getAllRecipesFromFirestore(filters: FilterInterface): Prom
 
 
   export async function getRecipeByIdFromFirestore(id: string): Promise<RecipeInterface | null> {
+    console.log("getRecipeByIdFromFirestore", id)
     try {
       const recipeRef = doc(db, 'recipes', id);
       const docSnap = await getDoc(recipeRef);
@@ -134,14 +137,10 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?
   }
 }
 
-export async function deleteRecipeInFirestore(id: string, user: User | null): Promise<void> {
+export async function deleteRecipeInFirestore(id: string): Promise<void> {
   try {
     const recipeRef = doc(db, 'recipes', id);
-    const storage = getStorage();
-    const isLiked = await checkRecipeLikesInFirestore(id, user);
-    if(isLiked) {
-      updateFavoritesListInFirestore(user, id, false);
-    }
+    deleteRecipeFromAllFavoritesListsInFireStore(id);
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
     let imageRef = ref(storage, `recipes/${id}.jpg`);
@@ -156,8 +155,7 @@ export async function deleteRecipeInFirestore(id: string, user: User | null): Pr
   }
 }
 
-export async function checkRecipeLikesInFirestore(id: string, currentUser: User | null): Promise<LikesInterface> {
-  let likes: LikesInterface = { likes: false, numberOfLikes: 0 };
+export async function checkRecipeLikesInFirestore(id: string, currentUser: User | null): Promise<LikesInterface | null> {
   try {
     const userId: string = await getUserId(currentUser);
     const userRef = doc(db, 'users', userId);
@@ -166,34 +164,39 @@ export async function checkRecipeLikesInFirestore(id: string, currentUser: User 
       const data = docSnap.data() as any;
       const favorites: Array<string> = data.favorites;
       const recipe = await getRecipeByIdFromFirestore(id);
-      const numberOfLikes = recipe && recipe.favorites ? recipe.favorites : 0;
-      likes = { likes: favorites.includes(id), numberOfLikes: numberOfLikes };
+      const numberOfLikes = recipe?.favorites;
+      if(numberOfLikes) return { likes: favorites.includes(id), numberOfLikes: numberOfLikes };
     }
-    return likes;
+    return null;
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore-Daten:', error);
-    return likes;
+    return null;
   }
 }
 
-export async function changeRecipeVisibilityInFirestore(recipe: Partial<RecipeInterface>, visibility: boolean): Promise<void> {
-  const storage = getStorage();
+export async function changeRecipeVisibilityInFirestore(id: string, visibility: boolean, user: User | null, isLiked: boolean): Promise<void> {
   try {
-    if(recipe.id){
+    if(id){
       if(visibility){
-        const recipeRef = { ...recipe,  public: visibility, date_edit: Timestamp.now()}
-        await updateRecipeInFirestore(recipe.id, recipeRef);
+        const recipe = await getRecipeByIdFromIndexedDB(id)
+        const updatedRecipe: Partial<RecipeInterface> = { ...recipe, public: visibility, date_edit: Timestamp.now() };
+        // update userFavorites
+        if(isLiked) {
+          updateFavoritesListInFirestore(user, id, true);
+        }
+        if(recipe) await updateRecipeInFirestore(id, updatedRecipe);
       } else {
-        const recipeRef = doc(db, 'recipes', recipe.id);
-        // Not deleteRecipeFromFirestore to keep Favorites
-        await deleteDoc(recipeRef).then( () =>
-        console.log('Rezept erfolgreich aus Firestore gelöscht.'));
-        let imageRef = ref(storage, `recipes/${recipe.id}.jpg`);
-        deleteObject(imageRef).then(() => {
-          console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
-        }).catch((error) => {
-          console.log(error)
-        });
+        if(user?.email) {
+          const recipeRef = doc(db, 'recipes', id);
+          deleteRecipeFromAllFavoritesListsInFireStore(id, user?.email);
+          await deleteDoc(recipeRef);
+          let imageRef = ref(storage, `recipes/${recipe.id}.jpg`);
+          deleteObject(imageRef).then(() => {
+            console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
+          }).catch((error) => {
+            console.log(error)
+          });
+        } else deleteRecipeInFirestore(id);
       }
     }
   } catch (error) {
@@ -230,7 +233,7 @@ async function uploadImage(id: string, image: File): Promise<string> {
 
 export async function getUsersRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
-  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
   try {
     let q: any = collection(db, 'recipes');
     q = query(q, where('author', "==", user));
@@ -244,7 +247,7 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
 
 export async function getUsersFavoriteRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
-  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : "unknown";
+  let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
 
   try {
     let s: any = collection(db, "users");
@@ -260,4 +263,31 @@ export async function getUsersFavoriteRecipesInFirestore(currentUser: User | nul
     console.error('Fehler beim Abrufen von Firestore:', error);
   }
   return recipes;
+}
+
+export async function deleteRecipeFromAllFavoritesListsInFireStore (id: string, exemptUserEmail?: string) {
+  try {
+    // Get all users
+    const usersCollection = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersCollection);
+    
+    // Iterate through all users
+    for (const userDoc of usersSnapshot.docs) {
+      const userData = userDoc.data();
+
+      // Check whether favoritesList contains id
+      if (userData.favorites && Array.isArray(userData.favorites) && userData.email != exemptUserEmail) {
+        const updatedFavorites = userData.favorites.filter((favoriteId: string) => favoriteId !== id);
+        // if filtering was effective: update list with new date_edit
+        if (updatedFavorites.length !== userData.favorites.length) {
+          await updateDoc(doc(db, 'users', userDoc.id), {
+            favorites: updatedFavorites,
+            date_edit: Timestamp.now()
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Fehler beim Entfernen des Rezepts aus den Favoritenlisten:', error);
+  }
 }

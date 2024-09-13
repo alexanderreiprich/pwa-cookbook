@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import { Key, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import NavigationBar from "../components/NavigationBar";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
@@ -22,6 +22,9 @@ import { useDbActionHandler } from "../db/dbActionHandler";
 import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import EditRecipe from "../components/EditRecipe";
 import RecipeCookMode from "../components/RecipeCookMode";
+import { useAuth } from "../provider/Authentication";
+import { USER_UNKNOWN } from "../App";
+import { BasePage } from "./BasePage";
 
 
 function Recipe() {
@@ -31,25 +34,37 @@ function Recipe() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<boolean>(false);
+  const [showVisibilityToggle, setShowVisibilityToggle] = useState<boolean>(false);
+  const [canEdit, setCanEdit] = useState<boolean>(false);
+  const [isPublic, setIsPublic] = useState<boolean>(false);
   const { handleGetRecipeById, handleChangeRecipeVisibility } = useDbActionHandler();
   const { isOnline } = useNetworkStatus();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   const handleVisibilityChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (recipe) {
-      handleChangeRecipeVisibility(recipe, !checked);
+      handleChangeRecipeVisibility(recipe.id, !checked);
       setChecked(!checked);
+      setIsPublic(!isPublic);
     }
   };
 
   const [servings, setServings] = useState<number>(4);
+
   const handleServingsChange = (event: any) => {
     const newServings = Number(event.target.value);
     setServings(newServings);
   }
 
-  useEffect(() => {
+   
+  const handleReturnToBrowseRecipes = () => {
+    navigate('/', {replace: true});
+    window.location.reload();
+  }
+  useEffect(() => { 
     const fetchRecipe = async () => {
       try {
         if (id) {
@@ -57,20 +72,31 @@ function Recipe() {
           setRecipe(recipe);
           
           setChecked(recipe!.public);
-          setServings(recipe!.number_of_people)
+          setServings(recipe!.number_of_people);
+          setIsPublic(recipe!.public);
+          console.log(Boolean(recipe?.author) && (recipe?.author == currentUser?.email), recipe?.author, currentUser?.email);
+          setCanEdit(Boolean(recipe?.author)  && (recipe?.author == currentUser?.email) || (recipe?.author === USER_UNKNOWN));
+          setShowVisibilityToggle(isOnline && Boolean(recipe?.author)  && (recipe?.author == currentUser?.email));
+          
         } else {
           setError("Fehler beim Abrufen der Id des Rezepts.");
         }
       } catch (err) {
-        setError("Fehler beim Abrufen des Rezepts.");
-        console.error(err);
+        return (
+          <div>
+      <NavigationBar title="Rezepte" />
+        <p>Fehler beim Laden des Rezeptes... es wurde vermutlich gelöscht oder depubliziert</p>
+        <Button onClick={handleReturnToBrowseRecipes} variant="contained"> Zurück zur Übersicht?</Button>
+      </div>
+        )
       } finally {
         setLoading(false);
+    
       }
     };
 
     fetchRecipe();
-  }, [id]);
+  }, [id, currentUser]);
   
   if (loading) {
     return (
@@ -93,7 +119,8 @@ function Recipe() {
     return (
       <div>
       <NavigationBar title="Rezepte" />
-        <p>Rezept konnte leider nicht geladen werden... vielleicht wurde es gelöscht?</p>
+        <p>Rezept konnte leider nicht geladen werden... es wurde vermutlich gelöscht oder depubliziert</p>
+        <Button onClick={handleReturnToBrowseRecipes} variant="contained"> Zurück zur Übersicht?</Button>
       </div>
     );
   }
@@ -106,8 +133,7 @@ function Recipe() {
   })
   
   return (
-    <div>
-      <NavigationBar title="Rezepte" />
+    <BasePage title="Rezepte">
       <Grid
         container
         spacing={10}
@@ -123,7 +149,7 @@ function Recipe() {
             </div>
             <div>erstellt am: {formatDate(recipe.date_create)}</div>
           </div>
-          {isOnline ? (
+          { showVisibilityToggle? (
             <div>
               <FormGroup
                 sx={{
@@ -147,10 +173,12 @@ function Recipe() {
               </FormGroup>
             </div>
           ) : null}
-          <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
+          { canEdit? (
+            <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
+          ) : null }
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
-            {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
+            {recipe.tags.map((tag: TAG) => <Button key={TAG[tag]}> {TAG[tag]}</Button>)}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
             <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
           </div>
@@ -184,7 +212,7 @@ function Recipe() {
         </Grid>
       </Grid>
       <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
-    </div>
+    </BasePage>
   );
 }
 

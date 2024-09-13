@@ -85,7 +85,7 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
             )}
           >
             {tags.map((tag) => (
-              <MenuItem value={tag}>{tag}</MenuItem>
+              <MenuItem key={tag} value={tag}>{tag}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -96,7 +96,7 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
             onChange={handleDifficultyChange}
           >
             {difficulties.map((difficulty) => (
-              <MenuItem value={difficulty}>{difficulty}</MenuItem>
+              <MenuItem key={difficulty} value={difficulty}>{difficulty}</MenuItem>
             ))}
           </Select>
         </FormControl>

@@ -217,46 +217,45 @@ function syncFirestoreDocToIndexedDB(doc) {
 
 async function syncFavoritesFromFirestore() {
     const ids = await getFavoritesIdsFromFirestore();
-    await Promise.all(ids?.favorites.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
-    return syncFavoritesList(ids);
+    if(ids && Array.isArray(ids.favorites)) {
+        if(ids.favorites) await Promise.all(ids?.favorites.map(id => getFromFirestore(id).then(syncFirestoreDocToIndexedDB)));
+        return syncFavoritesList(ids);
+    } else return syncFavoritesList([]);
 }
 
 async function syncFavoritesList(ids) {
+    console.log(ids);
     const idbUser = await getUserFromIDB();
     let newFavorites = [];
     let newEditDate = {};
     let firestoreFavorites = ids.favorites ? [...ids.favorites] : [];
     let firestoreEditDate = ids.date_edit ? ids.date_edit : {};
-    if (idbUser && idbUser[1]) {
-        let idbFavorites = idbUser[1].favorites ? idbUser[1].favorites : [];
-        let idbEditDate = idbUser[1].date ? idbUser[1].date_edit : {};
-        if (arraysEqual(idbUser[1].favorites, newFavorites) && newFavorites.length > 0) return;
+    let useFirestore = true;
+    let idbFavorites = idbUser ? (idbUser[0].favorites ? idbUser[0].favorites : (idbUser[1].favorites ? idbUser[1].favorites : [])) : [];
+    let idbEditDate = idbUser ? (idbUser[0].date_edit ? idbUser[0].date_edit : (idbUser[1].date_edit ? idbUser[1].date_edit : {})) : {};
+    if (idbUser) {
+        console.log("syncFavoritesList", "idb", idbFavorites, idbEditDate, "firestore", firestoreFavorites, firestoreEditDate)
+        if (arraysEqual(idbFavorites, newFavorites) && newFavorites.length > 0) return;
         else if (idbEditDate && firestoreEditDate) {
-            if (firestoreEditDate.seconds > idbEditDate.seconds) {
-                newFavorites = firestoreFavorites;
-                newEditDate = firestoreEditDate;
-            } else if (firestoreEditDate.seconds <= idbEditDate.seconds) {
+            if (!compareTimestamps(firestoreEditDate, idbEditDate)) {
+                console.log("!compareTimestamps(firestoreEditDate, idbEditDate)");
                 newFavorites = idbFavorites;
-                newEditDate = idbFavorites;
-            } else {
-                newFavorites = firestoreFavorites;
-                newEditDate = firestoreEditDate;
+                newEditDate = idbEditDate;
+                useFirestore = false;
             }
-        } else if (firestoreEditDate) {
-            newFavorites = firestoreFavorites;
-            newEditDate = firestoreEditDate;
         }  else if (idbEditDate) {
+            console.log("idbEditDate");
             newFavorites = idbFavorites;
-            newEditDate = idbFavorites;
-        } else {
-            newFavorites = firestoreFavorites;
-            newEditDate = firestoreEditDate;
+            newEditDate = idbEditDate;
+            useFirestore = false;
         }
-    } else if(idbUser) {
+    }
+    if (useFirestore) {
+        console.log("useFirestore");
         newFavorites = firestoreFavorites;
         newEditDate = firestoreEditDate;
     }
-    if (!idbUser[1] || !idbUser[1].favorites || idbUser[1].favorites.length < 1|| !arraysEqual(idbUser[1].favorites, newFavorites)) {
+    if (!idbUser[1] || !idbUser[1].favorites || (idbUser[1].favorites.length < 1 && newFavorites.length > 0) || !arraysEqual(idbUser[1].favorites, newFavorites)) {
         await addFavoritesListToIndexedDB(newFavorites, newEditDate);
     }
     if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {
@@ -305,6 +304,23 @@ async function handleNetworkStatusChange(isOnline) {
     }
 }
 
+function compareTimestamps(a, b) {
+    if(!a.seconds || !b.seconds) return false;
+    if (a.seconds < b.seconds) {
+        return false;
+    } else if (a.seconds > b.seconds) {
+        return true;
+    } else {
+        if (a.nanoseconds < b.nanoseconds) {
+            return false;
+        } else if (a.nanoseconds > b.nanoseconds) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 // Service Worker events
 self.addEventListener('install', (event) => {
     console.log('Service Worker installed');
@@ -319,6 +335,5 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'NETWORK_STATUS_CHANGE') {
       event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
-      event.source.postMessage({ type: 'NETWORK_STATUS_PROCESSED' });
     }
 });
