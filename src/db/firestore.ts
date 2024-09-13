@@ -143,6 +143,7 @@ export async function deleteRecipeInFirestore(id: string): Promise<void> {
     deleteRecipeFromAllFavoritesListsInFireStore(id);
     await deleteDoc(recipeRef).then( () =>
     console.log('Rezept erfolgreich aus Firestore gelöscht.'));
+    const storage = getStorage();
     let imageRef = ref(storage, `recipes/${id}.jpg`);
     deleteObject(imageRef).then(() => {
       console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
@@ -190,7 +191,8 @@ export async function changeRecipeVisibilityInFirestore(id: string, visibility: 
           const recipeRef = doc(db, 'recipes', id);
           deleteRecipeFromAllFavoritesListsInFireStore(id, user?.email);
           await deleteDoc(recipeRef);
-          let imageRef = ref(storage, `recipes/${recipe.id}.jpg`);
+          const storage = getStorage();
+          let imageRef = ref(storage, `recipes/${id}.jpg`);
           deleteObject(imageRef).then(() => {
             console.log("Rezeptbild erfolgreich aus Firebase Storage gelöscht.")
           }).catch((error) => {
