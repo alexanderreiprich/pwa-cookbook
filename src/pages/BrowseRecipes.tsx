@@ -1,15 +1,13 @@
-import NavigationBar from "../components/NavigationBar";
 import RecipeList from "../components/RecipeList";
-import CreateRecipe from "../components/CreateRecipe";
+import { BasePage } from "./BasePage";
+import { ListConstraint } from "../interfaces/ListConstraintEnum";
 
 function BrowseRecipes() {
   
-  return(
-    <div>
-      <NavigationBar title="Öffentliche Rezepte durchsuchen" />
-      <CreateRecipe></CreateRecipe>
-      <RecipeList />
-    </div>
+  return (
+    <BasePage title="Öffentliche Rezepte durchsuchen">
+      <RecipeList constraint={ListConstraint.PUBLIC} />
+    </BasePage>
   );
 }
 

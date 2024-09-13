@@ -24,6 +24,7 @@ import EditRecipe from "../components/EditRecipe";
 import RecipeCookMode from "../components/RecipeCookMode";
 import { useAuth } from "../provider/Authentication";
 import { USER_UNKNOWN } from "../App";
+import { BasePage } from "./BasePage";
 
 
 function Recipe() {
@@ -132,8 +133,7 @@ function Recipe() {
   })
   
   return (
-    <div>
-      <NavigationBar title="Rezepte" />
+    <BasePage title="Rezepte">
       <Grid
         container
         spacing={10}
@@ -212,7 +212,7 @@ function Recipe() {
         </Grid>
       </Grid>
       <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
-    </div>
+    </BasePage>
   );
 }
 

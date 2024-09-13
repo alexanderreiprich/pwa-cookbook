@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "../style/Login.css";
+import { BasePage } from "./BasePage";
 
 export default function SignIn() {
   let navigate = useNavigate();
@@ -56,60 +57,61 @@ export default function SignIn() {
   const auth = getAuth();
 
   return (
-    <Container component="main" maxWidth="xs">
-      <NavigationBar title="Login" />
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Anmelden
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="E-Mail-Adresse"
-            name="email"
-            autoComplete="email"
-            autoFocus
-          />
-          <label className="errorLabel">{emailError}</label>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Passwort"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-          />
-          <label className="errorLabel">{passwordError}</label>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
+    <BasePage title="Login">
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Typography component="h1" variant="h5">
             Anmelden
-          </Button>
-          <Grid container>
-            <Grid item>
-              <Link href="/signup" variant="body2">
-                {"Kein Account? Hier registrieren!"}
-              </Link>
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="E-Mail-Adresse"
+              name="email"
+              autoComplete="email"
+              autoFocus
+            />
+            <label className="errorLabel">{emailError}</label>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Passwort"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+            />
+            <label className="errorLabel">{passwordError}</label>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Anmelden
+            </Button>
+            <Grid container>
+              <Grid item>
+                <Link href="/signup" variant="body2">
+                  {"Kein Account? Hier registrieren!"}
+                </Link>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Box>
-      </Box>
-    </Container>
+      </Container>
+    </BasePage>
   );
 }

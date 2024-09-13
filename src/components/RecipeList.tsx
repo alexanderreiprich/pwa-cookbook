@@ -8,9 +8,10 @@ import SortComponent from "./Sort";
 import { useDbActionHandler } from "../db/dbActionHandler";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { SortOrder } from "../interfaces/SortOrderEnum";
+import { ListConstraint } from "../interfaces/ListConstraintEnum";
 import { sort } from "../helper/Sorting";
 
-export default function RecipeList() {
+export default function RecipeList( {constraint}: {constraint: ListConstraint}) {
 
   const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
   const handleApplyFilters = (newFilters: FilterInterface) => {
@@ -19,11 +20,24 @@ export default function RecipeList() {
 
   const [recipes, setRecipes] = useState<RecipeInterface[]>([]);
   const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.NAMEASC);
-  const { handleGetAllRecipes } = useDbActionHandler();
+  const { handleGetAllRecipes, handleGetUsersRecipes, handleGetUsersFavoriteRecipes } = useDbActionHandler();
   
   useEffect(() => {
     const fetchItems = async () => {
-      let recipeList = await handleGetAllRecipes(filters);
+      let recipeList: RecipeInterface[] = [];
+      switch (constraint) {
+        case ListConstraint.PUBLIC : {
+          recipeList = await handleGetAllRecipes(filters);
+          break;
+        }
+        case ListConstraint.OWNED : {
+          recipeList = await handleGetUsersRecipes();
+          break;
+        }
+        case ListConstraint.FAVORED : {
+          recipeList =  await handleGetUsersFavoriteRecipes();
+        }
+      }
 
       sort(recipeList, sortOrder);
 
