@@ -274,6 +274,12 @@ async function syncImages(id) {
         await firestore.uploadBytes(storageRef, indexedDBImage.image);
         console.log("Image updated.")
     }
+    else {
+        const transaction = db.transaction('images', 'readwrite');
+        const objectStore = transaction.objectStore('images');
+        let imgRecord = convertImageToBlob(id);
+        await objectStore.put(imgRecord);      
+    }
 }
 
 // Boiler plate comparison function
@@ -293,6 +299,13 @@ function arraysEqual(arr1, arr2) {
       }
     }
     return true;
+}
+
+function convertImageToBlob(id) {
+    const storageRef = firebase.storage.ref(`images/${id}.jpg`);
+    return storageRef.getDownloadURL().then((url) => {
+        return fetch(url).then(response => response.blob()).then(blob => {return { id: id, image: blob, date_edit: firebase.Timestamp.now() }});
+    });
 }
 
 async function handleNetworkStatusChange(isOnline) {
