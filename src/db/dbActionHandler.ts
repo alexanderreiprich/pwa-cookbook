@@ -26,10 +26,10 @@ export function useDbActionHandler() {
         await updateRecipeFavorites(currentUser, recipe, newFavorites, likes, allowFirestorePush);
     };
 
-    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>) => {
+    const handleUpdateRecipe = async (id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
         if(isOnline && !currentUser) alert("Das Rezeptupdate wird nur lokal auf diesem Gerät gespeichert!");
-        await updateRecipe(id, updatedRecipe, allowFirestorePush);
+        await updateRecipe(id, updatedRecipe, allowFirestorePush, image);
     };
 
     const handleGetAllRecipes = async (filters: FilterInterface) => {
@@ -40,10 +40,10 @@ export function useDbActionHandler() {
         return await getRecipeById(id, isOnline);
     };
 
-    const handleCreateRecipe = async (newRecipe: RecipeInterface) => {
+    const handleCreateRecipe = async (newRecipe: RecipeInterface, image?: File) => {
         const allowFirestorePush = Boolean(currentUser) && isOnline;
         if(isOnline && !currentUser) alert("Das Rezept wird nur lokal auf diesem Gerät gespeichert!");
-        await createRecipe(newRecipe, allowFirestorePush);
+        await createRecipe(newRecipe, allowFirestorePush, image);
     };
 
     const handleDeleteRecipe = async (id: string, isPublic: boolean) => {

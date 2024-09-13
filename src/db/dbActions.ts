@@ -43,13 +43,13 @@ export async function updateRecipeFavorites(currentUser: User | null, recipe: Re
     console.log("updateRecipeFavorites", recipe, newFavorites, likes, allowFirestorePush);
 }
 // Function to update a recipe
-export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, allowFirestorePush: boolean) {
+export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInterface>, allowFirestorePush: boolean, image?: File) {
     // Update in IndexedDB
-    updateRecipeInIndexedDB(id, updatedRecipe);
+    updateRecipeInIndexedDB(id, updatedRecipe, image);
 
     // Update in Firestore if online
     if (allowFirestorePush && updatedRecipe.public) {
-        await updateRecipeInFirestore(id, updatedRecipe);
+        await updateRecipeInFirestore(id, updatedRecipe, image);
     }
 }
 
@@ -92,13 +92,13 @@ export async function getRecipeById(id: string, isOnline: boolean): Promise<Reci
 }
 
 // Function to create a new recipe
-export async function createRecipe(newRecipe: RecipeInterface, allowFirestorePush: boolean) {
+export async function createRecipe(newRecipe: RecipeInterface, allowFirestorePush: boolean, image?: File) {
     // Create in IndexedDB
-    createRecipeInIndexedDB(newRecipe);
+    createRecipeInIndexedDB(newRecipe, image);
     
     // Create in Firestore if online
     if (allowFirestorePush && newRecipe && newRecipe.public) {
-        await createRecipeInFirestore(newRecipe);
+        await createRecipeInFirestore(newRecipe, image);
     }
 }
 

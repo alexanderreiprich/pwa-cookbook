@@ -19,7 +19,6 @@ export async function syncFirestoreWithIndexedDB() {
 }
 
 export async function checkRecipeVersioning(id: string, oldDateEdit: Timestamp): Promise<boolean> {
-  console.log(id);
   if(!id) return true;
     const firestoreDoc = await getRecipeByIdFromFirestore(id);
     if (firestoreDoc && oldDateEdit) {
