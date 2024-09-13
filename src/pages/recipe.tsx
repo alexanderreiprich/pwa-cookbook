@@ -178,7 +178,7 @@ function Recipe() {
           ) : null }
           <div>
             <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
-            {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
+            {recipe.tags.map((tag: TAG) => <Button key={TAG[tag]}> {TAG[tag]}</Button>)}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
             <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
           </div>

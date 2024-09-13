@@ -51,12 +51,12 @@ const SortComponent: React.FC<SortComponentProps> = ({ sortBy, onSortOrderChange
             onChange={(e) => {handleSortChange(e); handleClose();}}
             label="Sortieren nach"
           >
-            <MenuItem value={SortOrder.NAMEASC}>Name (aufsteigend)</MenuItem>
-            <MenuItem value={SortOrder.NAMEDSC}>Name (absteigend)</MenuItem>
-            <MenuItem value={SortOrder.FAVSASC}>Favoriten (aufsteigend)</MenuItem>
-            <MenuItem value={SortOrder.FAVSDSC}>Favoriten (absteigend)</MenuItem>
-            <MenuItem value={SortOrder.DATEASC}>Datum (aufsteigend)</MenuItem>
-            <MenuItem value={SortOrder.DATEDSC}>Datum (absteigend)</MenuItem>
+            <MenuItem key={SortOrder.NAMEASC} value={SortOrder.NAMEASC}>Name (aufsteigend)</MenuItem>
+            <MenuItem key={SortOrder.NAMEDSC} value={SortOrder.NAMEDSC}>Name (absteigend)</MenuItem>
+            <MenuItem key={SortOrder.FAVSASC} value={SortOrder.FAVSASC}>Favoriten (aufsteigend)</MenuItem>
+            <MenuItem key={SortOrder.FAVSDSC} value={SortOrder.FAVSDSC}>Favoriten (absteigend)</MenuItem>
+            <MenuItem key={SortOrder.DATEASC} value={SortOrder.DATEASC}>Datum (aufsteigend)</MenuItem>
+            <MenuItem key={SortOrder.DATEDSC} value={SortOrder.DATEDSC}>Datum (absteigend)</MenuItem>
           </Select>
         </FormControl>
       </Popover>

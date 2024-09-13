@@ -323,7 +323,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
               variant="outlined"
               >
                 {allTags.map((tag) => (
-                  <MenuItem key={tag} value={tag}>
+                  <MenuItem key={tag + "recipe-edit"} value={tag}>
                     {TAG[parseInt(tag)]}
                   </MenuItem>
                 ))}

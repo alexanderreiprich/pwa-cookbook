@@ -47,7 +47,7 @@ function FavoriteRecipes () {
       </Grid>
 			<Grid container spacing={1}>
         {recipes.map((recipe) => (
-          <Grid id={recipe.id} item xs={6} sm={3}>
+          <Grid id={recipe.id} key={recipe.id} item xs={6} sm={3}>
             <RecipeElement name={recipe.name} image={recipe.image} id={recipe.id} />
           </Grid>
         ))}

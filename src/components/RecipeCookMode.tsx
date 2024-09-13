@@ -69,7 +69,7 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
                 <h1>{recipe.name}</h1>
                 <div>
                     <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
-                    {recipe.tags.map((tag: TAG) => <Button> {TAG[tag]}</Button>)}
+                    {recipe.tags.map((tag: TAG) => <Button key={TAG[tag] + "-cookmode" as Key}> {TAG[tag]}</Button>)}
                 </div>
                 <p> Gesamtdauer: {recipe.time} min</p>
                 <p>{recipe.description}</p>
@@ -80,7 +80,7 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
             <p>Anzahl der Personen: { numberOfServings }</p>
             <ul>
                 {adjustedIngredients.map((ingredient: IngredientInterface) =>
-                <li key={ingredient.name as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
+                <li key={ingredient.name  + "-cookmode" as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
                 )}
             </ul>
             <h2>Schritte</h2>
