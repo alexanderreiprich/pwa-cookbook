@@ -178,7 +178,11 @@ async function syncOwnRecipesFromFirestore() {
 
 async function syncRecipeImages() {
     const recipes = await getAllRecipesFromIndexedDB();
-    return Promise.all(recipes.map((recipe) => {syncImages(recipe.id)}));
+    return Promise.all(recipes.map((recipe) => {
+        if (recipe.public) {
+            syncImages(recipe.id)
+        }
+    }));
 }
 
 async function syncFileInDBs(firestoreDoc, idbDoc) {

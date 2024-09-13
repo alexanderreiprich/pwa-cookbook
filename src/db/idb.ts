@@ -4,16 +4,17 @@ import { saveRecipe } from "../helper/helperFunctions";
 import { Timestamp } from "firebase/firestore";
 import { LikesInterface } from "../interfaces/LikesInterface";
 
-const dbPromise = openDB('recipes-db', 2, {
+const dbPromise = openDB('recipes-db', 3, {
   upgrade(db, oldVersion, newVersion) {
     console.log(`Upgrading from version ${oldVersion} to ${newVersion}`);
     if (oldVersion < 1) {
       db.createObjectStore('recipes', { keyPath: 'id' });
-      db.createObjectStore('images', { keyPath: 'id' });
     }
     if (oldVersion < 2) {
       db.createObjectStore('user', { keyPath: 'id' });
-      db.createObjectStore('tags', { keyPath: 'id' });
+    }
+    if (oldVersion < 3) {
+      db.createObjectStore('images', { keyPath: 'id' });
     }
   },
 });

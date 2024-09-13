@@ -45,7 +45,7 @@ export async function updateRecipe(id: string, updatedRecipe: Partial<RecipeInte
     updateRecipeInIndexedDB(id, updatedRecipe, image);
 
     // Update in Firestore if online
-    if (isOnline) {
+    if (isOnline && updatedRecipe.public) {
         await updateRecipeInFirestore(id, updatedRecipe, image);
     }
 }
@@ -94,7 +94,7 @@ export async function createRecipe(newRecipe: RecipeInterface, isOnline: boolean
     createRecipeInIndexedDB(newRecipe, image);
     
     // Create in Firestore if online
-    if (isOnline) {
+    if (isOnline && newRecipe && newRecipe.public) {
         await createRecipeInFirestore(newRecipe, image);
     }
 }
