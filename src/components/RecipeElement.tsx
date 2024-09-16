@@ -18,7 +18,7 @@ export default function RecipeElement({
       }}
     >
       <div className="recipeImageContainer">
-        <img className="recipeImage" src={image} />
+        <img className="recipeImage" src={image ? image : "../public/default.jpg"} />
       </div>
       <div className="recipeNameContainer">
         <p className="recipeName">{name}</p>

@@ -141,7 +141,7 @@ function Recipe() {
         paddingTop={3}
         paddingBottom={3}
       >
-        <Grid item id="recipeHead" xs={10} md={5}>
+        <Grid item id="recipeHead" xs={10} md={5} style={{paddingTop: '40px'}}>
           <h1>{recipe.name}</h1>
           <div>
             <div>
@@ -177,7 +177,7 @@ function Recipe() {
             <EditRecipe recipe={recipe} isNew={false}></EditRecipe>
           ) : null }
           <div>
-            <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
+            <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0, color: '#9c27b0', fontWeight: 'bold' }}>{DIFFICULTY[recipe.difficulty]}</Button>
             {recipe.tags.map((tag: TAG) => <Button key={TAG[tag]}> {TAG[tag]}</Button>)}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites}/>
             <RecipeCookMode recipe={recipe} numberOfServings={servings}></RecipeCookMode>
@@ -187,12 +187,11 @@ function Recipe() {
         </Grid>
         <Grid item id="recipeImage" xs={10} md={5}>
           <div id="recipeImgContainer">
-            <img className="image" src={recipe.image} alt={recipe.name}/>
+            <img className="image" src={recipe.image ? recipe.image : "../public/default.jpg"} alt={recipe.name}/>
           </div>
         </Grid>
-        <Grid item id="recipeContent" xs={10}>
+        <Grid item id="recipeContent" xs={10} style={{paddingTop: '10px'}}>
           <h2>Zutaten</h2>
-
           <p>Anzahl der Personen: 
             <Box sx={{padding: 3}}>
               <TextField type="number" size="small" value={servings} onChange={handleServingsChange} inputProps={{min: 1}} sx={{width: '100px'}} />
@@ -200,7 +199,7 @@ function Recipe() {
           </p>
           <ul>
             {adjustedIngredients.map((ingredient: IngredientInterface) =>
-              <li key={ingredient.name as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
+              <li key={ingredient.name as Key}>{ingredient.name} {Number.isInteger(ingredient.amount) ? ingredient.amount.toFixed() : ingredient.amount.toFixed((Math.round(ingredient.amount * 1e12) / 1e12).toString().split('.')[1]?.length || 0)} {ingredient.unit}</li>
             )}
           </ul>
           <h2>Schritte</h2>

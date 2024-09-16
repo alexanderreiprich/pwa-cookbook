@@ -267,18 +267,22 @@ async function syncImages(id) {
     const indexedDBImage = await getImageFromIDB(id);
     const storageRef = storage.ref(`recipes/${id}.jpg`);
     let storageLastEdit = null;
-    firebase.getMetadata(storageRef).then((metadata) => {
+    storageRef.getMetadata().then((metadata) => {
         metadata.updated ? storageLastEdit = firebase.Timestamp(new Date(metadata.updated)) : null;
     });
-    if (!storageLastEdit || indexedDBImage.last_edit > storageLastEdit) {
-        await firestore.uploadBytes(storageRef, indexedDBImage.image);
+    if ((!storageLastEdit || indexedDBImage.last_edit > storageLastEdit) && indexedDBImage.image == undefined) {
+        await storageRef.put(indexedDBImage.image);
         console.log("Image updated.")
     }
     else {
-        const transaction = db.transaction('images', 'readwrite');
-        const objectStore = transaction.objectStore('images');
-        let imgRecord = convertImageToBlob(id);
-        await objectStore.put(imgRecord);      
+        return openIndexedDB().then(db => new Promise((resolve, reject) => {
+            const transaction = db.transaction('images', 'readwrite');
+            const objectStore = transaction.objectStore('images');
+            let imgRecord = convertImageToBlob(id);
+            const request = objectStore.put(imgRecord);
+            request.onerror = (event) => reject(event);
+            request.onsuccess = () => resolve();
+        }));
     }
 }
 

@@ -50,36 +50,64 @@ export async function getRecipeByIdFromIndexedDB(id: string): Promise<RecipeInte
     const recipe = await db.get('recipes', id);
     return recipe;
 }
-  
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  })
+} 
+
+export async function saveImageAsBase64(id: string, imageBlob: Blob): Promise<void> {
+  const db = await dbPromise;
+  const base64Image: string = await blobToBase64(imageBlob);
+  const tx = db.transaction('images', 'readwrite');
+  const store = tx.objectStore('images');
+  await store.put({ id, image: base64Image, date_edit: Timestamp.now() });
+  await tx.done;
+  console.log(`Image with id ${id} saved as Base64.`);
+}
+
+export async function getImageBase64(id: string): Promise<string | null> {
+  const db = await dbPromise;
+  const tx = db.transaction('images', 'readonly');
+  const store = tx.objectStore('images');
+  const imageRecord: { id: string; image: string, date_edit: Timestamp } | undefined = await store.get(id);
+  await tx.done;
+
+  if (imageRecord) {
+    return imageRecord.image;
+  } else {
+    console.error(`Image with id ${id} not found.`);
+    return null;
+  }
+}
 
 export async function updateRecipeInIndexedDB(id: string, updatedRecipe: Partial<RecipeInterface>, image?: File) {
-    try{
-      const db = await initDB();
-      const tx = db.transaction('images', 'readwrite');
-      const store = tx.objectStore('images');
-      let imageRecord = { id: id, image: image, date_edit: Timestamp.now() };
-      await store.put(imageRecord);                       // Save to db and retrieve it again to convert image to blob
-      imageRecord = await db.get('images', id)
-      const imageBlob: Blob = imageRecord.image as Blob;
-      const url =  URL.createObjectURL(imageBlob);        // Generate URL to blob in idb and overwrite recipe
-      updatedRecipe.image = url;
-      await db.put('recipes', { id, ...saveRecipe(updatedRecipe)});
-      console.log('Rezept erfolgreich in IndexedDB aktualisiert.');
-    } catch (error) {
-      console.error('Fehler beim Aktualisieren des Rezepts in der Indexed DB:', error);
+  try{
+    const db = await initDB();
+    if (image) {
+      await saveImageAsBase64(id, image);
+      const url = await getImageBase64(id);
+      updatedRecipe.image = url!;
     }
+    await db.put('recipes', { id, ...saveRecipe(updatedRecipe)});
+    console.log('Rezept erfolgreich in IndexedDB aktualisiert.');
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Rezepts in der Indexed DB:', error);
+  }
 }
 
 export async function createRecipeInIndexedDB(newRecipe: RecipeInterface, image?: File): Promise<void> {
   try {
     const db = await initDB();
-    const tx = db.transaction('images', 'readwrite');
-    const store = tx.objectStore('images');
-    let imageRecord = { id: newRecipe.id, image: image, date_edit: Timestamp.now() };
-    await store.put(imageRecord);
-    imageRecord = await db.get('images', newRecipe.id);
-    const imageBlob: Blob = imageRecord.image as Blob;
-    newRecipe.image = URL.createObjectURL(imageBlob);
+    if(image) {
+      await saveImageAsBase64(newRecipe.id, image);
+      const url = await getImageBase64(newRecipe.id);
+      newRecipe.image = url!;
+    }
     await db.put('recipes', saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in IndexedDB gespeichert.');
   } catch (error) {

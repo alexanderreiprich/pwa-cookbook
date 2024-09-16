@@ -72,3 +72,20 @@ export function formatDate (date: Date | Timestamp | undefined): string {
       return result;
    } else return "?";
 };
+
+export function base64ToFile(base64String: string, filename: string): File {
+  // Entfernt den Präfix der Daten-URL
+  const arr = base64String.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1] || '';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  // Konvertiert die Base64-Daten in binäre Daten
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  // Erstellt ein File-Objekt aus dem Blob
+  return new File([u8arr], filename, { type: mime });
+}

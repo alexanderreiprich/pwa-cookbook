@@ -3,12 +3,12 @@ import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
-import { saveRecipe } from "../helper/helperFunctions";
+import { base64ToFile, saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
-import { getRecipeByIdFromIndexedDB } from "./idb";
+import { getImageBase64, getRecipeByIdFromIndexedDB } from "./idb";
 import { USER_UNKNOWN } from "../App";
 
 export async function fetchFromFirestore(q: any): Promise<RecipeInterface[]> {
@@ -129,6 +129,9 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?
       let imgLink = await uploadImage(newRecipe.id, image);
       newRecipe.image = imgLink;
     }
+    else {
+      newRecipe.image = "gs://pwacookbook.appspot.com/recipes/default.jpg"
+    }
     await setDoc(recipeRef, saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in Firestore erstellt.');
 
@@ -180,7 +183,13 @@ export async function changeRecipeVisibilityInFirestore(id: string, visibility: 
     if(id){
       if(visibility){
         const recipe = await getRecipeByIdFromIndexedDB(id)
-        const updatedRecipe: Partial<RecipeInterface> = { ...recipe, public: visibility, date_edit: Timestamp.now() };
+        const imgBase64 = await getImageBase64(id);
+        const img = base64ToFile(imgBase64!, id);
+        let url: string = "gs://pwacookbook.appspot.com/recipes/default.jpg";
+        if (img) {
+          url = await uploadImage(id, img);
+        }
+        const updatedRecipe: Partial<RecipeInterface> = { ...recipe, image: url, public: visibility, date_edit: Timestamp.now() };
         // update userFavorites
         if(isLiked) {
           updateFavoritesListInFirestore(user, id, true);

@@ -17,7 +17,7 @@ export default function CreateRecipe() {
       "",
     steps: [],
     description: "",
-    difficulty: DIFFICULTY.EASY,
+    difficulty: DIFFICULTY.Einfach,
     tags: [],
     favorites: 0,
     author: currentUser ? (currentUser.displayName ? currentUser.displayName : (currentUser.email ? currentUser.email : USER_UNKNOWN)) : USER_UNKNOWN,

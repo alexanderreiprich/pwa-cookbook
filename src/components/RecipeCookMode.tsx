@@ -4,7 +4,7 @@ import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import { DocumentData } from "firebase/firestore";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { Key } from "react";
+import { Key, useEffect } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import CloseIcon from '@mui/icons-material/Close';
@@ -31,9 +31,8 @@ const boxStyle = { mb: 2, p: 2, border: '1px solid', borderRadius: '8px' };
 export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: DocumentData, numberOfServings: number}) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
-      setOpen(true);
-      
-    }
+    setOpen(true);
+  }
   
   const handleClose = () => {
     setOpen(false);
@@ -45,6 +44,18 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
       amount: (ingredient.amount / recipe.number_of_people) * numberOfServings
     };
   })
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    }
+    else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    }
+  }, [open]);
 
   return (
     <div>
