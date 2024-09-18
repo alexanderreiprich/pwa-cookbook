@@ -204,7 +204,7 @@ function Recipe() {
           <h2>Schritte</h2>
           <ol>
             {recipe.steps.map((value: String) => (
-              <li key={value as Key}>{value}</li>
+              <li style={{marginBottom: '10px'}}key={value as Key}>{value}</li>
             ))}
           </ol>
         </Grid>

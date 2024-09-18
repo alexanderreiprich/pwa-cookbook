@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "../style/Login.css";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "..";
 
@@ -38,6 +38,7 @@ export default function SignUp() {
           created_recipes: []
         });
         const user = userCredential.user;
+        await updateProfile(user, {displayName: username});
         navigate("/login");
       })
       .catch((error) => {

@@ -10,6 +10,8 @@ import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import CloseIcon from '@mui/icons-material/Close';
 import Timer from "./Timer";
 
+import "../style/RecipeCookMode.css";
+
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -82,21 +84,21 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
                     <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
                     {recipe.tags.map((tag: TAG) => <Button key={TAG[tag] + "-cookmode" as Key}> {TAG[tag]}</Button>)}
                 </div>
-                <p> Gesamtdauer: {recipe.time} min</p>
-                <p>{recipe.description}</p>
+                <p className="text"> Gesamtdauer: {recipe.time} min</p>
+                <p className="text">{recipe.description}</p>
             </Box>
 
             <Box sx={boxStyle} id="recipeContent">
             <h2>Zutaten</h2>
-            <p>Anzahl der Personen: { numberOfServings }</p>
+            <p className="text">Anzahl der Personen: { numberOfServings }</p>
             <ul>
                 {adjustedIngredients.map((ingredient: IngredientInterface) =>
-                <li key={ingredient.name  + "-cookmode" as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
+                <li key={ingredient.name  + "-cookmode" as Key} className="text">{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
                 )}
             </ul>
             <h2>Schritte</h2>
-            <ol >
-                {recipe.steps.map((value: String) => <li key={value as Key}>{value}</li>)}
+            <ol>
+                {recipe.steps.map((value: String) => <li style={{marginBottom: '20px'}}className="text" key={value as Key}>{value}</li>)}
             </ol>
             </Box>
             <Timer defaultTime={recipe.time * 60}></Timer>

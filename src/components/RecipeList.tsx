@@ -62,7 +62,7 @@ export default function RecipeList( {constraint}: {constraint: ListConstraint}) 
       </Grid>
       <Grid container spacing={1}>
         {recipes.map((recipe) => (
-          <Grid key={recipe.id}id={recipe.id} item xs={6} sm={3}>
+          <Grid key={recipe.id}id={recipe.id} item xs={12} sm={6} md={4} lg={3}>
             <RecipeElement name={recipe.name} image={recipe.image} id={recipe.id} />
           </Grid>
         ))}

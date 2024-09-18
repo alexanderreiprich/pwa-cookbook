@@ -111,7 +111,7 @@ function getFromFirestore(id) {
     return firestore.collection('recipes').doc(id).get().then(doc => doc.exists ? doc.data() : null);
 }
 
-function addToIndexedDB(doc) {
+async function addToIndexedDB(doc) {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readwrite');
         const objectStore = transaction.objectStore(storeName);
@@ -126,7 +126,7 @@ function addToIndexedDB(doc) {
     }));
 }
 
-function putToIndexedDB(doc) {
+async function putToIndexedDB(doc) {
     return openIndexedDB().then(db => new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readwrite');
         const objectStore = transaction.objectStore(storeName);
@@ -173,7 +173,9 @@ async function syncOwnRecipesFromFirestore() {
     const user = await getUserFromIDB();
     if (user && user[0].email) {
         const querySnapshot = await firestore.collection('recipes').where('author', '==', user[0].email).get();
-        const recipes = querySnapshot.docs.map(doc => doc.data());
+        const querySnapshot2 = await firestore.collection('recipes').where('author', '==', user[0].displayName).get();
+        let recipes = querySnapshot.docs.map(doc => doc.data());
+        recipes.push(querySnapshot2.docs.map(doc => doc.data()))
         return Promise.all(recipes.map(syncFirestoreDocToIndexedDB));
     }
 }
@@ -260,8 +262,8 @@ async function syncFavoritesList(ids) {
     if (!idbUser[1] || !idbUser[1].favorites || (idbUser[1].favorites.length < 1 && newFavorites.length > 0) || !arraysEqual(idbUser[1].favorites, newFavorites)) {
         await addFavoritesListToIndexedDB(newFavorites, newEditDate);
     }
-    if (idbUser[0] && idbUser[0].email && !arraysEqual(ids, newFavorites)) {
-        await addFavoritesListToFirestore(idbUser[0].email, newFavorites, newEditDate);
+    if (idbUser[0] && idbUser[0].displayName && !arraysEqual(ids, newFavorites)) {
+        await addFavoritesListToFirestore(idbUser[0].displayName, newFavorites, newEditDate);
     }
 }
 

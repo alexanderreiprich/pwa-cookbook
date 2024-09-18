@@ -222,16 +222,16 @@ export async function checkRecipeLikesInIndexedDB (id: string): Promise<LikesInt
 }
 
 // only used by authentication.tsx, after user is logged in
-export async function syncEmailToFirestore (email: string) {
+export async function syncUserToFirestore (email: string, username: string) {
   const db = await initDB();
   const tx = db.transaction(['user'], 'readwrite');
   const userStore = tx.objectStore('user');
 
-  let storedEmail:string = await userStore.get('email') || "";
- if(email && storedEmail !== email){
-  const emailEntry = { id: "email", email: email };
+  let storedEmail: string = await userStore.get('email') || "";
+  if(email && storedEmail !== email){
+    const emailEntry = { id: "email", email: email, displayName: username };
     await userStore.put(emailEntry);
- }
+  }
 }
 
 export async function changeRecipeVisibilityInIndexedDB (id: string, visibility: boolean) {

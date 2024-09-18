@@ -21,7 +21,9 @@ export default function RecipeElement({
         <img className="recipeImage" src={image ? image : "../public/default.jpg"} />
       </div>
       <div className="recipeNameContainer">
-        <p className="recipeName">{name}</p>
+        <div className="recipeName">
+          {name}
+        </div>
       </div>
     </div>
   );

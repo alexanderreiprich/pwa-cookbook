@@ -220,17 +220,21 @@ export async function changeRecipeVisibilityInFirestore(id: string, visibility: 
 }
 
 async function getUserId(currentUser: User | null): Promise<string> {
-  let userId: string = "superuser";
-    if(currentUser && currentUser.email){
-      let email: string = currentUser.email;
-      const q = query(collection(db, 'users'), where('email', '==', email));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        // Under the assumption that the email ist a unique property
-        userId = querySnapshot.docs[0].id;
-      }
+  let userId: string = USER_UNKNOWN;
+  if (currentUser && currentUser.displayName) {
+    let user = await getDoc(doc(db, 'users', currentUser.displayName));
+    userId = user.id;
+  }
+  else if(currentUser && currentUser.email){
+    let email: string = currentUser.email;
+    const q = query(collection(db, 'users'), where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      // Under the assumption that the email is a unique property
+      userId = querySnapshot.docs[0].id;
     }
-    return userId;
+  }
+  return userId;
 }
 
 async function uploadImage(id: string, image: File): Promise<string> {
@@ -250,7 +254,15 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
   let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
   try {
     let q: any = collection(db, 'recipes');
-    q = query(q, where('author', "==", user));
+    q = query(q, where('author', "==", user)); //TODO: email und nutzername checken
+    if (currentUser) {
+      if (user == currentUser.displayName) {
+        q = query(q, where('author', '==', currentUser.email));
+      }
+      else {
+        q = query(q, where('author', '==', currentUser.displayName));
+      }
+    }
     recipes = await fetchFromFirestore(q);
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore:', error);
@@ -262,13 +274,19 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
 export async function getUsersFavoriteRecipesInFirestore(currentUser: User | null): Promise<RecipeInterface[]> {
   let recipes: RecipeInterface[] = [];
   let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
-
   try {
     let s: any = collection(db, "users");
-    s = query(s, where("email", "==", user));
-    const username = await getDocs(s);
     let savedRecipeList: string[] = [];
-    username.docs.map((user) => (savedRecipeList = user.get("favorites")));
+    if (user && user == currentUser?.displayName) {
+      let username = await getDoc(doc(db, 'users', user));
+      let docData = username.data() as any;
+      savedRecipeList = docData.favorites;
+    }
+    else {
+      s = query(s, where("email", "==", user));
+      let username = await getDocs(s);
+      username.docs.map((user) => (savedRecipeList = user.get("favorites")));
+    }
 
     let q: any = collection(db, 'recipes');
     q = query(q, where('id', "in", savedRecipeList));

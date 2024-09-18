@@ -5,14 +5,14 @@ import {
     deleteRecipeInIndexedDB, 
     fetchFromIndexedDB, 
     getRecipeByIdFromIndexedDB,
-    syncEmailToFirestore,
     getUsersRecipesInIndexedDB,
     getUsersFavoriteRecipesInIndexedDB,
     updateRecipeFavoritesInIndexedDB, 
     updateRecipeInIndexedDB,
     changeRecipeVisibilityInIndexedDB,
     getUsersFavoritesList,
-    logoutInIndexedDB
+    logoutInIndexedDB,
+    syncUserToFirestore
 } from "./idb";
 import { 
     changeRecipeVisibilityInFirestore,
@@ -152,7 +152,7 @@ export async function getUsersFavoriteRecipes(currentUser: User | null, isOnline
 }
 
 export async function syncEmail(user: User | null){
-    if(user && user.email) syncEmailToFirestore(user.email);
+    if(user && user.email && user.displayName) syncUserToFirestore(user.email, user.displayName);
 }
 
 export function logout() {
