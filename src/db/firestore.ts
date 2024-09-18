@@ -130,7 +130,8 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?
       newRecipe.image = imgLink;
     }
     else {
-      newRecipe.image = "gs://pwacookbook.appspot.com/recipes/default.jpg"
+      const storage = getStorage();
+      newRecipe.image = await getDownloadURL(ref(storage, 'recipes/default.jpg'))
     }
     await setDoc(recipeRef, saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in Firestore erstellt.');
@@ -184,11 +185,13 @@ export async function changeRecipeVisibilityInFirestore(id: string, visibility: 
       if(visibility){
         const recipe = await getRecipeByIdFromIndexedDB(id)
         const imgBase64 = await getImageBase64(id);
-        const img = base64ToFile(imgBase64!, id);
-        let url: string = "gs://pwacookbook.appspot.com/recipes/default.jpg";
-        if (img) {
+        const storage = getStorage();
+        let url: string = await getDownloadURL(ref(storage, 'recipes/default.jpg'));      
+        if (imgBase64) {
+          const img = base64ToFile(imgBase64, id);
           url = await uploadImage(id, img);
         }
+        console.log(imgBase64, url);
         const updatedRecipe: Partial<RecipeInterface> = { ...recipe, image: url, public: visibility, date_edit: Timestamp.now() };
         // update userFavorites
         if(isLiked) {

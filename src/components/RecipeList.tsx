@@ -11,6 +11,8 @@ import { SortOrder } from "../interfaces/SortOrderEnum";
 import { ListConstraint } from "../interfaces/ListConstraintEnum";
 import { sort } from "../helper/Sorting";
 
+import '../style/RecipeList.css';
+
 export default function RecipeList( {constraint}: {constraint: ListConstraint}) {
 
   const [filters, setFilters] = useState<FilterInterface>({timeMin: undefined, timeMax: undefined, tags: undefined, difficulty: undefined, user: undefined, favorite: undefined});
@@ -36,11 +38,13 @@ export default function RecipeList( {constraint}: {constraint: ListConstraint}) 
         }
         case ListConstraint.FAVORED : {
           recipeList =  await handleGetUsersFavoriteRecipes();
+          break;
+        }
+        default: {
+          break;
         }
       }
-
       sort(recipeList, sortOrder);
-
       setRecipes(recipeList);
     };
     fetchItems()
@@ -48,13 +52,17 @@ export default function RecipeList( {constraint}: {constraint: ListConstraint}) 
 
   return (
     <div>
-      <Grid container>
-        <FilterComponent onApplyFilters={handleApplyFilters} />
-        <SortComponent sortBy={sortOrder} onSortOrderChange={setSortOrder} />
+      <Grid container id="btnDiv">
+        <Grid item xs={6}>
+          <FilterComponent onApplyFilters={handleApplyFilters}  />
+        </Grid>
+        <Grid item xs={6}>
+          <SortComponent sortBy={sortOrder} onSortOrderChange={setSortOrder} />
+        </Grid>
       </Grid>
       <Grid container spacing={1}>
         {recipes.map((recipe) => (
-          <Grid id={recipe.id} item xs={6} sm={3}>
+          <Grid key={recipe.id}id={recipe.id} item xs={6} sm={3}>
             <RecipeElement name={recipe.name} image={recipe.image} id={recipe.id} />
           </Grid>
         ))}

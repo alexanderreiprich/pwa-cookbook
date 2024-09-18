@@ -12,7 +12,7 @@ export const BasePage = ({children, title}: {children: any, title: string}) => {
         display: 'flex',
         padding: '20px',
         
-        '@media (max-width: 600px)': {
+        '@media (maxWidth: 600px)': {
         },
       };
 

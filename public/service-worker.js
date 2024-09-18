@@ -91,16 +91,18 @@ async function getUserFromFirestore(email) {
 
 async function getFavoritesIdsFromFirestore() {
     const user = await getUserFromIDB();
-    if (user && user[0].email) {
-        const fireStoreUser = await getUserFromFirestore(user[0].email);
-        let ids = { favorites: [], date_edit: null};
-        if(fireStoreUser && fireStoreUser.favorites) {
-            ids.favorites = fireStoreUser.favorites
+    if (user) {
+        if(user[0].email) { //TODO: Fix user[0] being undefined
+            const fireStoreUser = await getUserFromFirestore(user[0].email);
+            let ids = { favorites: [], date_edit: null};
+            if(fireStoreUser && fireStoreUser.favorites) {
+                ids.favorites = fireStoreUser.favorites
+            }
+            if(fireStoreUser && fireStoreUser.date_edit) {
+                ids.date_edit = fireStoreUser.date_edit
+            }
+            return ids;
         }
-        if(fireStoreUser && fireStoreUser.date_edit) {
-            ids.date_edit = fireStoreUser.date_edit
-        }
-        return ids;
     }
     return [];
 }
@@ -268,18 +270,23 @@ async function syncImages(id) {
     const storageRef = storage.ref(`recipes/${id}.jpg`);
     let storageLastEdit = null;
     storageRef.getMetadata().then((metadata) => {
+        console.log(metadata);
         metadata.updated ? storageLastEdit = firebase.Timestamp(new Date(metadata.updated)) : null;
     });
-    if ((!storageLastEdit || indexedDBImage.last_edit > storageLastEdit) && indexedDBImage.image == undefined) {
-        await storageRef.put(indexedDBImage.image);
-        console.log("Image updated.")
+    if ((!storageLastEdit || indexedDBImage.last_edit > storageLastEdit) && indexedDBImage) {
+        if (indexedDBImage.image == undefined) {
+            await storageRef.put(base64ToFile(indexedDBImage.image, id));
+            console.log("Image updated.")
+        }
     }
     else {
-        return openIndexedDB().then(db => new Promise((resolve, reject) => {
+        return openIndexedDB().then(db => new Promise(async (resolve, reject) => {
             const transaction = db.transaction('images', 'readwrite');
             const objectStore = transaction.objectStore('images');
-            let imgRecord = convertImageToBlob(id);
-            const request = objectStore.put(imgRecord);
+            let storageRecord = await convertImageToBlob(id);
+            let base64image = await blobToBase64(storageRecord.image)
+            storageRecord.image = base64image;
+            const request = objectStore.put(storageRecord);
             request.onerror = (event) => reject(event);
             request.onsuccess = () => resolve();
         }));
@@ -306,10 +313,36 @@ function arraysEqual(arr1, arr2) {
 }
 
 function convertImageToBlob(id) {
-    const storageRef = firebase.storage.ref(`images/${id}.jpg`);
+    const storageRef = storage.ref(`images/${id}.jpg`);
     return storageRef.getDownloadURL().then((url) => {
         return fetch(url).then(response => response.blob()).then(blob => {return { id: id, image: blob, date_edit: firebase.Timestamp.now() }});
     });
+}
+
+async function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    })
+} 
+
+function base64ToFile(base64String, filename) {
+    // Entfernt den Präfix der Daten-URL
+    const arr = base64String.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || '';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+  
+    // Konvertiert die Base64-Daten in binäre Daten
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+  
+    // Erstellt ein File-Objekt aus dem Blob
+    return new File([u8arr], filename, { type: mime });
 }
 
 async function handleNetworkStatusChange(isOnline) {

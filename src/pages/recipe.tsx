@@ -192,11 +192,10 @@ function Recipe() {
         </Grid>
         <Grid item id="recipeContent" xs={10} style={{paddingTop: '10px'}}>
           <h2>Zutaten</h2>
-          <p>Anzahl der Personen: 
-            <Box sx={{padding: 3}}>
-              <TextField type="number" size="small" value={servings} onChange={handleServingsChange} inputProps={{min: 1}} sx={{width: '100px'}} />
-            </Box>
-          </p>
+          <p>Anzahl der Personen:</p>
+          <Box sx={{padding: 3}}>
+            <TextField type="number" size="small" value={servings} onChange={handleServingsChange} inputProps={{min: 1}} sx={{width: '100px'}} />
+          </Box>
           <ul>
             {adjustedIngredients.map((ingredient: IngredientInterface) =>
               <li key={ingredient.name as Key}>{ingredient.name} {Number.isInteger(ingredient.amount) ? ingredient.amount.toFixed() : ingredient.amount.toFixed((Math.round(ingredient.amount * 1e12) / 1e12).toString().split('.')[1]?.length || 0)} {ingredient.unit}</li>
