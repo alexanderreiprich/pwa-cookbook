@@ -131,7 +131,7 @@ export async function createRecipeInFirestore(newRecipe: RecipeInterface, image?
     }
     else {
       const storage = getStorage();
-      newRecipe.image = await getDownloadURL(ref(storage, 'recipes/default.jpg'))
+      newRecipe.image = await getDownloadURL(ref(storage, 'recipes/undefined.jpg'))
     }
     await setDoc(recipeRef, saveRecipe(newRecipe));
     console.log('Rezept erfolgreich in Firestore erstellt.');
@@ -186,7 +186,7 @@ export async function changeRecipeVisibilityInFirestore(id: string, visibility: 
         const recipe = await getRecipeByIdFromIndexedDB(id)
         const imgBase64 = await getImageBase64(id);
         const storage = getStorage();
-        let url: string = await getDownloadURL(ref(storage, 'recipes/default.jpg'));      
+        let url: string = await getDownloadURL(ref(storage, 'recipes/undefined.jpg'));      
         if (imgBase64) {
           const img = base64ToFile(imgBase64, id);
           url = await uploadImage(id, img);
@@ -323,3 +323,30 @@ export async function deleteRecipeFromAllFavoritesListsInFireStore (id: string, 
     console.error('Fehler beim Entfernen des Rezepts aus den Favoritenlisten:', error);
   }
 }
+
+async function fetchDownloadURL(id: string) {
+  console.log(id);
+  const storage = getStorage();
+  const storageRef = ref(storage, `recipes/${id}.jpg`);
+  return await getDownloadURL(storageRef);
+}
+navigator.serviceWorker.addEventListener('message', async (event) => {
+  if (event.data && event.data.type === 'FETCH_DOWNLOAD_URL') {
+    const imagePath = event.data.imagePath;
+    console.log(imagePath);
+    fetchDownloadURL(imagePath).then((url) => {
+      event.source?.postMessage({
+        type: 'DOWNLOAD_URL_RESULT',
+        id: imagePath,
+        url: url
+      });
+    }).catch((error) => {
+      console.error('Download URL konnte nicht gefetched werden: ', error);
+      event.source?.postMessage({
+        type: 'DOWNLOAD_URL_ERROR',
+        id: imagePath,
+        error: error.message
+      });
+    });
+  }
+})

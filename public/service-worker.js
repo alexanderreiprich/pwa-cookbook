@@ -24,6 +24,9 @@ const storeName = 'recipes';
 const userStoreName = 'user';
 const imagesStoreName = 'images';
 
+// Externe Parameter
+let recipeId = "";
+
 function openIndexedDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, 3);
@@ -282,9 +285,13 @@ async function syncImages(id) {
         }
     }
     else {
+        console.log(id);
         return openIndexedDB().then(db => new Promise(async (resolve, reject) => {
             const transaction = db.transaction('images', 'readwrite');
             const objectStore = transaction.objectStore('images');
+            recipeId = id;
+            let url = await requestImageURL();
+            
             let storageRecord = await convertImageToBlob(id);
             let base64image = await blobToBase64(storageRecord.image)
             storageRecord.image = base64image;
@@ -314,11 +321,8 @@ function arraysEqual(arr1, arr2) {
     return true;
 }
 
-function convertImageToBlob(id) {
-    const storageRef = storage.ref(`images/${id}.jpg`);
-    return storageRef.getDownloadURL().then((url) => {
-        return fetch(url).then(response => response.blob()).then(blob => {return { id: id, image: blob, date_edit: firebase.Timestamp.now() }});
-    });
+async function convertImageToBlob(url) {
+    return fetch(url).then(response => response.blob()).then(blob => {return { id: id, image: blob, date_edit: firebase.Timestamp.now() }});
 }
 
 async function blobToBase64(blob) {
@@ -389,3 +393,49 @@ self.addEventListener('message', function(event) {
       event.waitUntil(handleNetworkStatusChange(event.data.isOnline));
     }
 });
+
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-images') {
+        event.waitUntil(requestImageURL(recipeId))
+    }
+});
+
+function requestImageURL(id) {
+    console.log(id);
+    return new Promise((resolve, reject) => {
+        sendMessageToClient({
+            type: 'FETCH_DOWNLOAD_URL',
+            id: id 
+        }).then((response) => {
+            console.log(response.url);
+            resolve();
+        }).catch((error) => {
+            console.error(error);
+            reject(error);
+        })
+    })
+}
+
+function sendMessageToClient(message) {
+    return clients.matchAll().then((clients) => {
+        if (clients && clients.length) {
+            return new Promise((resolve, reject) => {
+                const client = clients[0];
+                const msgChannel = new MessageChannel();
+                
+                msgChannel.port1.onmessage = (event) => {
+                    if (event.data && event.data.type === 'DOWNLOAD_URL_RESULT') {
+                        resolve(event.data);
+                    }
+                    else if (event.data && event.data.type === 'DOWNLOAD_URL_ERROR') {
+                        reject(event.data.error);
+                    }
+                };
+                client.postMessage(message, [msgChannel.port2]);
+            })
+        }
+        else {
+            return Promise.reject('Kein aktiver Client gefunden')
+        }
+    });
+}
