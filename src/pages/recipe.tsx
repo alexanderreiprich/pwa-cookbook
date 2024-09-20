@@ -245,7 +245,9 @@ function Recipe() {
             {adjustedIngredients.map((ingredient: IngredientInterface) => (
               <li key={ingredient.name as Key}>
                 {ingredient.name}{" "}
-                {Number.isInteger(ingredient.amount)
+                {ingredient.amount == 0
+                  ? ""
+                  : Number.isInteger(ingredient.amount)
                   ? ingredient.amount.toFixed()
                   : ingredient.amount.toFixed(
                       (Math.round(ingredient.amount * 1e12) / 1e12)
