@@ -2,7 +2,6 @@ import { Button } from '@mui/material';
 import { blue } from '@mui/material/colors';
 import { useState, useRef, useEffect } from 'react';
 
-// Timer component
 export default function Timer({ defaultTime }: { defaultTime: number }) {
   const [time, setTime] = useState(defaultTime);
   const [isRunning, setIsRunning] = useState(false);
@@ -92,10 +91,11 @@ export default function Timer({ defaultTime }: { defaultTime: number }) {
         borderRadius: 10,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingTop: '5px',
+        fontSize: 'xx-large'
       }}>
-        <div style={{ fontSize: '2rem', paddingBottom: 10 }}>
-            <span style={{ paddingRight: 20 }}>Timer</span>
+        <div style={{ fontSize: '2rem', padding: "0px 5px 0px 5px", marginBottom: "5px",  color: "#1976d2", backgroundColor: '#ffffff', borderRadius: 7 }}>
             <span>{formatTime(time)}</span>
         </div>
         <span style={{ display: 'flex', gap: '1rem', paddingBottom: 5 }}>

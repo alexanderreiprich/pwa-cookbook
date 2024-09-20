@@ -14,9 +14,10 @@ import ScrollToHide from "./ScrollToHide";
 import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import { useAuth } from "../provider/Authentication";
 import { logout } from "../db/dbActions";
+
+import "../style/NavigationBar.css";
 
 export default function NavigationBar({ title }: { title: string }) {
   const [open, setOpen] = useState(false);
@@ -27,8 +28,6 @@ export default function NavigationBar({ title }: { title: string }) {
 
   const auth = getAuth();
   const navigate = useNavigate();
-
-  const { isOnline } = useNetworkStatus();
 
   const handleLogout = () => {
     signOut(auth)
@@ -62,26 +61,26 @@ export default function NavigationBar({ title }: { title: string }) {
             <Drawer open={open} onClose={toggleDrawer}>
               <List>
                 <ListItemButton component="a" href="/">
-                  <ListItemText primary="Rezepte durchsuchen" />
+                  <ListItemText className="navigationBarElement" primary="Rezepte durchsuchen" />
                 </ListItemButton>
                 <ListItemButton component="a" href="/my_recipes">
-                  <ListItemText primary="Meine Rezepte" />
+                  <ListItemText className="navigationBarElement" primary="Meine Rezepte" />
                 </ListItemButton>
                 <ListItemButton component="a" href="/favorite_recipes">
-                  <ListItemText primary="Favorisierte Rezepte" />
+                  <ListItemText className="navigationBarElement" primary="Favorisierte Rezepte" />
                 </ListItemButton>
                 {Boolean(currentUser) ? (
                   <ListItemButton component="button" onClick={handleLogout}>
-                    <ListItemText primary="Abmelden" />
+                    <ListItemText className="navigationBarElement" primary="Abmelden" />
                   </ListItemButton>
                 ) : (
                   <ListItemButton component="a" href="/login">
-                    <ListItemText primary="Anmelden" />
+                    <ListItemText className="navigationBarElement" primary="Anmelden" />
                   </ListItemButton>
                 )}
               </List>
             </Drawer>
-            { currentUser ? "Angemeldet" : "Abgemeldet" }
+            { currentUser ? `Angemeldet als ${currentUser.displayName ? currentUser.displayName : currentUser.email}`: "Abgemeldet" }
           </Toolbar>
         </AppBar>
       </ScrollToHide>

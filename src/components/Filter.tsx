@@ -4,11 +4,9 @@ import { TextField, Select, MenuItem, Button, FormControl, InputLabel, Input, Ch
 import { TAG } from "../interfaces/TagEnum";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 
-import "../style/Filter.css";
-
 const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
   const [categoryFilter, setCategoryFilter] = useState([]);
-  const [difficultyFilter, setDifficultyFilter] = useState([]);
+  const [difficultyFilter, setDifficultyFilter] = useState('');
   const [timeMinFilter, setMinTime] = useState();
   const [timeMaxFilter, setMaxTime] = useState();
 
@@ -32,6 +30,14 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
     onApplyFilters({ tags: categoryFilter, difficulty: difficultyFilter, timeMin: timeMinFilter, timeMax: timeMaxFilter, user: undefined, favorite: undefined });
   };
 
+  const handleResetFilters = () => {
+    setCategoryFilter([]);
+    setDifficultyFilter('');
+    setMinTime(undefined);
+    setMaxTime(undefined);
+    onApplyFilters({ tags: [], difficulty: '', timeMin: undefined, timeMax: undefined, user: undefined, favorite: undefined });
+  }
+
   const tags: string[] = Object.keys(TAG).slice(Object.keys(TAG).length / 2);
   const difficulties: string[] = Object.keys(DIFFICULTY).slice(Object.keys(DIFFICULTY).length / 2);
 
@@ -48,8 +54,8 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
   const id = open ? 'simple-popover' : undefined;
 
   return (
-    <div>
-      <Button variant="contained" color="primary" onClick={handleClick}>
+    <div style={{paddingBottom: '15px'}}>
+      <Button variant="contained" color="primary" onClick={handleClick} style={{width: '100%'}}>
         Rezepte filtern
       </Button>
       <Popover 
@@ -66,10 +72,10 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
         anchorEl={anchorEl}
         onClose={handleClose}
         PaperProps={{
-          style: { width: '50%' },
+          style: { padding: '10px', marginTop: '5px' },
         }}
       >
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth variant="standard" margin="normal">
           <InputLabel>Schlagwörter</InputLabel>
           <Select
             multiple
@@ -89,7 +95,7 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
             ))}
           </Select>
         </FormControl>
-        <FormControl fullWidth margin="normal">
+        <FormControl fullWidth variant="standard" margin="normal">
           <InputLabel>Schwierigkeit</InputLabel>
           <Select
             value={difficultyFilter}
@@ -101,8 +107,8 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
           </Select>
         </FormControl>
         <FormControl fullWidth margin="normal">
-          <Typography id="sliderLabel" gutterBottom>
-            Dauer
+          <Typography gutterBottom>
+            Dauer in Minuten
           </Typography>
           <Box> 
             <TextField label="Min" type="number" value={timeMinFilter} onChange={handleMinTimeChange}/>
@@ -112,8 +118,10 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
         <Button variant="contained" color="primary" onClick={() => {handleApplyFilters(); handleClose();}}>
           Anwenden
         </Button>
+        <Button variant="contained" color="error" onClick={() => {handleResetFilters(); handleClose();}} style={{marginLeft: '5px'}}>
+          Zurücksetzen
+        </Button>
       </Popover>
-      
     </div>
   );
 };

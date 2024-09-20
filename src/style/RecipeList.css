@@ -1,0 +1,49 @@
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  #btnDiv {
+    width: 100%;
+  }
+  .recipeName {
+    font-size: 1rem;
+  }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+  #btnDiv {
+    width: 100%;
+  }
+  .recipeName {
+    font-size: 1rem;
+  }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  #btnDiv {
+    width: 35%;
+  }
+  .recipeName {
+    font-size: 1.5rem;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  #btnDiv {
+    width: 35%;
+  }
+  .recipeName {
+    font-size: 1.5rem;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+  #btnDiv {
+    width: 35%;
+  }
+  .recipeName {
+    font-size: 1.5rem;
+  }
+}

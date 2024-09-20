@@ -26,7 +26,7 @@ const SortComponent: React.FC<SortComponentProps> = ({ sortBy, onSortOrderChange
 
   return (
     <div>
-      <Button variant="contained" color="primary" onClick={handleClick}>
+      <Button variant="contained" color="primary" onClick={handleClick} style={{width: '100%'}}>
         Rezepte sortieren
       </Button>
       <Popover 
@@ -42,6 +42,9 @@ const SortComponent: React.FC<SortComponentProps> = ({ sortBy, onSortOrderChange
         id={id}
         anchorEl={anchorEl}
         onClose={handleClose}
+        PaperProps={{
+          style: {padding: '10px', marginTop: '5px'}
+        }}
       >
         <FormControl fullWidth variant="outlined" margin="normal">
           <InputLabel id="sort-label">Sortieren nach</InputLabel>

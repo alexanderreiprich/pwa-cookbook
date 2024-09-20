@@ -4,11 +4,13 @@ import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import { DocumentData } from "firebase/firestore";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
-import { Key } from "react";
+import { Key, useEffect } from "react";
 import { TAG } from "../interfaces/TagEnum";
 import { IngredientInterface } from "../interfaces/IngredientsInterface";
 import CloseIcon from '@mui/icons-material/Close';
 import Timer from "./Timer";
+
+import "../style/RecipeCookMode.css";
 
 const style = {
   position: "absolute" as "absolute",
@@ -31,9 +33,8 @@ const boxStyle = { mb: 2, p: 2, border: '1px solid', borderRadius: '8px' };
 export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: DocumentData, numberOfServings: number}) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => {
-      setOpen(true);
-      
-    }
+    setOpen(true);
+  }
   
   const handleClose = () => {
     setOpen(false);
@@ -45,6 +46,18 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
       amount: (ingredient.amount / recipe.number_of_people) * numberOfServings
     };
   })
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    }
+    else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    }
+  }, [open]);
 
   return (
     <div>
@@ -58,9 +71,7 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
         aria-describedby="modal-modal-description"
       >
 
-
-        {/* General Information */}
-          
+        {/* General Information */}  
         <Box sx={style}>
             <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
                 <Button onClick={handleClose} variant="outlined" startIcon={<CloseIcon />}>Kochmodus beenden</Button>
@@ -71,26 +82,24 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
                     <Button style={{ paddingLeft: 0, marginLeft: 0, minWidth: 0 }}>{DIFFICULTY[recipe.difficulty]}</Button>
                     {recipe.tags.map((tag: TAG) => <Button key={TAG[tag] + "-cookmode" as Key}> {TAG[tag]}</Button>)}
                 </div>
-                <p> Gesamtdauer: {recipe.time} min</p>
-                <p>{recipe.description}</p>
+                <p className="text"> Gesamtdauer: {recipe.time} min</p>
+                <p className="text">{recipe.description}</p>
             </Box>
-
             <Box sx={boxStyle} id="recipeContent">
             <h2>Zutaten</h2>
-            <p>Anzahl der Personen: { numberOfServings }</p>
+            <p className="text">Anzahl der Personen: { numberOfServings }</p>
             <ul>
                 {adjustedIngredients.map((ingredient: IngredientInterface) =>
-                <li key={ingredient.name  + "-cookmode" as Key}>{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
+                <li key={ingredient.name  + "-cookmode" as Key} className="text">{ingredient.name} {ingredient.amount.toFixed(2)} {ingredient.unit}</li>
                 )}
             </ul>
             <h2>Schritte</h2>
-            <ol >
-                {recipe.steps.map((value: String) => <li key={value as Key}>{value}</li>)}
+            <ol>
+                {recipe.steps.map((value: String) => <li style={{marginBottom: '20px'}}className="text" key={value as Key}>{value}</li>)}
             </ol>
             </Box>
             <Timer defaultTime={recipe.time * 60}></Timer>
         </Box>
-        
       </Modal>
     </div>
   );

@@ -1,6 +1,4 @@
-/* Image CSS to be used across different components */
-
 .image {
-    width: 100%;
-    object-fit: cover;
-  }
+  width: 100%;
+  object-fit: cover;
+}

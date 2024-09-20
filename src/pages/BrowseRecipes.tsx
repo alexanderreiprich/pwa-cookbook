@@ -3,9 +3,8 @@ import { BasePage } from "./BasePage";
 import { ListConstraint } from "../interfaces/ListConstraintEnum";
 
 function BrowseRecipes() {
-  
   return (
-    <BasePage title="Öffentliche Rezepte durchsuchen">
+    <BasePage title="Rezepte durchsuchen">
       <RecipeList constraint={ListConstraint.PUBLIC} />
     </BasePage>
   );

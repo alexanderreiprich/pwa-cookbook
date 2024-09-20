@@ -1,5 +1,4 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -8,7 +7,6 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import NavigationBar from "../components/NavigationBar";
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,30 +26,35 @@ export default function SignIn() {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
-    signInWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString())
-    .then((userCredential) => {
-      const user = userCredential.user;
-      navigate(from);
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorCode + "  " + errorMessage);
-      switch (errorCode) {
-        case "auth/invalid-email": 
-          setEmailError("Diese E-Mail-Adresse scheint nicht zu exisitieren.");
-          break;
-        case "auth/invalid-login-credentials":
-          setPasswordError("Diese E-Mail-Passwort-Kombination ist falsch.");
-          break;
-        case "auth/too-many-requests":
-          setPasswordError("Zu viele Anfragen, bitte versuche es später noch einmal.");
-          break;
-        default:
-          setEmailError("Ein unerwarteter Fehler ist aufgetreten.");
-          break;
-      }
-    });
+    signInWithEmailAndPassword(
+      auth,
+      data.get("email")!.toString(),
+      data.get("password")!.toString()
+    )
+      .then((userCredential) => {
+        const user = userCredential.user;
+        navigate(from);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        console.error(errorCode, error.message);
+        switch (errorCode) {
+          case "auth/invalid-email":
+            setEmailError("Diese E-Mail-Adresse scheint nicht zu exisitieren.");
+            break;
+          case "auth/invalid-login-credentials":
+            setPasswordError("Diese E-Mail-Passwort-Kombination ist falsch.");
+            break;
+          case "auth/too-many-requests":
+            setPasswordError(
+              "Zu viele Anfragen, bitte versuche es später noch einmal."
+            );
+            break;
+          default:
+            setEmailError("Ein unerwarteter Fehler ist aufgetreten.");
+            break;
+        }
+      });
   };
 
   const auth = getAuth();
@@ -71,7 +74,12 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Anmelden
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ mt: 1 }}
+          >
             <TextField
               margin="normal"
               required

@@ -104,11 +104,15 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
 
   const [hasError, setHasError] = useState<boolean>(false);
   const [checked, setChecked] =  useState<boolean>(false)
+  const [recipePublic, setRecipePublic] = useState<boolean>(recipe.public);
   const [canClaimRecipe, setCanClaimRecipe] =  useState<boolean>(false)
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const { currentUser } = useAuth();
   const handleImageSelect = (image: File) => {
     setSelectedImage(image);
+  }
+  const handlePublicStateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRecipePublic(event.target.checked);
   }
 
   const allTags = Object.keys(TAG);
@@ -117,7 +121,6 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const navigate = useNavigate();
 
   useEffect(() => { 
-    console.log("setCanClaimRecipe", recipe.author != USER_UNKNOWN, Boolean(currentUser))
     setCanClaimRecipe((recipe.author == USER_UNKNOWN) && Boolean(currentUser));
   }, [currentUser]);
 
@@ -174,12 +177,6 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
     setChecked(event.target.checked);
   };
 
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     setImage(e.target.files[0]);
-  //   }
-  // };
-
   const handleChange = (index: number, field: keyof IngredientInterface, value: any) => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
@@ -195,7 +192,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
   };
 
   const handleIdCheck = async (id: string): Promise<boolean> => {
-    if (await handleGetRecipeById(id)) {
+    if (await handleGetRecipeById(id) || id == 'undefined') {
       return false;
     }
     return true
@@ -217,7 +214,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       author: checked ? (currentUser?.email ? currentUser.email : recipe.author) : recipe.author,
       date_create: recipe.date_create,
       date_edit: Timestamp.now(),
-      public: recipe.public
+      public: recipePublic
     }
     if (isNew && await handleIdCheck(updatedRecipe.id) === false) {
       setHasError(true);
@@ -228,7 +225,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
         isNew ? createRecipe(updatedRecipe, selectedImage).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit, selectedImage).then(() => handleReload());
       }
       else {
-        isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit.then(() => handleReload()));
+        isNew ? createRecipe(updatedRecipe).then(() => handleReload()) : updateRecipe(recipe.id, updatedRecipe, recipe.date_edit).then(() => handleReload());
       }
       handleClose();
     }
@@ -261,9 +258,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
         aria-describedby="modal-modal-description"
       >
 
-
         {/* General Information */}
-          
         <Box sx={style}>
           <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
             <Button onClick={handleClose} variant="outlined" startIcon={<CloseIcon />}>Abbrechen</Button>
@@ -284,6 +279,12 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
                 </FormGroup>
               ) : null }
               <TextField size="small" multiline required inputRef={descriptionRef} id="description" label="Beschreibung des Rezeptes" defaultValue={recipe.description}/>
+              <FormGroup>
+                <FormControlLabel 
+                  control={<Checkbox checked={recipePublic} onChange={handlePublicStateChange}/>}
+                  label="Rezept veröffentlichen?"
+                />
+              </FormGroup>
               <TextField size="small" inputRef={numberOfPeopleRef} required type="number" id="numberOfPeople" label="Anzahl an Personen" defaultValue={recipe.number_of_people}/>
               <TextField size="small" type="number" inputRef={timeRef} id="time" label="Dauer in Minuten" defaultValue={recipe.time}/>
               <CustomSelect
@@ -342,34 +343,9 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
             </Stack>
           </Box>
 
-          {/* Upload image via file */}
-
-          {/* <Box sx={boxStyle}>
-            <Typography paddingBottom={2} id="modal-modal-title" variant="h6" component="h2">
-                Neues Bild hochladen
-              </Typography>
-              <input
-                accept="image/*"
-                type="file"
-                onChange={handleImageChange}
-              />
-              
-              {image && (
-                <div>
-                  <p>Hochgeladenes Bild: {image.name}</p>
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    style={{ maxWidth: '100%', maxHeight: 200 }}
-                  />
-                </div>
-              )}
-          </Box> */}
-
           <UploadImageButton onImageSelect={handleImageSelect}/>
 
           {/* Ingredients */}
-
           <Box sx={boxStyle}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Zutaten bearbeiten
@@ -419,6 +395,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
               </Table>
             </TableContainer>
             </Box>
+
             {/* Mobile View */}
             <Box sx={mobileIngredientsStyles} className="mobile-view">
               {ingredients.map((ingredient: IngredientInterface, index) => (
@@ -454,10 +431,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
             </Button>
           </Box>
 
-
-
   	      {/* Steps */}
-
           <Box  sx={boxStyle}>
             <Typography paddingBottom={2} id="modal-modal-title" variant="h6" component="h2">
               Schritte
