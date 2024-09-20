@@ -4,8 +4,7 @@ import { BasePage } from "./BasePage";
 import { ListConstraint } from "../interfaces/ListConstraintEnum";
 
 function MyRecipes() {
-  
-  return(
+  return (
     <BasePage title="Meine Rezepte">
       <CreateRecipe></CreateRecipe>
       <RecipeList constraint={ListConstraint.OWNED} />

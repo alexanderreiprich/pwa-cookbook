@@ -13,8 +13,7 @@ export default function CreateRecipe() {
     ingredients: [],
     number_of_people: 0,
     time: 0,
-    image:
-      "",
+    image: "",
     steps: [],
     description: "",
     difficulty: DIFFICULTY.Einfach,

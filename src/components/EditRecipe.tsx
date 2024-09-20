@@ -121,7 +121,6 @@ export default function EditRecipe( {recipe, isNew}: {recipe: DocumentData, isNe
   const navigate = useNavigate();
 
   useEffect(() => { 
-    console.log("setCanClaimRecipe", recipe.author != USER_UNKNOWN, Boolean(currentUser))
     setCanClaimRecipe((recipe.author == USER_UNKNOWN) && Boolean(currentUser));
   }, [currentUser]);
 
@@ -178,12 +177,6 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
     setChecked(event.target.checked);
   };
 
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     setImage(e.target.files[0]);
-  //   }
-  // };
-
   const handleChange = (index: number, field: keyof IngredientInterface, value: any) => {
     const newIngredients = [...ingredients];
     newIngredients[index] = { ...newIngredients[index], [field]: value };
@@ -223,7 +216,6 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
       date_edit: Timestamp.now(),
       public: recipePublic
     }
-    console.log(recipe.public, recipePublic, updatedRecipe)
     if (isNew && await handleIdCheck(updatedRecipe.id) === false) {
       setHasError(true);
     }
@@ -266,9 +258,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
         aria-describedby="modal-modal-description"
       >
 
-
         {/* General Information */}
-          
         <Box sx={style}>
           <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
             <Button onClick={handleClose} variant="outlined" startIcon={<CloseIcon />}>Abbrechen</Button>
@@ -353,34 +343,9 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
             </Stack>
           </Box>
 
-          {/* Upload image via file */}
-
-          {/* <Box sx={boxStyle}>
-            <Typography paddingBottom={2} id="modal-modal-title" variant="h6" component="h2">
-                Neues Bild hochladen
-              </Typography>
-              <input
-                accept="image/*"
-                type="file"
-                onChange={handleImageChange}
-              />
-              
-              {image && (
-                <div>
-                  <p>Hochgeladenes Bild: {image.name}</p>
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    style={{ maxWidth: '100%', maxHeight: 200 }}
-                  />
-                </div>
-              )}
-          </Box> */}
-
           <UploadImageButton onImageSelect={handleImageSelect}/>
 
           {/* Ingredients */}
-
           <Box sx={boxStyle}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
               Zutaten bearbeiten
@@ -430,6 +395,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
               </Table>
             </TableContainer>
             </Box>
+
             {/* Mobile View */}
             <Box sx={mobileIngredientsStyles} className="mobile-view">
               {ingredients.map((ingredient: IngredientInterface, index) => (
@@ -465,10 +431,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
             </Button>
           </Box>
 
-
-
   	      {/* Steps */}
-
           <Box  sx={boxStyle}>
             <Typography paddingBottom={2} id="modal-modal-title" variant="h6" component="h2">
               Schritte

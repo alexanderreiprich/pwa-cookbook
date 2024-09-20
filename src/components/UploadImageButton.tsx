@@ -1,12 +1,7 @@
 import {
   Box,
-  Grid,
-  Card,
-  CardContent,
   Typography,
   Button,
-  LinearProgress,
-  CardMedia,
 } from "@mui/material";
 import { CloudUploadOutlined } from "@mui/icons-material";
 import { useState } from "react";
@@ -17,8 +12,6 @@ interface UploadImageProps {
 
 const UploadImageButton: React.FC<UploadImageProps> = ({onImageSelect}) => {
   const [image, setImage] = useState<File | null>(null);
-  const [imageURL, setImageURL] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -52,34 +45,7 @@ const UploadImageButton: React.FC<UploadImageProps> = ({onImageSelect}) => {
             Ausgewählte Datei: {image.name}
           </Typography>
         )}
-        {/* <Button
-          variant="contained"
-          color="primary"
-          onClick={handleUpload}
-          disabled={!image || uploading}
-          sx={{ width: "100%" }}
-        >
-          Hochladen
-        </Button> */}
       </Box>
-      {imageURL && (
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Hochgeladenes Bild
-              </Typography>
-              <CardMedia
-                component="img"
-                height="300"
-                image={imageURL}
-                alt="Uploaded Image"
-                sx={{ objectFit: "contain" }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      )}
     </Box>
   );
 }

@@ -11,7 +11,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "../style/Login.css";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "..";
 
@@ -29,53 +33,61 @@ export default function SignUp() {
     const data = new FormData(event.currentTarget);
     const auth = getAuth();
 
-    createUserWithEmailAndPassword(auth, data.get("email")!.toString(), data.get("password")!.toString())
+    createUserWithEmailAndPassword(
+      auth,
+      data.get("email")!.toString(),
+      data.get("password")!.toString()
+    )
       .then(async (userCredential) => {
         let username = data.get("username")!.toString();
         await setDoc(doc(db, "users", username), {
           email: data.get("email")!.toString(),
           favorites: [],
-          created_recipes: []
+          created_recipes: [],
         });
         const user = userCredential.user;
-        await updateProfile(user, {displayName: username});
+        await updateProfile(user, { displayName: username });
         navigate("/login");
       })
       .catch((error) => {
         const errorCode = error.code;
         switch (errorCode) {
-          case "auth/email-already-in-use": 
+          case "auth/email-already-in-use":
             setEmailError("Diese E-Mail-Adresse wird bereits verwendet.");
             break;
           case "auth/weak-password":
-            setPasswordError("Dieses Password ist zu kurz. Bitte versuche ein anderes.");
+            setPasswordError(
+              "Dieses Password ist zu kurz. Bitte versuche ein anderes."
+            );
             break;
           default:
             setEmailError("Ein unerwarteter Fehler ist aufgetreten.");
             break;
         }
-      }
-    );
+      });
   };
 
   const handleUsernameInput = async () => {
-    let chosenUsernameInput = document.getElementById("username")! as HTMLInputElement;
+    let chosenUsernameInput = document.getElementById(
+      "username"
+    )! as HTMLInputElement;
     let chosenUsername = chosenUsernameInput.value;
-    if (chosenUsername != "") { // avoid edge case of invalid database reference
+    if (chosenUsername != "") {
+      // avoid edge case of invalid database reference
       const docRef = doc(db, "users", chosenUsername);
       const docSnap = await getDoc(docRef);
-      const submitButton = document.getElementById("submitBtn")! as HTMLButtonElement;
+      const submitButton = document.getElementById(
+        "submitBtn"
+      )! as HTMLButtonElement;
       if (docSnap.exists()) {
         submitButton.disabled = true;
-        setUsernameError("Nutzername bereits vergeben.")
-      }
-      else {
+        setUsernameError("Nutzername bereits vergeben.");
+      } else {
         submitButton.disabled = false;
         setUsernameError("");
       }
     }
-    
-  }
+  };
 
   return (
     <Container component="main" maxWidth="xs">

@@ -1,4 +1,10 @@
-import React, { createContext, useEffect, useState, useContext, ReactNode } from 'react';
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  useContext,
+  ReactNode,
+} from "react";
 
 // Define the type for the context value
 interface NetworkStatusContextValue {
@@ -11,18 +17,22 @@ interface NetworkStatusProviderProps {
 }
 
 // Create a context for the network status
-const NetworkStatusContext = createContext<NetworkStatusContextValue>({ isOnline: navigator.onLine });
+const NetworkStatusContext = createContext<NetworkStatusContextValue>({
+  isOnline: navigator.onLine,
+});
 
 // Create a provider component
-export const NetworkStatusProvider: React.FC<NetworkStatusProviderProps> = ({ children }) => {
+export const NetworkStatusProvider: React.FC<NetworkStatusProviderProps> = ({
+  children,
+}) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
     const notifyServiceWorker = (status: boolean) => {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
-          type: 'NETWORK_STATUS_CHANGE',
-          isOnline: status
+          type: "NETWORK_STATUS_CHANGE",
+          isOnline: status,
         });
       }
     };
@@ -31,24 +41,24 @@ export const NetworkStatusProvider: React.FC<NetworkStatusProviderProps> = ({ ch
       setIsOnline(true);
       notifyServiceWorker(true);
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
       notifyServiceWorker(false);
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Initial notification on load
     notifyServiceWorker(navigator.onLine);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
-  
+
   return (
     <NetworkStatusContext.Provider value={{ isOnline }}>
       {children}
