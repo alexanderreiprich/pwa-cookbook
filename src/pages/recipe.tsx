@@ -25,6 +25,7 @@ import RecipeCookMode from "../components/RecipeCookMode";
 import { useAuth } from "../provider/Authentication";
 import { USER_UNKNOWN } from "../App";
 import { BasePage } from "./BasePage";
+import ShareButton from "../components/ShareButton";
 
 function Recipe() {
   const [searchParams] = useSearchParams();
@@ -211,6 +212,7 @@ function Recipe() {
               <Button key={TAG[tag]}> {TAG[tag]}</Button>
             ))}
             <FavoritesButton recipe={recipe} favorites={recipe.favorites} />
+            <ShareButton recipe={recipe} />
             <RecipeCookMode
               recipe={recipe}
               numberOfServings={servings}
