@@ -33,7 +33,7 @@ export default function NavigationBar({ title }: { title: string }) {
     signOut(auth)
       .then(() => {
         logout();
-        navigate("/login");
+        navigate("/");
       })
       .catch((error) => {
         alert("Etwas ist schiefgegangen, bitte lade die Seite neu.");
@@ -60,13 +60,13 @@ export default function NavigationBar({ title }: { title: string }) {
             </Typography>
             <Drawer open={open} onClose={toggleDrawer}>
               <List>
-                <ListItemButton component="a" href="/">
+                <ListItemButton component="a" href="#/">
                   <ListItemText className="navigationBarElement" primary="Rezepte durchsuchen" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/my_recipes">
+                <ListItemButton component="a" href="#/my_recipes">
                   <ListItemText className="navigationBarElement" primary="Meine Rezepte" />
                 </ListItemButton>
-                <ListItemButton component="a" href="/favorite_recipes">
+                <ListItemButton component="a" href="#/favorite_recipes">
                   <ListItemText className="navigationBarElement" primary="Favorisierte Rezepte" />
                 </ListItemButton>
                 {Boolean(currentUser) ? (
@@ -74,7 +74,7 @@ export default function NavigationBar({ title }: { title: string }) {
                     <ListItemText className="navigationBarElement" primary="Abmelden" />
                   </ListItemButton>
                 ) : (
-                  <ListItemButton component="a" href="/login">
+                  <ListItemButton component="a" href="#/login">
                     <ListItemText className="navigationBarElement" primary="Anmelden" />
                   </ListItemButton>
                 )}
