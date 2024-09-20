@@ -2,7 +2,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 // import Home from "./pages/home";
 import "./App.css";
 
@@ -23,7 +23,7 @@ export const USER_UNKNOWN = "unknown";
 function App() {
   return (
     <FirestoreProvider sdk={db}>
-      <BrowserRouter>
+      <HashRouter>
         <AuthProvider>
           <Routes>
             <Route path="/" element={<BrowseRecipes />} />
@@ -34,7 +34,7 @@ function App() {
             <Route path="/favorite_recipes" element={<FavoriteRecipes />} />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </HashRouter>
     </FirestoreProvider>
   );
 }
