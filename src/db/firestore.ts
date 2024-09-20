@@ -1,11 +1,11 @@
-import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, or, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { db } from "..";
 import { RecipeInterface } from "../interfaces/RecipeInterface";
 import { DIFFICULTY } from "../interfaces/DifficultyEnum";
 import { TAG } from "../interfaces/TagEnum";
 import { base64ToFile, saveRecipe } from "../helper/helperFunctions";
 import { User } from "firebase/auth";
-import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { deleteObject, getDownloadURL, getMetadata, getStorage, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { FilterInterface } from "../interfaces/FilterInterface";
 import { LikesInterface } from "../interfaces/LikesInterface";
 import { getImageBase64, getRecipeByIdFromIndexedDB } from "./idb";
@@ -253,17 +253,22 @@ export async function getUsersRecipesInFirestore(currentUser: User | null): Prom
   let recipes: RecipeInterface[] = [];
   let user = currentUser ? (currentUser.displayName ? currentUser.displayName : currentUser.email) : USER_UNKNOWN;
   try {
-    let q: any = collection(db, 'recipes');
-    q = query(q, where('author', "==", user)); //TODO: email und nutzername checken
+    let c: any = collection(db, 'recipes');
+    let q = query(c, where('author', "==", user)); // query for email or displayname
+    let u; // query for the opposite of q, unused if user unknown
+    console.log(user, user == currentUser?.displayName)
     if (currentUser) {
       if (user == currentUser.displayName) {
-        q = query(q, where('author', '==', currentUser.email));
+        u = query(c, where('author', '==', currentUser.email));
       }
       else {
-        q = query(q, where('author', '==', currentUser.displayName));
+        u = query(c, where('author', '==', currentUser.displayName));
       }
     }
     recipes = await fetchFromFirestore(q);
+    if (u) {
+      recipes.concat(await fetchFromFirestore(u));
+    }
   } catch (error) {
     console.error('Fehler beim Abrufen von Firestore:', error);
     return [];
@@ -324,27 +329,42 @@ export async function deleteRecipeFromAllFavoritesListsInFireStore (id: string, 
   }
 }
 
-async function fetchDownloadURL(id: string) {
+async function fetchDownloadURLAndMetadata(id: string) {
   console.log(id);
   const storage = getStorage();
   const storageRef = ref(storage, `recipes/${id}.jpg`);
-  return await getDownloadURL(storageRef);
+  const undefinedRef = ref(storage, 'recipes/undefined.jpg');
+  let url = "";
+  let metadata;
+  try {
+    url = await getDownloadURL(storageRef);
+    metadata = await getMetadata(storageRef);
+  }
+  catch (error) {
+    url = await getDownloadURL(undefinedRef);
+    metadata = undefined;
+  }
+  console.log(url, metadata);
+  return {id: id, url: url, metadata: metadata};
 }
+
 navigator.serviceWorker.addEventListener('message', async (event) => {
   if (event.data && event.data.type === 'FETCH_DOWNLOAD_URL') {
-    const imagePath = event.data.imagePath;
-    console.log(imagePath);
-    fetchDownloadURL(imagePath).then((url) => {
+    console.log(event.data);
+    const id = event.data.id;
+    console.log(id);
+    fetchDownloadURLAndMetadata(id).then((obj) => {
       event.source?.postMessage({
         type: 'DOWNLOAD_URL_RESULT',
-        id: imagePath,
-        url: url
+        id: id,
+        url: obj.url,
+        metadata: obj.metadata
       });
     }).catch((error) => {
       console.error('Download URL konnte nicht gefetched werden: ', error);
       event.source?.postMessage({
         type: 'DOWNLOAD_URL_ERROR',
-        id: imagePath,
+        id: id,
         error: error.message
       });
     });

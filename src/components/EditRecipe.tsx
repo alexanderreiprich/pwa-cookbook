@@ -199,7 +199,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
   };
 
   const handleIdCheck = async (id: string): Promise<boolean> => {
-    if (await handleGetRecipeById(id)) {
+    if (await handleGetRecipeById(id) || id == 'undefined') {
       return false;
     }
     return true
