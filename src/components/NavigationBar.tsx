@@ -14,7 +14,6 @@ import ScrollToHide from "./ScrollToHide";
 import { useState } from "react";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { useNetworkStatus } from "../provider/NetworkStatusProvider";
 import { useAuth } from "../provider/Authentication";
 import { logout } from "../db/dbActions";
 
@@ -29,8 +28,6 @@ export default function NavigationBar({ title }: { title: string }) {
 
   const auth = getAuth();
   const navigate = useNavigate();
-
-  const { isOnline } = useNetworkStatus();
 
   const handleLogout = () => {
     signOut(auth)

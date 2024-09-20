@@ -122,7 +122,6 @@ const FilterComponent = ({ onApplyFilters }: {onApplyFilters: any}) => {
           Zurücksetzen
         </Button>
       </Popover>
-      
     </div>
   );
 };

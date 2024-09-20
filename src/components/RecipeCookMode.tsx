@@ -71,9 +71,7 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
         aria-describedby="modal-modal-description"
       >
 
-
-        {/* General Information */}
-          
+        {/* General Information */}  
         <Box sx={style}>
             <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
                 <Button onClick={handleClose} variant="outlined" startIcon={<CloseIcon />}>Kochmodus beenden</Button>
@@ -87,7 +85,6 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
                 <p className="text"> Gesamtdauer: {recipe.time} min</p>
                 <p className="text">{recipe.description}</p>
             </Box>
-
             <Box sx={boxStyle} id="recipeContent">
             <h2>Zutaten</h2>
             <p className="text">Anzahl der Personen: { numberOfServings }</p>
@@ -103,7 +100,6 @@ export default function RecipeCookMode( {recipe, numberOfServings}: {recipe: Doc
             </Box>
             <Timer defaultTime={recipe.time * 60}></Timer>
         </Box>
-        
       </Modal>
     </div>
   );

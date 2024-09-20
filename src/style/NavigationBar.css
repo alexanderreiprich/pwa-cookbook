@@ -1,11 +1,11 @@
 .navigationBarContainer {
   height: 100%;
   width: 0;
-  position: fixed; 
+  position: fixed;
   z-index: 1;
   top: 0;
   left: 0;
-  background-color: #111; 
+  background-color: #111;
   overflow-x: hidden;
   padding-top: 60px;
   transition: 0.5s;
@@ -33,38 +33,37 @@
 }
 
 @media only screen and (max-width: 600px) {
-
-	.navigationBarElement .MuiListItemText-primary {
-		font-size: 1rem;
-	}
+  .navigationBarElement .MuiListItemText-primary {
+    font-size: 1rem;
+  }
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
 @media only screen and (min-width: 600px) {
-	.navigationBarElement .MuiListItemText-primary {
-		font-size: 1rem;
-	}
+  .navigationBarElement .MuiListItemText-primary {
+    font-size: 1rem;
+  }
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
 @media only screen and (min-width: 768px) {
-	.navigationBarElement .MuiListItemText-primary {
-		font-size: 1rem;
-	}
+  .navigationBarElement .MuiListItemText-primary {
+    font-size: 1rem;
+  }
 }
 
 /* Large devices (laptops/desktops, 992px and up) */
 @media only screen and (min-width: 992px) {
-	.navigationBarElement .MuiListItemText-primary {
-		font-size: 1rem;
-	}
+  .navigationBarElement .MuiListItemText-primary {
+    font-size: 1rem;
+  }
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {
-	.navigationBarElement .MuiListItemText-primary {
-		font-size: 1.2rem;
-	}
+  .navigationBarElement .MuiListItemText-primary {
+    font-size: 1.2rem;
+  }
 }
 
 .openBtn {
@@ -81,6 +80,10 @@
 }
 
 @media screen and (max-height: 450px) {
-  .navigationBarContainer {padding-top: 15px;}
-  .navigationBarContainer a {font-size: 18px;}
+  .navigationBarContainer {
+    padding-top: 15px;
+  }
+  .navigationBarContainer a {
+    font-size: 18px;
+  }
 }
