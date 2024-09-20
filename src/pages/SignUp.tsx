@@ -47,7 +47,7 @@ export default function SignUp() {
         });
         const user = userCredential.user;
         await updateProfile(user, { displayName: username });
-        navigate("/login");
+        navigate("#/login");
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -153,7 +153,7 @@ export default function SignUp() {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link href="/login" variant="body2">
+              <Link href="#/login" variant="body2">
                 Bereits einen Account erstellt? Hier anmelden!
               </Link>
             </Grid>

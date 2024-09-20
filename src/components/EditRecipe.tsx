@@ -233,7 +233,7 @@ const updateRecipe = async (id: string, updatedRecipe: RecipeInterface, oldDateE
 
   const handleDelete = () => {
     if(!isNew) deleteRecipe().then(() => {
-      navigate('/my_recipes', {replace: true});
+      navigate('#/my_recipes', {replace: true});
       handleReload();
     });
     handleClose();
