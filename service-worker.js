@@ -115,7 +115,7 @@ async function getUserFromFirestore(email) {
 
 async function getFavoritesIdsFromFirestore() {
   const user = await getUserFromIDB();
-  if (user) {
+  if (user && user[0]) {
     if (user[0].email) {
       const fireStoreUser = await getUserFromFirestore(user[0].email);
       let ids = { favorites: [], date_edit: null };
